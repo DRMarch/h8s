@@ -93,15 +93,14 @@ INTERFACE=wlp3s0 # Replace with your network interface
 VIP=192.168.178.10 # Replace with your desired VIP
 
 sudo ctr image pull ghcr.io/kube-vip/kube-vip:$KVVERSION
-sudo ctr run --rm --net-host
---env VIPCIDR=32
-ghcr.io/kube-vip/kube-vip:$KVVERSION vip /kube-vip manifest pod
---interface $INTERFACE
---vip $VIP
---controlplane
---services
---arp
---leaderElection | sudo tee /etc/kubernetes/manifests/kube-vip.yaml
+sudo ctr run --rm --net-host --env VIPCIDR=32 \
+  ghcr.io/kube-vip/kube-vip:$KVVERSION vip /kube-vip manifest pod \
+  --interface $INTERFACE \
+  --vip $VIP \
+  --controlplane \
+  --services \
+  --arp \
+  --leaderElection | sudo tee /etc/kubernetes/manifests/kube-vip.yaml
 
 # https://github.com/kube-vip/kube-vip/issues/684#issuecomment-1864855405
 sudo sed -i 's#path: /etc/kubernetes/admin.conf#path: /etc/kubernetes/super-admin.conf#' /etc/kubernetes/manifests/kube-vip.yaml
@@ -127,7 +126,7 @@ On the second+ nodes run the command taken from above that looks like the one be
 
 ```bash
 VIP=192.168.178.10
-kubeadm join $VIP:6443 --token <token> \
+sudo kubeadm join $VIP:6443 --token <token> \
 	--discovery-token-ca-cert-hash <discover-token> \
 	--control-plane --certificate-key <cet-key>
 
@@ -159,7 +158,19 @@ kubectl taint nodes <node-name> node-role.kubernetes.io/control-plane:NoSchedule
 
 Replace `<node-name>` with your actual node name.
 
-## Future Considerations
 
+### 7. Additional setup
+Below we install any packages that are required by Longhorn.
+```bash
+# For longhorn we must have
+sudo apt install open-iscsi nfs-common cryptsetup dmsetup -y
+```
+
+## Kube-VIP-Cloud-Controller
+
+https://kube-vip.io/docs/usage/cloud-provider/
+
+
+## Future Considerations
 - **Migrate to TalosOS** when WiFi support becomes available for improved security and manageability.
 - **Switch kube-vip to DaemonSet** for higher reliability and easier management.
