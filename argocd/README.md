@@ -15,8 +15,7 @@ Key features include:
 The following steps demonstrate how to deploy Argo CD into your Kubernetes cluster using the official Helm chart. 
 This method allows you to customize your deployment via Helm values and ensures your Argo CD installation is reproducible and version-controlled.
 ```bash
-export CLUSTER_ENV=prod
-export ARGOCD_HELM_VER=8.0.10
+export ARGOCD_HELM_VER=8.1.3 # Jul 2025
 
 helm repo add argo https://argoproj.github.io/argo-helm && helm repo update
 
@@ -35,8 +34,7 @@ The **App of Apps** pattern allows you to manage multiple Argo CD applications a
 To bootstrap your applications using the App of Apps pattern:
 
 ```bash
-CLUSTER_ENV=prod
-kubectl apply -k environments/$CLUSTER_ENV/applications/app-of-apps-bootstrap.yaml
+kubectl apply -f applications/app-of-apps-bootstrap.yaml
 ```
 
 ## Accessing the Argo CD UI

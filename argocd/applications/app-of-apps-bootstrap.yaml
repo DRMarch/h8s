@@ -13,9 +13,12 @@ spec:
   source:
     repoURL: https://github.com/DRMarch/h8s.git
     targetRevision: HEAD
-    path: ci-cd/argocd/environments/prod/apps/
+    path: argocd/applications/bootstrap
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
       allowEmpty: false
+    syncOptions:
+      - PruneLast=true
+      - ServerSideApply=true
