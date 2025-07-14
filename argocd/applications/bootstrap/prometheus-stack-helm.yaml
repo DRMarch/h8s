@@ -14,7 +14,7 @@ spec:
       helm:
         releaseName: prometheus-stack
         valueFiles:
-          - $h8s/observability/prometheus-stack/values.yaml
+          - $h8s/monitoring/prometheus-stack/values.yaml
     - repoURL: https://github.com/DRMarch/h8s.git
       targetRevision: HEAD
       ref: h8s
