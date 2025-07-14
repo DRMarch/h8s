@@ -1,0 +1,23 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: pg-default-cluster
+  namespace: cloudnative-pg
+spec:
+  description: Default postgres cluster
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.5
+  instances: 3
+  postgresql:
+    parameters:
+      max_connections: "100"
+  storage:
+    size: 32Gi
+  resources:
+    requests:
+      memory: 256Mi
+  bootstrap:
+    initdb:
+      database: default
+      owner: admin
+      secret:
+        name: pg-default-credentials
