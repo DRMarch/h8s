@@ -1,0 +1,4 @@
+namespaceOverride: monitoring
+serviceMonitor:
+  enabled: true
+  namespace: monitoring

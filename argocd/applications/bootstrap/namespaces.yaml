@@ -1,28 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: longhorn
+  name: namespaces
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "-500"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1000"
 spec:
-  syncPolicy:
-    syncOptions:
-      - CreateNamespace=true
   project: default
   sources:
-    - chart: longhorn
-      repoURL: https://charts.longhorn.io/
-      targetRevision: v1.9.0 # May 2025
-      helm:
-        values: |
-          preUpgradeChecker:
-            jobEnabled: false
+    - repoURL: https://github.com/DRMarch/h8s.git
+      targetRevision: HEAD
+      path: namespaces
   destination:
     server: https://kubernetes.default.svc
-    namespace: longhorn-system
   syncPolicy:
     automated:
       prune: true

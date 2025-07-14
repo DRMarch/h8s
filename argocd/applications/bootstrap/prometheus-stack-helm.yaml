@@ -1,28 +1,26 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: longhorn
+  name: prometheus-stack
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "-500"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  syncPolicy:
-    syncOptions:
-      - CreateNamespace=true
   project: default
   sources:
-    - chart: longhorn
-      repoURL: https://charts.longhorn.io/
-      targetRevision: v1.9.0 # May 2025
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: kube-prometheus-stack
+      targetRevision: 75.10.0 # July 2025
       helm:
-        values: |
-          preUpgradeChecker:
-            jobEnabled: false
+        releaseName: prometheus-stack
+        valueFiles:
+          - $h8s/monitoring/prometheus-stack/values.yaml
+    - repoURL: https://github.com/DRMarch/h8s.git
+      targetRevision: HEAD
+      ref: h8s
   destination:
     server: https://kubernetes.default.svc
-    namespace: longhorn-system
+    namespace: monitoring
   syncPolicy:
     automated:
       prune: true
