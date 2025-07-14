@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - ./monitoring.yaml
   - ./longhorn_system.yaml
+  - ./secret-generator.yaml
