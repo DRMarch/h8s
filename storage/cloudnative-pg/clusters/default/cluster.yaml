@@ -19,8 +19,6 @@ spec:
   bootstrap:
     initdb:
       database: default
-    initdb:
-      database: default
       owner: admin
       secret:
         name: pg-default-credentials
