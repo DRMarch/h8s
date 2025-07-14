@@ -15,7 +15,7 @@ spec:
         releaseName: cloudnative-pg
   destination:
     server: https://kubernetes.default.svc
-    namespace: cnpg-system
+    namespace: cloudnative-pg
   syncPolicy:
     automated:
       prune: true
