@@ -24,7 +24,7 @@ helm upgrade argocd argo/argo-cd \
     --namespace argocd \
     --create-namespace \
     --version ${ARGOCD_HELM_VER} \
-    -f environments/${CLUSTER_ENV}/values.yaml
+    -f ./values.yaml
 ```
 
 ## App of Apps Pattern
@@ -45,3 +45,9 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
 Then open [https://localhost:8080](https://localhost:8080) in your browser.
+
+You can get the password with:
+```bash
+
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d 
+```
