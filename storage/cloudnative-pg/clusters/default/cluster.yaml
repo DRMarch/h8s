@@ -11,8 +11,6 @@ spec:
     parameters:
       max_connections: "100"
   storage:
-    size: 1Gi
-  storage:
     size: 32Gi
   resources:
     requests:
