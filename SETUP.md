@@ -88,7 +88,7 @@ Follow the [official Kubernetes guide](https://kubernetes.io/docs/setup/producti
 
 On the **first control plane node**:
 ```bash
-KVVERSION=v0.8.0
+KVVERSION=v0.9.2
 INTERFACE=wlp3s0 # Replace with your network interface
 VIP=192.168.178.10 # Replace with your desired VIP
 
@@ -100,6 +100,7 @@ sudo ctr run --rm --net-host --env VIPCIDR=32 \
   --controlplane \
   --services \
   --arp \
+  --vipSubnet 32 \
   --leaderElection | sudo tee /etc/kubernetes/manifests/kube-vip.yaml
 
 # https://github.com/kube-vip/kube-vip/issues/684#issuecomment-1864855405
