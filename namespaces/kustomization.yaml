@@ -5,3 +5,4 @@ resources:
   - ./longhorn_system.yaml
   - ./secret-generator.yaml
   - ./cloudnative-pg.yaml
+  - ./hello-world.yaml

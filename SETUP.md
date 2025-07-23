@@ -1,8 +1,8 @@
 # Home Kubernetes Cluster Setup
 
-A guide to building a highly available, three-node home Kubernetes cluster using kubeadm and kube-vip, running on Ubuntu Server 25.04. This setup focuses on simplicity, reliability, and security for home environments where WiFi networking is required.
+A guide to building a highly available, three-node home Kubernetes cluster using kubeadm and kube-vip, running on Ubuntu Server 25.04. This setup focuses on simplicity, reliability, and security.
 
-_Last updated: June 29, 2025_
+_Last updated: July 23, 2025_
 
 ## Table of Contents
 
@@ -26,12 +26,10 @@ This repository documents the setup of a highly available, three-node Kubernetes
 - [kube-vip](https://kube-vip.io/docs/installation/static/) as a metal load balancer for the control plane.
 - [Cilium](https://cilium.io/) as the CNI for advanced networking.
 
-> **Note:** TalosOS was considered for its security and immutability, but is currently not supported due to WiFi driver limitations. Future migration to TalosOS is under review.
-
 ## Prerequisites
 
 - Three physical or virtual machines, each running [Ubuntu Server 25.04](https://releases.ubuntu.com/plucky/)
-- WiFi network connectivity (due to router access limitations)
+- Network switch
 - Basic familiarity with Linux and Kubernetes
 
 ## OS Setup
@@ -89,7 +87,7 @@ Follow the [official Kubernetes guide](https://kubernetes.io/docs/setup/producti
 On the **first control plane node**:
 ```bash
 KVVERSION=v0.9.2
-INTERFACE=wlp3s0 # Replace with your network interface
+INTERFACE=enp1s0 # Replace with your network interface
 VIP=192.168.178.10 # Replace with your desired VIP
 
 sudo ctr image pull ghcr.io/kube-vip/kube-vip:$KVVERSION
@@ -173,5 +171,5 @@ https://kube-vip.io/docs/usage/cloud-provider/
 
 
 ## Future Considerations
-- **Migrate to TalosOS** when WiFi support becomes available for improved security and manageability.
+- **Migrate to TalosOS**.
 - **Switch kube-vip to DaemonSet** for higher reliability and easier management.
