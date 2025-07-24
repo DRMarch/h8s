@@ -17,7 +17,7 @@ spec:
       memory: 256Mi
   bootstrap:
     initdb:
-      database: default
+      database: postgres
       owner: admin
       secret:
         name: pg-default-credentials
