@@ -1,0 +1,7 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: longhorn-dashboard
+spec:
+  url: https://raw.githubusercontent.com/onzack/grafana-dashboards/refs/heads/main/grafana/longhorn/onzack-longhorn-monitoring.json
+  folderRef: longhorn
