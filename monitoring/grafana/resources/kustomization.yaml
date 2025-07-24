@@ -4,6 +4,6 @@ namespace: monitoring
 resources:
   - ./datasources
   # To Implement dashboard yet
-  # - ./dashboards 
+  - ./dashboards 
   - ./grafana.yaml
   - ./admin-credentials.yaml
