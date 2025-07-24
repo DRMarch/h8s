@@ -1,0 +1,11 @@
+# https://cloudnative-pg.io/documentation/current/monitoring/
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: pg-default-cluster-monitoring
+spec:
+  selector:
+    matchLabels:
+      "cnpg.io/cluster": pg-default-cluster
+  podMetricsEndpoints:
+  - port: metrics
