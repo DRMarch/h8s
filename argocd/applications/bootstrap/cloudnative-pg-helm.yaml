@@ -13,6 +13,9 @@ spec:
       targetRevision: 0.24.0 # May 2025
       helm:
         releaseName: cloudnative-pg
+    - repoURL: https://github.com/DRMarch/h8s.git
+      targetRevision: HEAD
+      path: storage/cloudnative-pg/operator
   destination:
     server: https://kubernetes.default.svc
     namespace: cloudnative-pg

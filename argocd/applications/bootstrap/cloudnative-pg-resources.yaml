@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/DRMarch/h8s.git
     targetRevision: HEAD
-    path: storage/cloudnative-pg/clusters
+    path: storage/cloudnative-pg/resources/clusters
   destination:
     server: https://kubernetes.default.svc
   syncPolicy:
