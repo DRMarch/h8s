@@ -20,6 +20,9 @@ spec:
         values: |
           preUpgradeChecker:
             jobEnabled: false
+    - repoURL: https://github.com/DRMarch/h8s.git
+      targetRevision: HEAD
+      path: storage/longhorn
   destination:
     server: https://kubernetes.default.svc
     namespace: longhorn-system
