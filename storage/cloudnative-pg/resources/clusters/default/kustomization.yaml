@@ -4,3 +4,4 @@ namespace: cloudnative-pg
 resources:
   - ./cluster.yaml
   - ./admin-credentials.yaml
+  - ./pod-monitor.yaml
