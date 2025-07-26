@@ -6,7 +6,9 @@ metadata:
 data:
   Corefile: |-
     homelab.local:53 {
+        forward . 192.168.172.12
+        log
         errors
         cache 30
-        forward . 192.168.172.12 # IP for contour-envoy service
+        ready
     }
