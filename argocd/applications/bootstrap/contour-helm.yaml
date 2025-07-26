@@ -15,7 +15,7 @@ spec:
   sources:
     - repoURL: registry-1.docker.io/bitnamicharts
       chart: contour
-      targetRevision: 20.0.12 # July 2025
+      targetRevision: 20.0.11 # July 2025
       helm:
         valueFiles:
           - $values/networking/contour/helm/values.yaml
