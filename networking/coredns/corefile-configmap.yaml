@@ -6,7 +6,7 @@ metadata:
 data:
   Corefile: |-
     homelab.local:53 {
-        forward . 192.168.172.12
+        forward . 192.168.178.12
         log
         errors
         cache 30
