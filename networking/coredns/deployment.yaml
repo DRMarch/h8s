@@ -19,15 +19,14 @@ spec:
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchExpressions:
-                    - key: k8s-app
-                      operator: In
-                      values:
-                        - coredns-lan
-                topologyKey: "kubernetes.io/hostname"
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: k8s-app
+                    operator: In
+                    values:
+                      - coredns-lan
+              topologyKey: "kubernetes.io/hostname"
       containers:
         - name: coredns
           image: coredns/coredns:1.12.2
