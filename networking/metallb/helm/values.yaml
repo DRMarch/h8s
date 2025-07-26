@@ -1,0 +1,9 @@
+controller:
+  podAntiAffinityPreset: hard # HA
+
+speaker:
+  podAntiAffinityPreset: hard # HA
+  metrics:
+    enabled: true
+    serviceMonitor:
+      namespace: monitoring
