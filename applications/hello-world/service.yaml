@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: nginx-hello-world
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: nginx-hello-world
   ports:
