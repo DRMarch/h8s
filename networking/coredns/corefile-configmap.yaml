@@ -5,7 +5,7 @@ metadata:
   namespace: coredns-lan
 data:
   Corefile: |-
-    homelab.local:53 {
+    homelab.local.fritz.box.:53 {
         template IN A {
             match (^|\.)homelab\.local(\.|$)
             answer "{{ .Name }} 60 IN A 192.168.178.12"
