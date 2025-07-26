@@ -11,20 +11,23 @@ spec:
   selector:
     matchLabels:
       k8s-app: coredns-lan
+  template:
+    metadata:
+      labels:
+        k8s-app: coredns-lan
     spec:
-      # Ensure that coredns is in ha and pods won't share the same node name
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               podAffinityTerm:
-                - labelSelector:
+                labelSelector:
                   matchExpressions:
                     - key: k8s-app
                       operator: In
                       values:
-                      - coredns-lan
-                  topologyKey: "kubernetes.io/hostname"
+                        - coredns-lan
+                topologyKey: "kubernetes.io/hostname"
       containers:
         - name: coredns
           image: coredns/coredns:1.12.2
@@ -82,4 +85,3 @@ spec:
             items:
               - key: Corefile
                 path: Corefile
-  
