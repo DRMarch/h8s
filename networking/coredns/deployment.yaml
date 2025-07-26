@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coredns
+  namespace: coredns-lan
+  labels:
+    k8s-app: coredns-lan
+    kubernetes.io/name: CoreDNS
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      k8s-app: coredns-lan
+  template:
+    metadata:
+      labels:
+        k8s-app: coredns-lan
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: k8s-app
+                      operator: In
+                      values:
+                        - coredns-lan
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: coredns
+          image: coredns/coredns:1.12.2
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              memory: 170Mi
+            requests:
+              cpu: 100m
+              memory: 70Mi
+          env:
+            - name: GOMEMLIMIT
+              value: 161MiB
+            - name: GOMAXPROCS
+              value: "1"
+          args:
+            - -conf
+            - /etc/coredns/Corefile
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/coredns
+              readOnly: true
+          ports:
+            - name: dns
+              protocol: UDP
+              containerPort: 53
+            - name: dns-tcp
+              protocol: TCP
+              containerPort: 53
+            - name: metrics
+              protocol: TCP
+              containerPort: 9153
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8181
+              scheme: HTTP
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+      dnsPolicy: Default
+      volumes:
+        - name: config-volume
+          configMap:
+            name: corefile-coredns-lan
+            items:
+              - key: Corefile
+                path: Corefile

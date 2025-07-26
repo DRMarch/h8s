@@ -1,21 +1,21 @@
 # apiVersion: argoproj.io/v1alpha1
 # kind: Application
 # metadata:
-#   name: metallb-resources
+#   name: coredns-lan
 #   namespace: argocd
 #   finalizers:
 #     - resources-finalizer.argocd.argoproj.io
 #   annotations:
-#     argocd.argoproj.io/sync-wave: "-299"
+#     argocd.argoproj.io/sync-wave: "-200"
 # spec:
 #   project: default
 #   destination:
 #     server: https://kubernetes.default.svc
-#     namespace: metallb-system
+#     namespace: coredns-lan
 #   source:
 #     repoURL: https://github.com/DRMarch/h8s.git
 #     targetRevision: HEAD
-#     path: networking/metallb/resources
+#     path: networking/coredns
 #   syncPolicy:
 #     automated:
 #       prune: true

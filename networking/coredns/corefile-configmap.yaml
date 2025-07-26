@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: corefile-coredns-lan
+  namespace: coredns-lan
+data:
+  Corefile: |-
+    homelab.local.fritz.box.:53 {
+        template IN A {
+            match (^|\.)homelab\.local\.fritz\.box\.$
+            answer "{{ .Name }} 60 IN A 192.168.178.12"
+            fallthrough
+        }
+        template IN AAAA {
+            match (^|\.)homelab\.local\.fritz\.box\.$
+            rcode NOERROR
+            fallthrough
+        }
+        ready
+        log . {
+            class error
+        }
+        header {
+            response set ra
+        }
+        errors
+    }
+    .:53 {
+        health {
+            lameduck 5s
+        }
+        ready
+        log . {
+            class error
+        }
+        prometheus :9153
+        forward . tls://8.8.8.8 tls://8.8.4.4 {
+          tls_servername dns.google
+        }
+        loop
+        reload
+        loadbalance
+        errors
+    }

@@ -3,18 +3,24 @@ envoy:
     requests:
       cpu: 100m
       memory: 128Mi
-  loadBalancerIP: 192.168.178.12
+    limits:
+      cpu: 500m
+      memory: 256Mi
   kind: deployment
   podAntiAffinityPreset: hard # Spread across nodes
   replicaCount: 2 # HA
   service:
     externalTrafficPolicy: Local
     exposeMetrics: true
+    loadBalancerIP: 192.168.178.12
   shutdownManager:
     resources:
       requests:
         cpu: 25m
         memory: 50Mi
+    limits:
+      cpu: 25mi
+      memory: 50Mi
 
 metrics:
   serviceMonitor:
@@ -30,6 +36,9 @@ contour:
   resources:
     requests:
       cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
       memory: 128Mi
   replicaCount: 2 # HA
   podAntiAffinityPreset: hard # Spread across nodes
