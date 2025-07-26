@@ -1,0 +1,14 @@
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: argocd-httpproxy
+  namespace: argocd
+spec:
+  routes:
+    - conditions:
+      - prefix: /
+      services:
+        - name: argocd-server
+          port: 80
+  virtualhost:
+    fqdn: argocd.homelab.local

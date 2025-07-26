@@ -1,0 +1,38 @@
+envoy:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  loadBalancerIP: 192.168.178.12
+  kind: deployment
+  podAntiAffinityPreset: hard # Spread across nodes
+  replicaCount: 2 # HA
+  service:
+    externalTrafficPolicy: Local
+    exposeMetrics: true
+  shutdownManager:
+    resources:
+      requests:
+        cpu: 25m
+        memory: 50Mi
+
+metrics:
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
+    additionalLabels:
+      release: prometheus-stack
+
+ingress:
+  ingressClassName: contour
+
+contour:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+  replicaCount: 2 # HA
+  podAntiAffinityPreset: hard # Spread across nodes
+  metrics:
+    service:
+      exposeMetrics: true
