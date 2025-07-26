@@ -6,9 +6,32 @@ metadata:
 data:
   Corefile: |-
     homelab.local:53 {
-        forward . 192.168.178.12
-        log
+        template IN A {
+            match (^|\.)homelab\.local\.$
+            answer "{{ .Name }} 60 IN A 192.168.178.12"
+            fallthrough
+        }
+        ready
+        log . {
+            class error
+        }
         errors
         cache 30
+    }
+    .:53 {
+        health {
+            lameduck 5s
+        }
         ready
+        log . {
+            class error
+        }
+        prometheus :9153
+        forward . tls://8.8.8.8 tls://8.8.4.4 {
+          tls_servername dns.google
+        }
+        loop
+        reload
+        loadbalance
+        errors
     }
