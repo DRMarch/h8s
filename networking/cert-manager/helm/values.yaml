@@ -1,0 +1,12 @@
+# https://artifacthub.io/packages/helm/cert-manager/cert-manager/1.18.2?modal=values
+
+config:
+  enableGatewayAPI: true
+crds:
+  enabled: true
+extraArgs:
+  - --acme-http01-solver-nameservers="coredns-lan.coredns-lan.svc.cluster.local:53"
+prometheus:
+  enabled: true
+  servicemonitor:
+    enabled: true
