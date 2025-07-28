@@ -33,6 +33,9 @@ data:
         log . {
             class error
         }
+        hosts /blocklist/hosts {
+          fallthrough
+        }
         prometheus :9153
         forward . tls://8.8.8.8 tls://8.8.4.4 {
           tls_servername dns.google
