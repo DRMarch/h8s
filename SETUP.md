@@ -145,8 +145,7 @@ Install only on the node where you ran `kubeadm init`:
 sudo snap install helm --classic
 
 helm repo add cilium https://helm.cilium.io/
-helm install cilium cilium/cilium --version 1.17.5 --namespace kube-system
-```
+helm install cilium cilium/cilium --version 1.17.6 --namespace kube-system -f networking/cilium/helm/values.yaml
 
 ### 6. Untaint Control Plane Nodes
 

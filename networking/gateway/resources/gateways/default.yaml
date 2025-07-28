@@ -1,0 +1,49 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: default-gateway
+  namespace: default
+spec:
+  gatewayClassName: cilium
+  infrastructure:
+    annotations:
+      io.cilium/lb-ipam-ips: 192.168.178.12
+  listeners:
+    # https://cert-manager.io/docs/usage/gateway/#use-cases
+    # For details on how to make these listeners for cert-manager
+    - protocol: HTTPS
+      name: home-lan-argocd
+      hostname: argocd.homelab.local
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: argocd-homelab-local-tls
+            namespace: argocd
+    - protocol: HTTPS
+      name: home-lan-grafana
+      hostname: grafana.homelab.local
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: grafana-homelab-local-tls
+            namespace: monitoring
+    - protocol: HTTPS
+      name: home-lan-hello-world
+      hostname: helloworld.homelab.local
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: hello-world-homelab-local-tls
+            namespace: hello-world

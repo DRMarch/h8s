@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: hello-world-homelab-local
+  namespace: hello-world
+spec:
+  secretName: hello-world-homelab-local-tls
+  issuerRef:
+    name: vault-issuer
+    kind: ClusterIssuer
+  commonName: helloworld.homelab.local
+  dnsNames:
+    - helloworld.homelab.local

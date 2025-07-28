@@ -10,9 +10,10 @@ metadata:
     k8s-app: coredns-lan
     kubernetes.io/cluster-service: "true"
     kubernetes.io/name: CoreDNS
+    cilium.io/ip-pool-designation: home-lan
+    cilium.io/l2-announce-on-lan: "true"
 spec:
   type: LoadBalancer
-  loadBalancerIP: 192.168.178.11
   selector:
     k8s-app: coredns-lan
   ipFamilyPolicy: SingleStack

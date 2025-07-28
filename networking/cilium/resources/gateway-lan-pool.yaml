@@ -1,0 +1,10 @@
+apiVersion: cilium.io/v2alpha1
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: gateway-lan-pool
+spec:
+  blocks:
+    - cidr: 192.168.178.12/32
+  serviceSelector:
+    matchLabels:
+      io.cilium.gateway/owning-gateway: default-gateway

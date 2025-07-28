@@ -1,27 +1,26 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: coredns-lan
+  name: cert-manager-resources
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   annotations:
-    argocd.argoproj.io/sync-wave: "-200"
+    argocd.argoproj.io/sync-wave: "-299"
 spec:
   project: default
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: coredns-lan
   source:
     repoURL: https://github.com/DRMarch/h8s.git
     targetRevision: HEAD
-    path: networking/coredns
+    path: networking/cert-manager/resources
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
       allowEmpty: false
     syncOptions:
-      - CreateNamespace=true
       - PruneLast=true
       - ServerSideApply=true

@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: argocd-homelab-local
+  namespace: argocd
+spec:
+  secretName: argocd-homelab-local-tls
+  issuerRef:
+    name: vault-issuer
+    kind: ClusterIssuer
+  commonName: argocd.homelab.local
+  dnsNames:
+    - argocd.homelab.local

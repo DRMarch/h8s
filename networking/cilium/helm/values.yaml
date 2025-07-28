@@ -1,0 +1,10 @@
+# https://artifacthub.io/packages/helm/cilium/cilium/1.17.6?modal=values
+l2announcements:
+  enabled: true
+
+gatewayAPI:
+  enabled: true
+  enableAlpn: true
+  enableAppProtocol: true
+
+kubeProxyReplacement: true

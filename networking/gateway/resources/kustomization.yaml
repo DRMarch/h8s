@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./gateways/default.yaml
+  - ./http-routes/grafana.yaml
+  - ./http-routes/argocd.yaml
+  - ./http-routes/hello-world.yaml
+  - ./reference-grants/default-gateway-argocd-tls.yaml
+  - ./reference-grants/default-gateway-grafana-tls.yaml
+  - ./reference-grants/default-gateway-hello-world-tls.yaml
+patches:
+  - target:
+      kind: ReferenceGrant
+    patch: |
+      - op: add
+        path: /metadata/annotations
+        value:
+          argocd.argoproj.io/sync-wave: "1"
+  - target:
+      kind: Gateway
+    patch: |
+      - op: add
+        path: /metadata/annotations
+        value:
+          argocd.argoproj.io/sync-wave: "2"
+  - target:
+      kind: HTTPRoute
+    patch: |
+      - op: add
+        path: /metadata/annotations
+        value:
+          argocd.argoproj.io/sync-wave: "3"

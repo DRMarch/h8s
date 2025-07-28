@@ -1,0 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./coredns-lan-pool.yaml
+  - ./gateway-lan-pool.yaml
+  - ./gateway-l2-announcement-policy.yaml
+  - ./default-l2-announcement-policy.yaml
