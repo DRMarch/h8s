@@ -15,9 +15,12 @@ spec:
   resources:
     requests:
       memory: 256Mi
-  bootstrap:
-    initdb:
-      database: postgres
-      owner: admin
-      secret:
-        name: pg-default-credentials
+  managed:
+    roles:
+      - name: admin
+        ensure: present
+        login: true
+        superuser: false
+        passwordSecret:
+          name: pg-default-credentials
+          key: password
