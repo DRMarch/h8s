@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: storage-configuration
+  namespace: minio-tenant
+  annotations:
+    secret-generator.v1.mittwald.de/autogenerate: MINIO_ROOT_PASSWORD
+type: Opaque
+stringData:
+  config.env: |-
+    export MINIO_ROOT_USER="minio"
+    export MINIO_ROOT_PASSWORD="test"
+    export MINIO_STORAGE_CLASS_STANDARD="longhorn"
+    export MINIO_BROWSER="on"
+    export MINIO_PROMETHEUS_AUTH_TYPE="public"

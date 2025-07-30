@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: storage-user
+  namespace: default
+  annotations:
+    secret-generator.v1.mittwald.de/autogenerate: CONSOLE_ACCESS_KEY
+    secret-generator.v1.mittwald.de/autogenerate: CONSOLE_SECRET_KEY
+type: Opaque
+data: {}

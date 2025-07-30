@@ -6,6 +6,7 @@ resources:
   - ./longhorn/
   - ./kubernetes/
   - ./cloudnative-pg/
+  - ./minio/
 patches:
   - target:
       group: grafana.integreatly.org
