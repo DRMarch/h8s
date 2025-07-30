@@ -38,4 +38,3 @@ ls
 # Delete the pod
 kubectl delete pod pvc-inspector -n $CLAIM_NAMESPACE
 ```
-
