@@ -1,8 +1,12 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - ./argocd/
+  - ./cert-manager/
   - ./longhorn/
+  - ./kubernetes/
   - ./cloudnative-pg/
+  - ./minio/
 patches:
   - target:
       group: grafana.integreatly.org

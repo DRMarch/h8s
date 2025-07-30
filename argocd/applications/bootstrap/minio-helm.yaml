@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: minio-operator-helm
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "-300"
+spec:
+  project: default
+  sources:
+    - repoURL: https://operator.min.io
+      chart: operator
+      targetRevision: 7.1.1 # April 2025
+      helm:
+        valueFiles:
+          - $h8s/storage/minio/helm/values.yaml
+    - repoURL: https://github.com/DRMarch/h8s.git
+      targetRevision: HEAD
+      ref: h8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: minio-operator
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - PruneLast=true
+      - ServerSideApply=true
+      - CreateNamespace=true

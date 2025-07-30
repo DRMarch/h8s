@@ -1,0 +1,60 @@
+# Taken from https://github.com/minio/operator/blob/master/examples/kustomization/base/tenant.yaml
+apiVersion: minio.min.io/v2
+kind: Tenant
+metadata:
+  name: myminio
+  namespace: minio-tenant
+  labels:
+    app: minio
+  annotations:
+    prometheus.io/path: /minio/v2/metrics/cluster
+    prometheus.io/port: "9000"
+    prometheus.io/scrape: "true"
+
+spec:
+  features:
+    bucketDNS: false
+  users:
+    - name: storage-user
+  ## Create buckets using the console user
+  buckets:
+    - name: "default"
+      region: "eu-west-2"
+      objectLock: true
+  podManagementPolicy: Parallel
+  configuration:
+    name: storage-configuration
+  image: quay.io/minio/minio:RELEASE.2025-07-18T21-56-31Z # Jul 2025
+  mountPath: /export
+  ## Specification for MinIO Pool(s) in this Tenant.
+  pools:
+    - servers: 3
+      name: pool-0
+      volumesPerServer: 3
+      volumeClaimTemplate:
+        apiVersion: v1
+        kind: persistentvolumeclaims
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 128Gi
+          storageClassName: longhorn
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
+      containerSecurityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        seccompProfile:
+          type: RuntimeDefault
+  requestAutoCert: false
