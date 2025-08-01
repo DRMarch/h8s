@@ -1,0 +1,26 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cnpg-harbor
+  namespace: harbor
+spec:
+  description: Postgres cluster for the Harbor
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.4
+  instances: 3
+  storage:
+    size: 10Gi
+  resources:
+    requests:
+      memory: 512Mi
+  managed:
+    roles:
+      - name: harbor
+        ensure: present
+        login: true
+        superuser: false
+        passwordSecret:
+          name: cnpg-harbor-user-credentials
+          key: password
+  enableSuperuserAccess: false
+  monitoring:
+    enablePodMonitor: true

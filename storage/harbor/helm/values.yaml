@@ -1,0 +1,23 @@
+
+externalURL: https://harbor.homelab.local
+expose:
+  type: clusterIP
+  tls:
+    enabled: false
+existingSecretAdminPassword: harbor-admin-credentials
+existingSecretAdminPasswordKey: HARBOR_ADMIN_PASSWORD
+database:
+  type: external
+  external:
+    host: cnpg-harbor-rw.harbor.svc.cluster.local
+    port: 5432
+    username: harbor
+    coreDatabase: harbor_core
+    existingSecret: cnpg-harbor-user-credentials
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+
+persistence:
+  enabled: true

@@ -6,4 +6,5 @@ resources:
   - ./issuers/vault-issuer-service-account-secret.yaml
   - ./certificates/argocd-homelab-local.yaml
   - ./certificates/grafana-homelab-local.yaml
+  - ./certificates/harbor-homelab-local.yaml
   - ./certificates/hello-world-homelab-local.yaml

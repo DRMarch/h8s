@@ -3,9 +3,10 @@ kind: Kustomization
 resources:
   - ./argocd/
   - ./cert-manager/
-  - ./longhorn/
-  - ./kubernetes/
   - ./cloudnative-pg/
+  - ./harbor/
+  - ./kubernetes/
+  - ./longhorn/
   - ./minio/
 patches:
   - target:
