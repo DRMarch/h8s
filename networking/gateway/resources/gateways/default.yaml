@@ -36,6 +36,18 @@ spec:
           - name: grafana-homelab-local-tls
             namespace: monitoring
     - protocol: HTTPS
+      name: home-lan-harbor
+      hostname: harbor.homelab.local
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: harbor-homelab-local-tls
+            namespace: harbor
+    - protocol: HTTPS
       name: home-lan-hello-world
       hostname: helloworld.homelab.local
       port: 443
