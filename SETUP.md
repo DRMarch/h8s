@@ -138,16 +138,24 @@ sudo cp /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
-### 5. Install CNI (Cilium)
+### 5. Setup kube/config
 
-Install only on the node where you ran `kubeadm init`:
+Next you will need to copy the contents of `$HOME/.kube/config` from the node where you `kubeadm init` and then copy this over to your local machine in the same path. This will allow you to access the cluster remotely with `kubectl`.
+
+### 6. Install CNI (Cilium)
+
+On your local machine you can run the following to install a Cilium CNI for the cluster:
+
 ```bash
+# Install helm
 sudo snap install helm --classic
 
+# Helm install cilium
 helm repo add cilium https://helm.cilium.io/
 helm install cilium cilium/cilium --version 1.17.6 --namespace kube-system -f networking/cilium/helm/values.yaml
+```
 
-### 6. Untaint Control Plane Nodes
+### 7. Untaint Control Plane Nodes
 
 Allow scheduling pods on control plane nodes:
 ```bash
@@ -157,17 +165,19 @@ kubectl taint nodes <node-name> node-role.kubernetes.io/control-plane:NoSchedule
 Replace `<node-name>` with your actual node name.
 
 
-### 7. Additional setup
+### 8. Additional setup
 Below we install any packages that are required by Longhorn.
 ```bash
 # For longhorn we must have
 sudo apt install open-iscsi nfs-common cryptsetup dmsetup -y
 ```
 
-## Kube-VIP-Cloud-Controller
+## Vault Setup
 
-https://kube-vip.io/docs/usage/cloud-provider/
+You will need to setup Vault that can be found [here](./security/vault/README.md).
 
+## Argocd
+Next you can setup [argocd](./argocd/README.md) that will bootstrap all the other services in the cluster.
 
 ## Future Considerations
 - **Migrate to TalosOS**.

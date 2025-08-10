@@ -1,5 +1,15 @@
 # Hashicorp Vault
 
+## Helm
+
+## Deployment Manual
+```bash
+helm install vault hashicorp/vault \
+  --version 0.30.0 \
+  --namespace vault \
+  --create-namespace \
+  --values helm/values.yaml
+```
 
 ## Resources
 
@@ -8,10 +18,6 @@
 ```bash
 kubectl apply -k security/vault/resources
 ```
-
-## Helm
-
-
 
 ## First Time Installation
 
