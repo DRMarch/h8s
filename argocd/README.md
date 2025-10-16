@@ -31,10 +31,17 @@ helm upgrade argocd argo/argo-cd \
 
 The **App of Apps** pattern allows you to manage multiple Argo CD applications as a single parent application. This is useful for bootstrapping complex environments.
 
+### Install
 To bootstrap your applications using the App of Apps pattern:
 
 ```bash
 kubectl apply -f applications/app-of-apps-bootstrap.yaml
+```
+
+### Removal
+
+```bash
+kubectl delete -f applications/app-of-apps-bootstrap.yaml
 ```
 
 ## Accessing the Argo CD UI

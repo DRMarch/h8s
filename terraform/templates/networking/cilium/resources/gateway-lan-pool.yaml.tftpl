@@ -1,10 +1,10 @@
 apiVersion: cilium.io/v2alpha1
 kind: CiliumLoadBalancerIPPool
 metadata:
-  name: coredns-lan-pool
+  name: gateway-lan-pool
 spec:
   blocks:
-    - cidr: 192.168.1.11/32
+    - cidr: ${gateway_lan_ip}/32
   serviceSelector:
     matchLabels:
-      k8s-app: coredns-lan
+      io.cilium.gateway/owning-gateway: default-gateway

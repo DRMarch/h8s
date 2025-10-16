@@ -2,7 +2,7 @@
 
 A guide to building a highly available, three-node home Kubernetes cluster using kubeadm and kube-vip, running on Ubuntu Server 25.04. This setup focuses on simplicity, reliability, and security.
 
-_Last updated: 2025-10-16
+_Last updated: ${last_updated}
 
 ## Table of Contents
 
@@ -88,7 +88,7 @@ On the **first control plane node**:
 ```bash
 KVVERSION=v0.9.2
 INTERFACE=enp1s0 # Replace with your network interface
-VIP=192.168.1.10 # Replace with your desired VIP
+VIP=${kube_vip_ip} # Replace with your desired VIP
 
 sudo ctr image pull ghcr.io/kube-vip/kube-vip:$KVVERSION
 sudo ctr run --rm --net-host --env VIPCIDR=32 \
@@ -112,7 +112,7 @@ On **other control plane nodes**, copy and adapt `/etc/kubernetes/manifests/kube
 On the first node:
 
 ```bash
-VIP=192.168.1.10
+VIP=${kube_vip_ip}
 sudo kubeadm init --control-plane-endpoint "$VIP:6443" --upload-certs
 
 # https://github.com/kube-vip/kube-vip/issues/684#issuecomment-1864855405
@@ -124,7 +124,7 @@ Note down the command to join the control plane cluster command that will be giv
 On the second+ nodes run the command taken from above that looks like the one below:
 
 ```bash
-VIP=192.168.1.10
+VIP=${kube_vip_ip}
 sudo kubeadm join $VIP:6443 --token <token> \
 	--discovery-token-ca-cert-hash <discover-token> \
 	--control-plane --certificate-key <cet-key>

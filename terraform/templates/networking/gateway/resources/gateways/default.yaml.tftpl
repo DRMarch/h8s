@@ -7,13 +7,13 @@ spec:
   gatewayClassName: cilium
   infrastructure:
     annotations:
-      io.cilium/lb-ipam-ips: 192.168.1.12
+      io.cilium/lb-ipam-ips: ${gateway_lan_ip}
   listeners:
     # https://cert-manager.io/docs/usage/gateway/#use-cases
     # For details on how to make these listeners for cert-manager
     - protocol: HTTPS
       name: home-lan-argocd
-      hostname: argocd.homelab.local
+      hostname: argocd.${kubernetes_domain}
       port: 443
       allowedRoutes:
         namespaces:
@@ -25,7 +25,7 @@ spec:
             namespace: argocd
     - protocol: HTTPS
       name: home-lan-grafana
-      hostname: grafana.homelab.local
+      hostname: grafana.${kubernetes_domain}
       port: 443
       allowedRoutes:
         namespaces:
@@ -37,7 +37,7 @@ spec:
             namespace: monitoring
     - protocol: HTTPS
       name: home-lan-harbor
-      hostname: harbor.homelab.local
+      hostname: harbor.${kubernetes_domain}
       port: 443
       allowedRoutes:
         namespaces:
@@ -49,7 +49,7 @@ spec:
             namespace: harbor
     - protocol: HTTPS
       name: home-lan-hello-world
-      hostname: helloworld.homelab.local
+      hostname: helloworld.${kubernetes_domain}
       port: 443
       allowedRoutes:
         namespaces:

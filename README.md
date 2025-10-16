@@ -15,6 +15,12 @@ This repo documents the configuration and management of my personal Kubernetes h
   - 16GB RAM per node  
   - 512GB storage per node
 
+
+## Prerequisites
+
+- `Devbox`: to see how to install Devbox see [here](https://github.com/jetify-com/devbox).
+- Update the documentation and manifest templates [here](./terraform/README.md)
+
 ## Documentation
 
 For detailed setup instructions, configuration steps, and operational notes, see [SETUP.md](./SETUP.md).

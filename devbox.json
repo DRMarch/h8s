@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.16.0/.schema/devbox.schema.json",
+  "packages": {
+    "kubectl": {
+      "version": "1.34.1"
+    },
+    "terraform": {
+      "version": "1.13.3"
+    }
+  }
+}

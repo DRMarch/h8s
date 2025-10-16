@@ -5,14 +5,14 @@ metadata:
   namespace: coredns-lan
 data:
   Corefile: |-
-    homelab.local:53 {
+    ${kubernetes_domain}:53 {
         template IN A {
-            match (^|\.)homelab\.local\.$
-            answer "{{ .Name }} 60 IN A 192.168.1.12"
+            match (^|\.)${kubernetes_domain_escaped}\.$
+            answer "{{ .Name }} 60 IN A ${gateway_lan_ip}"
             fallthrough
         }
         template IN AAAA {
-            match (^|\.)homelab\.local\.$
+            match (^|\.)${kubernetes_domain_escaped}\.$
             rcode NOERROR
             fallthrough
         }

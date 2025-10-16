@@ -38,3 +38,12 @@ ls
 # Delete the pod
 kubectl delete pod pvc-inspector -n $CLAIM_NAMESPACE
 ```
+
+## Cilium Gateway
+
+Sometime Cilium will not provide the load balancer for the API Gateway then try running the following
+
+```bash
+kubectl -n kube-system rollout restart deployment/cilium-operator
+kubectl -n kube-system rollout restart ds/cilium
+```
