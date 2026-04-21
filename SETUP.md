@@ -87,7 +87,7 @@ Follow the [official Kubernetes guide](https://kubernetes.io/docs/setup/producti
 On the **first control plane node**:
 ```bash
 KVVERSION=v0.9.2
-INTERFACE=enp1s0 # Replace with your network interface
+INTERFACE=enp2s0 # Replace with your network interface
 VIP=192.168.1.10 # Replace with your desired VIP
 
 sudo ctr image pull ghcr.io/kube-vip/kube-vip:$KVVERSION
@@ -152,7 +152,7 @@ sudo snap install helm --classic
 
 # Helm install cilium
 helm repo add cilium https://helm.cilium.io/
-helm install cilium cilium/cilium --version 1.17.6 --namespace kube-system -f networking/cilium/helm/values.yaml
+helm install cilium cilium/cilium --version 1.17.12 --namespace kube-system -f networking/cilium/helm/values.yaml
 ```
 
 ### 7. Untaint Control Plane Nodes
@@ -172,13 +172,53 @@ Below we install any packages that are required by Longhorn.
 sudo apt install open-iscsi nfs-common cryptsetup dmsetup -y
 ```
 
-## Vault Setup
-
-You will need to setup Vault that can be found [here](./security/vault/README.md).
-
 ## Argocd
 Next you can setup [argocd](./argocd/README.md) that will bootstrap all the other services in the cluster.
 
 ## Future Considerations
 - **Migrate to TalosOS**.
 - **Switch kube-vip to DaemonSet** for higher reliability and easier management.
+
+## Vault Setup
+
+You will need to setup Vault that can be found [here](./security/vault/README.md).
+
+
+## Harbor Setup
+
+If you would like to have the cluster be able to pull containers from harbor you will need to edit each node to resolve the dns to coredns. This can be done with:
+
+```bash
+sudo mkdir -p /etc/systemd/resolved.conf.d/
+
+sudo mkdir -p /etc/systemd/resolved.conf.d/ && echo -e "[Resolve]\nDNS=192.168.1.11\nDomains=~homelab.local" | sudo tee /etc/systemd/resolved.conf.d/homelab.conf > /dev/null && sudo systemctl restart systemd-resolved
+
+sudo systemctl restart systemd-resolved
+```
+
+Next you will need to get containerd to accept the cert of harbor
+
+```bash
+
+kubectl -n harbor get secret harbor-homelab-local-tls -o jsonpath='{.data.ca\.crt}' | base64 --decode > /tmp/ca.crt
+
+sudo cp /tmp/ca.crt /usr/local/share/ca-certificates/harbor.crt && sudo update-ca-certificates
+
+sudo systemctl restart containerd
+```
+
+If you see an error like:
+
+```text
+failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: expected cgroupsPa │
+│ th to be of format "slice:prefix:name" for systemd cgroups, got "/kubepods/besteffort/pod22d0e089-6763-4a6f-b30e-31dfcdced190/cd825cd6576eb5957d113e48a1566d462358db5c9a4a2 │
+```
+
+Then you will need to fix containerd c groups with:
+
+```bash
+sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+
+sudo systemctl restart containerd
+sudo systemctl restart kubelet
+```

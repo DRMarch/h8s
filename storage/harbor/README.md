@@ -35,7 +35,7 @@ First you will need to get the crts from the cluster:
 
 ```bash
 # Get the certificate from the cluster for harbor
-kubectl -n cilium-secrets get secret harbor-harbor-homelab-local-tls -o jsonpath='{.data.ca\.crt}' | base64 --decode > /tmp/ca.crt
+kubectl -n harbor get secret harbor-homelab-local-tls -o jsonpath='{.data.ca\.crt}' | base64 --decode > /tmp/ca.crt
 
 # Copy the certificate to your docker crts
 sudo mkdir -p /etc/docker/certs.d/harbor.homelab.local
@@ -74,4 +74,40 @@ export IMAGE_TAG=1.0
 docker build -t ${HARBOR_URL}/${PROJECT}/${IMAGE_NAME}:${IMAGE_TAG} .
 
 docker push ${HARBOR_URL}/${PROJECT}/${IMAGE_NAME}:${IMAGE_TAG}
+```
+
+## Use As Container Registry
+
+If you would like to set harbor as a custom container registery for a kuberentes cluster you will need to create a secret like so:
+
+
+```bash
+export HARBOR_URL="harbor.homelab.local"
+export NAMESPACE="harbor"
+kubectl create secret docker-registry harbor-cluster-robot-creds \
+  --docker-server=$HARBOR_URL \
+  --docker-username=admin \
+  --docker-password=$(kubectl -n harbor get secret harbor-admin-credentials -o jsonpath="{.data.HARBOR_ADMIN_PASSWORD}" | base64 -d) \
+  --namespace=$NAMESPACE
+```
+
+>> **NOTE**: This is using an admin user here and should be a read only robot account. This is to be updated in the future.
+
+Then in the future when making a deployment manifest you will have to specify the secret like so:
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+  namespace: YOUR_NAMESPACE
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: my-container
+        image: harbor.example.com/my-project/my-image:latest
+      # Specify the creds here
+      imagePullSecrets:
+      - name: harbor-cluster-robot-creds
 ```
