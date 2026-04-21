@@ -7,7 +7,6 @@ resources:
   - ./harbor/
   - ./kubernetes/
   - ./longhorn/
-  - ./minio/
 patches:
   - target:
       group: grafana.integreatly.org

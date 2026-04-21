@@ -1,9 +1,0 @@
-mode: "distributed"
-
-statefulset:
-  replicaCount: 2
-
-podAntiAffinityPreset: "hard"
-
-ingress:
-  tls: false
