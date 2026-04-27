@@ -1,0 +1,128 @@
+# https://github.com/rajsinghtech/garage-operator/blob/v0.3.13/charts/garage-operator/values.yaml
+
+# -- Number of operator replicas (typically 1 with leader election)
+replicaCount: 1
+
+image:
+  repository: ghcr.io/rajsinghtech/garage-operator
+  pullPolicy: IfNotPresent
+  tag: "v0.3.13"
+
+
+# Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+# Container security context
+securityContext:
+  # -- Read-only root filesystem
+  readOnlyRootFilesystem: true
+  # -- Disallow privilege escalation
+  allowPrivilegeEscalation: false
+  # -- Drop all capabilities
+  capabilities:
+    drop:
+      - "ALL"
+
+# Resource requests and limits
+# Note: 256Mi is recommended for stable operation. Lower values (128Mi) may cause
+# OOM issues during certificate generation or when managing many resources.
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 10m
+    memory: 128Mi
+
+# Leader election configuration
+leaderElection:
+  # -- Enable leader election for HA deployments
+  enabled: true
+
+# Health probes configuration
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8081
+  initialDelaySeconds: 15
+  periodSeconds: 20
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 8081
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+# Metrics configuration
+metrics:
+  # -- Enable metrics endpoint
+  enabled: true
+  # -- Metrics bind address (port)
+  bindAddress: ":8443"
+  service:
+    # -- Create metrics service
+    enabled: true
+    # -- Metrics service type
+    type: ClusterIP
+    # -- Metrics service port
+    port: 8443
+
+# ServiceMonitor for Prometheus Operator
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+  scheme: http
+  namespace: "monitoring"
+
+
+# Grafana dashboard ConfigMap for the official Garage Prometheus dashboard.
+# Uses the Grafana sidecar pattern — label the ConfigMap so Grafana auto-discovers it.
+grafanaDashboard:
+  enabled: false
+  labels:
+    grafana_dashboard: "1"
+  namespace: "monitoring"
+
+
+# PrometheusRules for alerting on GarageCluster health
+## TODO implement in the future with alerting for the hole cluster
+prometheusRules:
+  enabled: false
+  labels: {}
+  namespace: "monitoring"
+
+
+# -- Termination grace period in seconds
+terminationGracePeriodSeconds: 10
+
+# CRD installation
+crds:
+  install: true
+  keep: false
+  annotations: {}
+
+# RBAC configuration
+rbac:
+  create: true
+
+# -- Operator log level. Valid values: debug, info, error.
+logLevel: info
+
+# -- Kubernetes cluster domain used for service FQDNs.
+# Override when your cluster uses a custom domain (e.g., eu-cluster.local, as-cluster.local).
+clusterDomain: homelab.local
+
+# Namespace scoping
+# -- List of namespaces to watch (empty means all namespaces, cluster-scoped).
+watchNamespaces: []
+# -- Force cluster-wide watching even when watchNamespaces is set.
+# Only meaningful when watchNamespaces is non-empty; otherwise has no effect.
+watchAnyNamespace: false
+
+# -- Extra Kubernetes objects to deploy with the chart (supports templating)
+extraObjects: []
