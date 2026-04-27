@@ -18,6 +18,13 @@ resource "local_file" "certificates_argocd" {
     })
 }
 
+resource "local_file" "certificates_garage" {
+    filename = "${path.module}/${local.project_root}/networking/cert-manager/resources/certificates/garage-homelab-local.yaml"
+    content = templatefile("${path.module}/templates/networking/cert-manager/resources/certificates/garage-homelab-local.yaml.tftpl", {
+        kubernetes_domain = var.kubernetes_domain
+    })
+}
+
 resource "local_file" "certificates_grafana" {
     filename = "${path.module}/${local.project_root}/networking/cert-manager/resources/certificates/grafana-homelab-local.yaml"
     content = templatefile("${path.module}/templates/networking/cert-manager/resources/certificates/grafana-homelab-local.yaml.tftpl", {
@@ -88,6 +95,13 @@ resource "local_file" "gateway_default" {
 resource "local_file" "http_route_argocd" {
     filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/argocd.yaml"
     content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/argocd.yaml.tftpl", {
+        kubernetes_domain = var.kubernetes_domain
+    })
+}
+
+resource "local_file" "http_route_garage" {
+    filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/garage.yaml"
+    content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/garage.yaml.tftpl", {
         kubernetes_domain = var.kubernetes_domain
     })
 }

@@ -1,0 +1,21 @@
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageCluster
+metadata:
+  name: garage-default-cluster
+spec:
+  imagePullPolicy: IfNotPresent
+  imageRepository: dxflrs/amd64_garage:v2.3.0
+  zone: eu-west-2
+  replicas: 3
+  replication:
+    factor: 3
+  storage:
+    data:
+      size: 10Gi
+      storageClassName: longhorn
+  admin:
+    enabled: true
+    bindPort: 3903
+    adminTokenSecretRef:
+      name: garage-admin-token
+      key: admin-token
