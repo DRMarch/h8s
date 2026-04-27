@@ -76,7 +76,7 @@ serviceMonitor:
   enabled: true
   interval: 30s
   scrapeTimeout: 10s
-  scheme: http
+  scheme: https
   namespace: "monitoring"
 
 
@@ -115,7 +115,7 @@ logLevel: info
 
 # -- Kubernetes cluster domain used for service FQDNs.
 # Override when your cluster uses a custom domain (e.g., eu-cluster.local, as-cluster.local).
-clusterDomain: homelab.local
+clusterDomain: cluster.local
 
 # Namespace scoping
 # -- List of namespaces to watch (empty means all namespaces, cluster-scoped).

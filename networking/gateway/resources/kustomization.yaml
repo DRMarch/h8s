@@ -3,10 +3,12 @@ kind: Kustomization
 resources:
   - ./gateways/default.yaml
   - ./http-routes/argocd.yaml
+  - ./http-routes/garage.yaml
   - ./http-routes/grafana.yaml
   - ./http-routes/harbor.yaml
   - ./http-routes/hello-world.yaml
   - ./reference-grants/default-gateway-argocd-tls.yaml
+  - ./reference-grants/default-gateway-garage-tls.yaml
   - ./reference-grants/default-gateway-grafana-tls.yaml
   - ./reference-grants/default-gateway-harbor-tls.yaml
   - ./reference-grants/default-gateway-hello-world-tls.yaml

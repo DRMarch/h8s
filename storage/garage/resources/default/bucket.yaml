@@ -1,0 +1,9 @@
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageBucket
+metadata:
+  name: default-bucket
+spec:
+  clusterRef:
+    name: garage-default-cluster
+  quotas:
+    maxSize: 10Gi

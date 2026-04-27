@@ -24,6 +24,18 @@ spec:
           - name: argocd-homelab-local-tls
             namespace: argocd
     - protocol: HTTPS
+      name: home-lan-garage
+      hostname: "*.s3.${kubernetes_domain}"
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: garage-homelab-local-tls
+            namespace: garage
+    - protocol: HTTPS
       name: home-lan-grafana
       hostname: grafana.${kubernetes_domain}
       port: 443

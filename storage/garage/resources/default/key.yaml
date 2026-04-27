@@ -1,0 +1,11 @@
+apiVersion: garage.rajsingh.info/v1alpha1
+kind: GarageKey
+metadata:
+  name: default-bucket-key
+spec:
+  clusterRef:
+    name: garage-default-cluster
+  bucketPermissions:
+    - bucketRef: default-bucket
+      read: true
+      write: true

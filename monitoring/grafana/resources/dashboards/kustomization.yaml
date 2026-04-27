@@ -4,6 +4,7 @@ resources:
   - ./argocd/
   - ./cert-manager/
   - ./cloudnative-pg/
+  - ./garage/
   - ./harbor/
   - ./kubernetes/
   - ./longhorn/
