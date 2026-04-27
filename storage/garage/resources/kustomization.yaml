@@ -5,3 +5,4 @@ resources:
   - ./default
   - ./cluster.yaml
   - ./admin-token.yaml
+  - ./admin-key.yaml
