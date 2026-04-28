@@ -126,3 +126,39 @@ resource "local_file" "http_route_hello_world" {
         kubernetes_domain = var.kubernetes_domain
     })
 }
+
+############
+## Garage ##
+############
+
+resource "local_file" "garage_kustomization" {
+    filename = "${path.module}/${local.project_root}/storage/garage/resources/kustomization.yaml"
+    content = templatefile("${path.module}/templates/storage/garage/kustomization.yaml.tftpl", {
+        bucket_names = var.s3_bucket_names
+    })
+}
+
+## Buckets
+resource "local_file" "garage_bucket_kustomization" {
+    for_each = toset(var.s3_bucket_names)
+    filename = "${path.module}/${local.project_root}/storage/garage/resources/buckets/${each.value}/kustomization.yaml"
+    content = templatefile("${path.module}/templates/storage/garage/bucket/kustomization.yaml.tftpl", {
+    })
+}
+
+resource "local_file" "garage_bucket_bucket" {
+    for_each = toset(var.s3_bucket_names)
+    filename = "${path.module}/${local.project_root}/storage/garage/resources/buckets/${each.value}/bucket.yaml"
+    content = templatefile("${path.module}/templates/storage/garage/bucket/bucket.yaml.tftpl", {
+        bucket_name = each.value
+    })
+}
+
+resource "local_file" "garage_bucket_key" {
+    for_each = toset(var.s3_bucket_names)
+    filename = "${path.module}/${local.project_root}/storage/garage/resources/buckets/${each.value}/key.yaml"
+    content = templatefile("${path.module}/templates/storage/garage/bucket/key.yaml.tftpl", {
+        bucket_name = each.value
+    })
+}
+

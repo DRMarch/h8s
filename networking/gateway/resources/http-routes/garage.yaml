@@ -17,5 +17,5 @@ spec:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: garage
+        - name: garage-default-cluster
           port: 3900

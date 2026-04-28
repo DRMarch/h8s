@@ -12,6 +12,7 @@ To customize the configuration, edit the input variables defined in [`variables.
 | `coredns_ip`         | LAN fixed IP for CoreDNS                                      | string | `192.168.1.11`    |
 | `gateway_lan_ip`     | LAN IP used for ingress traffic into cluster services         | string | `192.168.1.12`    |
 | `kubernetes_domain`  | Domain name used for ingress into cluster services            | string | `homelab.local`   |
+| `s3_bucket_names`  | Names of S3 buckets to template out for garage resources        | list[str] | `["default"]`   |
 
 ## Usage
 

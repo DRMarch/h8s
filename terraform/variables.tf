@@ -23,3 +23,10 @@ variable "kubernetes_domain" {
   type        = string
   default     = "homelab.local"
 }
+
+
+variable "s3_bucket_names" {
+  description = "Names of S3 buckets to template out for garage resources"
+  type        = list(string)
+  default     = ["default"]
+}
