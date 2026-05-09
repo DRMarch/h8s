@@ -24,8 +24,3 @@ This repo documents the configuration and management of my personal Kubernetes h
 ## Documentation
 
 For detailed setup instructions, configuration steps, and operational notes, see [SETUP.md](./SETUP.md).
-
-
-## TODO list
-
-- Setup terraform to template out files. Ideally for kube-vip.
