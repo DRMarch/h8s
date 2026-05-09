@@ -1,0 +1,57 @@
+# Taken from 
+# https://github.com/cloudnative-pg/charts/blob/cloudnative-pg-v0.28.0/charts/cloudnative-pg/values.yaml
+
+# Keep low due to low usage and hardware constraints
+replicaCount: 1
+
+image:
+  repository: ghcr.io/cloudnative-pg/cloudnative-pg
+  pullPolicy: IfNotPresent
+  tag: "1.29.1"
+
+
+crds:
+  create: true
+
+
+config:
+  create: true
+  name: cnpg-controller-manager-config
+  secret: false
+  clusterWide: true
+
+
+# -- Container Security Context.
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - "ALL"
+
+# -- Security Context for the whole pod.
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+# -- Priority indicates the importance of a Pod relative to other Pods.
+priorityClassName: ""
+
+service:
+  type: ClusterIP
+  # -- DO NOT CHANGE THE SERVICE NAME as it is currently used to generate the certificate and can not be configured
+  name: cnpg-webhook-service
+  port: 443
+
+
+monitoring:
+  podMonitorEnabled: true
+  grafanaDashboard:
+    create: true
+    namespace: "monitoring"
+    configMapName: "cnpg-grafana-dashboard"

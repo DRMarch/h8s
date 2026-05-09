@@ -10,12 +10,13 @@ spec:
   sources:
     - repoURL: https://cloudnative-pg.github.io/charts
       chart: cloudnative-pg
-      targetRevision: 0.24.0 # May 2025
+      targetRevision: 0.28.0 # April 2026
       helm:
-        releaseName: cloudnative-pg
+        valueFiles:
+          - $h8s/storage/cloudnative-pg/operator/values.yaml
     - repoURL: https://github.com/DRMarch/h8s.git
       targetRevision: HEAD
-      path: storage/cloudnative-pg/operator
+      ref: h8s
   destination:
     server: https://kubernetes.default.svc
     namespace: cloudnative-pg
