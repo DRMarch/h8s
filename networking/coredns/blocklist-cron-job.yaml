@@ -6,6 +6,7 @@ metadata:
 spec:
   # Runs daily at 2 AM
   schedule: 0 2 * * *
+  successfulJobsHistoryLimit: 1
   jobTemplate:
     spec:
       template:
