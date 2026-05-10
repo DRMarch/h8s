@@ -1,4 +1,4 @@
-# https://artifacthub.io/packages/helm/cert-manager/cert-manager/1.18.2?modal=values
+# https://artifacthub.io/packages/helm/cert-manager/cert-manager/1.20.2?modal=values
 
 config:
   enableGatewayAPI: true
