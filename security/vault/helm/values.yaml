@@ -1,4 +1,4 @@
-# https://artifacthub.io/packages/helm/hashicorp/vault/0.30.0?modal=values
+# https://raw.githubusercontent.com/hashicorp/vault-helm/refs/tags/v0.32.0/values.yaml
 
 server:
   standalone:
