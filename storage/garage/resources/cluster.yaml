@@ -14,7 +14,6 @@ spec:
       size: 10Gi
       storageClassName: longhorn
   admin:
-    enabled: true
     bindPort: 3903
     adminTokenSecretRef:
       name: garage-admin-token
