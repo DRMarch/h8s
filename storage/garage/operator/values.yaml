@@ -84,15 +84,6 @@ grafanaDashboard:
   namespace: "monitoring"
 
 
-# Grafana dashboard ConfigMap for the official Garage Prometheus dashboard.
-# Uses the Grafana sidecar pattern — label the ConfigMap so Grafana auto-discovers it.
-grafanaDashboard:
-  enabled: false
-  labels:
-    grafana_dashboard: "1"
-  namespace: "monitoring"
-
-
 # PrometheusRules for alerting on GarageCluster health
 ## TODO implement in the future with alerting for the hole cluster
 prometheusRules:
