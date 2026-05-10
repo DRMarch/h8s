@@ -15,7 +15,7 @@ Key features include:
 The following steps demonstrate how to deploy Argo CD into your Kubernetes cluster using the official Helm chart. 
 This method allows you to customize your deployment via Helm values and ensures your Argo CD installation is reproducible and version-controlled.
 ```bash
-export ARGOCD_HELM_VER=8.1.3 # Jul 2025
+export ARGOCD_HELM_VER=9.5.13 # May 2026
 
 helm repo add argo https://argoproj.github.io/argo-helm && helm repo update
 
