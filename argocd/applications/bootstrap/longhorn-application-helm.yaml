@@ -15,14 +15,13 @@ spec:
   sources:
     - chart: longhorn
       repoURL: https://charts.longhorn.io/
-      targetRevision: v1.9.0 # May 2025
+      targetRevision: v1.11.2 # May 2026
       helm:
-        values: |
-          preUpgradeChecker:
-            jobEnabled: false
+        valueFiles:
+          - $h8s/storage/longhorn/values.yaml
     - repoURL: https://github.com/DRMarch/h8s.git
       targetRevision: HEAD
-      path: storage/longhorn
+      ref: h8s
   destination:
     server: https://kubernetes.default.svc
     namespace: longhorn-system
