@@ -1,4 +1,4 @@
-# https://artifacthub.io/packages/helm/cilium/cilium/1.17.6?modal=values
+# https://artifacthub.io/packages/helm/cilium/cilium/1.19.3?modal=values
 l2announcements:
   enabled: true
 
@@ -8,3 +8,9 @@ gatewayAPI:
   enableAppProtocol: true
 
 kubeProxyReplacement: true
+
+hubble:
+  relay:
+    enabled: true
+  ui:
+    enabled: true
