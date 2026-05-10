@@ -6,6 +6,7 @@ spec:
   clusterRef:
     name: garage-default-cluster
   bucketPermissions:
-    - bucketRef: ${bucket_name}
+    - bucketRef:
+        name: ${bucket_name}
       read: true
       write: true
