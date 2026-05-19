@@ -39,7 +39,7 @@ The `resources/` directory contains the actual Garage cluster configuration:
 1. **Install the Garage Operator first** (handled by ArgoCD bootstrap):
    ```bash
    # This is typically deployed via the ArgoCD bootstrap process
-   # Reference: argocd/applications/bootstrap/garage-operator-helm.yaml
+   # Reference: ci-cd/argo-cd/applications/bootstrap/garage-operator-helm.yaml
    ```
 
 2. **Apply the Garage cluster and resources**:

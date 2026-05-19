@@ -13,7 +13,7 @@ spec:
   source:
     repoURL: https://github.com/DRMarch/h8s.git
     targetRevision: HEAD
-    path: argocd/applications/bootstrap
+    path: ci-cd/argo-cd/applications/bootstrap
   syncPolicy:
     automated:
       prune: true

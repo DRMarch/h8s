@@ -173,7 +173,7 @@ sudo apt install open-iscsi nfs-common cryptsetup dmsetup -y
 ```
 
 ## Argocd
-Next you can setup [argocd](./argocd/README.md) that will bootstrap all the other services in the cluster.
+Next you can setup [argocd](./ci-cd/argo-cd/README.md) that will bootstrap all the other services in the cluster.
 
 ## Future Considerations
 - **Migrate to TalosOS**.
