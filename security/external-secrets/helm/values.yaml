@@ -1,0 +1,12 @@
+# Taken from
+# https://raw.githubusercontent.com/external-secrets/external-secrets/refs/tags/helm-chart-2.5.0/deploy/charts/external-secrets/values.yaml
+
+metrics:
+  listen:
+    port: 8080
+  service:
+    enabled: true
+    port: 8080
+
+grafanaDashboard:
+  enabled: true
