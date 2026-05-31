@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: h8s-github-listener
+  namespace: argo-events
+spec:
+  github:
+    my-public-repo:
+      owner: "DRMarch"
+      repository: "h8s"
+      webhook:
+        endpoint: "/push"
+        port: "12000"
+        method: "POST"
+        url: "https://argo-hook.svc.cluster.local.com"
+      events:
+        - "push"
+      webhookSecret:
+        name: argo-events-github-app-key
+        key: token
+      active: true
+      contentType: "json"
+      insecure: false

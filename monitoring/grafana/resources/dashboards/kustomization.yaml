@@ -9,6 +9,7 @@ resources:
   - ./harbor/
   - ./kubernetes/
   - ./longhorn/
+  - ./renovate/
 patches:
   - target:
       group: grafana.integreatly.org

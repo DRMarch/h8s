@@ -119,6 +119,33 @@ Read more here:
 - https://developer.hashicorp.com/vault/docs/secrets/pki/setup
 - https://developer.hashicorp.com/vault/tutorials/archive/kubernetes-cert-manager
 
+
+
+### Vault Secrets
+
+This cluster uses Vault to store secret API keys to avoid exposing them in manifests. The following API keys will need to be setup
+
+First login to the vault
+
+```bash
+kubectl exec -ti vault-0 -n vault -- /bin/sh
+
+vault login
+
+vault secrets enable -path=secret kv-v2
+```
+
+Follow the next subsections for the expected API keys
+
+#### GitHub App
+
+Argo Events uses a GitHub App private key to authenticate with your repository and trigger Argo Workflows based on repository events.
+
+```bash
+export ARGO_EVENTS_GITHUB_APP_PRIVATE_KEY="<INSERT_YOUR_GITHUB_APP_PRIVATE_KEY_HERE>"
+vault kv put secret/argo-events/github-app private-key="$ARGO_EVENTS_GITHUB_APP_PRIVATE_KEY"
+```
+
 ### Pod Rescheduling
 
 Whenever the pod(s) for Vault are rescheduled, they will need to be [unsealed](https://developer.hashicorp.com/vault/docs/concepts/seal) again. Run:

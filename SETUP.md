@@ -2,7 +2,7 @@
 
 A guide to building a highly available, three-node home Kubernetes cluster using kubeadm and kube-vip, running on Ubuntu Server 26.04. This setup focuses on simplicity, reliability, and security.
 
-_Last updated: 2026-05-10
+_Last updated: 2026-05-31
 
 ## Table of Contents
 
