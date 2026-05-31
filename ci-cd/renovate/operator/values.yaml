@@ -1,0 +1,21 @@
+# Taken from
+# https://github.com/mogenius/renovate-operator/blob/4.10.0/charts/renovate-operator/values.yaml
+
+
+replicaCount: 1
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+  dashboard:
+    enabled: true
+    annotations: {}
+    labels:
+      grafana_dashboard: "1"
+    namespace: "monitoring"
+    grafanaDashboard:
+      allowCrossNamespaceImport: false
+      instanceSelector:
+        matchLabels:
+          grafana.internal/instance: "grafana"

@@ -46,6 +46,13 @@ resource "local_file" "certificates_hello_world" {
     })
 }
 
+resource "local_file" "certificates_renovate" {
+    filename = "${path.module}/${local.project_root}/networking/cert-manager/resources/certificates/renovate-homelab-local.yaml"
+    content = templatefile("${path.module}/templates/networking/cert-manager/resources/certificates/renovate-homelab-local.yaml.tftpl", {
+        kubernetes_domain = var.kubernetes_domain
+    })
+}
+
 
 
 ############
@@ -123,6 +130,13 @@ resource "local_file" "http_route_harbor" {
 resource "local_file" "http_route_hello_world" {
     filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/hello-world.yaml"
     content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/hello-world.yaml.tftpl", {
+        kubernetes_domain = var.kubernetes_domain
+    })
+}
+
+resource "local_file" "http_route_renovate" {
+    filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/renovate.yaml"
+    content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/renovate.yaml.tftpl", {
         kubernetes_domain = var.kubernetes_domain
     })
 }

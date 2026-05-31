@@ -9,3 +9,4 @@ resources:
   - ./certificates/grafana-homelab-local.yaml
   - ./certificates/harbor-homelab-local.yaml
   - ./certificates/hello-world-homelab-local.yaml
+  - ./certificates/renovate-homelab-local.yaml

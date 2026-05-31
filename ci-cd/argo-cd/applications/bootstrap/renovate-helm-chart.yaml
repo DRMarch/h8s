@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: renovate-operator
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "-199" 
+spec:
+  project: default
+  sources:
+    - repoURL: https://charts.cncfstack.com/helm.mogenius.com
+      chart: renovate-operator
+      targetRevision: 4.10.0 # May 2026
+      helm:
+        releaseName: renovate-operator
+        valueFiles:
+          - $h8s/ci-cd/renovate/operator/values.yaml
+    - repoURL: https://github.com/DRMarch/h8s.git
+      targetRevision: HEAD
+      ref: h8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: renovate-operator
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
+      - ServerSideApply=true

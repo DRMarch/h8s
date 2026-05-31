@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: renovate-homelab-local
+  namespace: renovate-operator
+spec:
+  secretName: renovate-homelab-local-tls
+  issuerRef:
+    name: vault-issuer
+    kind: ClusterIssuer
+  commonName: renovate.${kubernetes_domain}
+  dnsNames:
+    - renovate.${kubernetes_domain}

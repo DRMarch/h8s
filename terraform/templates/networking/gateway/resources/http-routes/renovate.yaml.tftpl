@@ -1,0 +1,20 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: renovate
+  namespace: renovate-operator
+spec:
+  parentRefs:
+    - name: default-gateway
+      namespace: default
+      sectionName: home-lan-renovate
+  hostnames:
+    - renovate.${kubernetes_domain}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: renovate-operator
+          port: 3000
