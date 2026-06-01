@@ -10,6 +10,7 @@ resources:
   - ./kubernetes/
   - ./longhorn/
   - ./renovate/
+  - ./cloudflare-tunnel/
 patches:
   - target:
       group: grafana.integreatly.org

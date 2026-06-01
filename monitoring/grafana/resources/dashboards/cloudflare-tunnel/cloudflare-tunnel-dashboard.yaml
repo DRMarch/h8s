@@ -1,0 +1,10 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: cloudflare-tunnel-dashboard
+spec:
+  url: https://raw.githubusercontent.com/erfianugrah/cloudflare-grafana-dashboards/refs/heads/main/dashboards/cloudflare-tunnel.json
+  folderRef: cloudflare
+  datasources:
+    - inputName: "DS_PROMETHEUS"
+      datasourceName: "prom-default"
