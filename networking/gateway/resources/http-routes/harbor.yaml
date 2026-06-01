@@ -9,7 +9,7 @@ spec:
       namespace: default
       sectionName: home-lan-harbor
   hostnames:
-    - harbor.homelab.local
+    - harbor.drmarchent.com
   rules:
     - matches:
         - path:

@@ -9,8 +9,8 @@ spec:
       namespace: default
       sectionName: home-lan-garage
   hostnames:
-    - "s3.homelab.local"
-    - "*.s3.homelab.local"
+    - "s3.drmarchent.com"
+    - "*.s3.drmarchent.com"
   rules:
     - matches:
         - path:

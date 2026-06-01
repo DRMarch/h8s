@@ -73,7 +73,7 @@ Vault is setup to be the root CA service for [cert-manager](../../networking/cer
 ```bash
 kubectl exec -ti vault-0 -n vault -- /bin/sh
 
-DOMAIN="homelab.local"
+DOMAIN="drmarchent.com"
 ROLE_NAME=$(echo $DOMAIN | sed 's/\./\-dot\-/')
 echo "Vault role name: $ROLE_NAME"
 

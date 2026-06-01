@@ -17,7 +17,7 @@ Harbor will be deployed by argocd, and depends on [cloudnative-pg](../cloudnativ
 ## Login WebUI
 
 ### WebUI
-To access the WebUI for harbor you can navigate to [`harbor.homelab.local`](https://harbor.homelab.local/) if you have a local DNS setup in your home network as specified in [CoreDNS](../../networking/coredns/README.md). Or you can port forward locally with:
+To access the WebUI for harbor you can navigate to [`harbor.drmarchent.com`](https://harbor.drmarchent.com/) if you have a local DNS setup in your home network as specified in [CoreDNS](../../networking/coredns/README.md). Or you can port forward locally with:
 ```bash
 kubectl port-forward svc/harbor -n harbor 8080:80
 ```
@@ -38,8 +38,8 @@ First you will need to get the crts from the cluster:
 kubectl -n harbor get secret harbor-homelab-local-tls -o jsonpath='{.data.ca\.crt}' | base64 --decode > /tmp/ca.crt
 
 # Copy the certificate to your docker crts
-sudo mkdir -p /etc/docker/certs.d/harbor.homelab.local
-sudo cp /tmp/ca.crt /etc/docker/certs.d/harbor.homelab.local/
+sudo mkdir -p /etc/docker/certs.d/harbor.drmarchent.com
+sudo cp /tmp/ca.crt /etc/docker/certs.d/harbor.drmarchent.com/
 
 # Restart docker
 sudo systemctl restart docker
@@ -47,7 +47,7 @@ sudo systemctl restart docker
 You can get docker to login with:
 
 ```bash
-export HARBOR_URL="https://harbor.homelab.local/"
+export HARBOR_URL="https://harbor.drmarchent.com/"
 echo $(kubectl -n harbor get secret harbor-admin-credentials -o jsonpath="{.data.HARBOR_ADMIN_PASSWORD}" | base64 -d) | docker login ${HARBOR_URL} -u admin --password-stdin
 ```
 
@@ -56,7 +56,7 @@ echo $(kubectl -n harbor get secret harbor-admin-credentials -o jsonpath="{.data
 Create an example project in harbor:
 ```bash
 curl -u admin:$(kubectl -n harbor get secret harbor-admin-credentials -o jsonpath="{.data.HARBOR_ADMIN_PASSWORD}" | base64 -d) \
-  -X POST "https://harbor.homelab.local/api/v2.0/projects" \
+  -X POST "https://harbor.drmarchent.com/api/v2.0/projects" \
   -H "Content-Type: application/json" \
   -d '{
     "project_name": "myproject",
@@ -67,7 +67,7 @@ curl -u admin:$(kubectl -n harbor get secret harbor-admin-credentials -o jsonpat
 
 Next you can test uploading a docker image:
 ```bash
-export HARBOR_URL="harbor.homelab.local"
+export HARBOR_URL="harbor.drmarchent.com"
 export PROJECT="myproject"
 export IMAGE_NAME="myapp"
 export IMAGE_TAG=1.0
@@ -82,7 +82,7 @@ If you would like to set harbor as a custom container registery for a kuberentes
 
 
 ```bash
-export HARBOR_URL="harbor.homelab.local"
+export HARBOR_URL="harbor.drmarchent.com"
 export NAMESPACE="harbor"
 kubectl create secret docker-registry harbor-cluster-robot-creds \
   --docker-server=$HARBOR_URL \

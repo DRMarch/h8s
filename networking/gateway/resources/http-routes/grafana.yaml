@@ -9,7 +9,7 @@ spec:
       namespace: default
       sectionName: home-lan-grafana
   hostnames:
-    - grafana.homelab.local
+    - grafana.drmarchent.com
   rules:
     - matches:
         - path:

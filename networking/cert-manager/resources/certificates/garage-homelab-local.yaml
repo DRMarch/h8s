@@ -8,8 +8,8 @@ spec:
   issuerRef:
     name: vault-issuer
     kind: ClusterIssuer
-  commonName: garage.homelab.local
+  commonName: garage.drmarchent.com
   dnsNames:
-    - "s3.homelab.local"
-    - "*.s3.homelab.local"
-    - "garage.homelab.local"
+    - "s3.drmarchent.com"
+    - "*.s3.drmarchent.com"
+    - "garage.drmarchent.com"

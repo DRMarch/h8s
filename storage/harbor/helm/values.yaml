@@ -1,5 +1,5 @@
 
-externalURL: https://harbor.homelab.local
+externalURL: https://harbor.drmarchent.com
 expose:
   type: clusterIP
   tls:

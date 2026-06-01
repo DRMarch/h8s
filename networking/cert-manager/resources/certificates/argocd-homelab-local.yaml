@@ -8,6 +8,6 @@ spec:
   issuerRef:
     name: vault-issuer
     kind: ClusterIssuer
-  commonName: argocd.homelab.local
+  commonName: argocd.drmarchent.com
   dnsNames:
-    - argocd.homelab.local
+    - argocd.drmarchent.com

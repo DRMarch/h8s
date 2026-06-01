@@ -73,8 +73,8 @@ Upload a test file to the default bucket:
 
 ```bash
 echo "Hello from the Homelab" > test.txt
-aws s3 cp test.txt s3://default/test.txt --endpoint-url https://s3.homelab.local --no-verify-ssl
-aws s3 ls s3://default/ --endpoint-url https://s3.homelab.local --no-verify-ssl
+aws s3 cp test.txt s3://default/test.txt --endpoint-url https://s3.drmarchent.com--no-verify-ssl
+aws s3 ls s3://default/ --endpoint-url https://s3.drmarchent.com --no-verify-ssl
 ```
 
 ### SSL Certificate Setup (Optional)
@@ -97,7 +97,7 @@ sudo chmod 600 /etc/ssl/private/garage-service.key
 sudo update-ca-certificates
 
 # Now you can use S3 without --no-verify-ssl
-aws s3 ls s3://default/ --endpoint-url https://s3.homelab.local
+aws s3 ls s3://default/ --endpoint-url https://s3.drmarchent.com
 ```
 ## Resources
 

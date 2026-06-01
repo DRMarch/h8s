@@ -9,7 +9,7 @@ spec:
       namespace: default
       sectionName: home-lan-argocd
   hostnames:
-    - argocd.homelab.local
+    - argocd.drmarchent.com
   rules:
     - matches:
         - path:

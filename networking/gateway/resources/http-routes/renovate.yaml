@@ -9,7 +9,7 @@ spec:
       namespace: default
       sectionName: home-lan-renovate
   hostnames:
-    - renovate.homelab.local
+    - renovate.drmarchent.com
   rules:
     - matches:
         - path:

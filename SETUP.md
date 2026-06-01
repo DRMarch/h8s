@@ -2,7 +2,7 @@
 
 A guide to building a highly available, three-node home Kubernetes cluster using kubeadm and kube-vip, running on Ubuntu Server 26.04. This setup focuses on simplicity, reliability, and security.
 
-_Last updated: 2026-05-31
+_Last updated: 2026-06-01
 
 ## Table of Contents
 
@@ -190,7 +190,7 @@ If you would like to have the cluster be able to pull containers from harbor you
 ```bash
 sudo mkdir -p /etc/systemd/resolved.conf.d/
 
-sudo mkdir -p /etc/systemd/resolved.conf.d/ && echo -e "[Resolve]\nDNS=192.168.1.11\nDomains=~homelab.local" | sudo tee /etc/systemd/resolved.conf.d/homelab.conf > /dev/null && sudo systemctl restart systemd-resolved
+sudo mkdir -p /etc/systemd/resolved.conf.d/ && echo -e "[Resolve]\nDNS=192.168.1.11\nDomains=~drmarchent.com" | sudo tee /etc/systemd/resolved.conf.d/homelab.conf > /dev/null && sudo systemctl restart systemd-resolved
 
 sudo systemctl restart systemd-resolved
 ```

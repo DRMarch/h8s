@@ -9,7 +9,7 @@ spec:
       namespace: default
       sectionName: home-lan-hello-world
   hostnames:
-    - helloworld.homelab.local
+    - helloworld.drmarchent.com
   rules:
     - matches:
         - path:
