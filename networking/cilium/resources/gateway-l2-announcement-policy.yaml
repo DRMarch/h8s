@@ -5,7 +5,7 @@ metadata:
 spec:
   serviceSelector:
     matchLabels:
-      gateway.networking.k8s.io/gateway-name: default-gateway
+      gateway.networking.k8s.io/gateway-name: lan-gateway
   interfaces:
     - ^eth[0-9]+$
     - ^enp[0-9]s0+$

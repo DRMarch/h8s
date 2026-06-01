@@ -5,7 +5,7 @@ metadata:
   namespace: renovate-operator
 spec:
   parentRefs:
-    - name: default-gateway
+    - name: lan-gateway
       namespace: default
       sectionName: home-lan-renovate
   hostnames:

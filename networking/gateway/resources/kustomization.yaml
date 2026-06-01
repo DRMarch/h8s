@@ -1,19 +1,19 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ./gateways/default.yaml
+  - ./gateways/lan.yaml
   - ./http-routes/argocd.yaml
   - ./http-routes/garage.yaml
   - ./http-routes/grafana.yaml
   - ./http-routes/harbor.yaml
   - ./http-routes/hello-world.yaml
   - ./http-routes/renovate.yaml
-  - ./reference-grants/default-gateway-argocd-tls.yaml
-  - ./reference-grants/default-gateway-garage-tls.yaml
-  - ./reference-grants/default-gateway-grafana-tls.yaml
-  - ./reference-grants/default-gateway-harbor-tls.yaml
-  - ./reference-grants/default-gateway-hello-world-tls.yaml
-  - ./reference-grants/default-gateway-renovate-tls.yaml
+  - ./reference-grants/lan-gateway-argocd-tls.yaml
+  - ./reference-grants/lan-gateway-garage-tls.yaml
+  - ./reference-grants/lan-gateway-grafana-tls.yaml
+  - ./reference-grants/lan-gateway-harbor-tls.yaml
+  - ./reference-grants/lan-gateway-hello-world-tls.yaml
+  - ./reference-grants/lan-gateway-renovate-tls.yaml
 patches:
   - target:
       kind: ReferenceGrant
