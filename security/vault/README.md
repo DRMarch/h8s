@@ -143,7 +143,16 @@ Argo Events uses a GitHub App private key to authenticate with your repository a
 
 ```bash
 export ARGO_EVENTS_GITHUB_APP_PRIVATE_KEY="<INSERT_YOUR_GITHUB_APP_PRIVATE_KEY_HERE>"
-vault kv put secret/argo-events/github-app private-key="$ARGO_EVENTS_GITHUB_APP_PRIVATE_KEY"
+vault kv put kubernetes-homelab/argo-events/github-app private-key="$ARGO_EVENTS_GITHUB_APP_PRIVATE_KEY"
+```
+
+#### Cloudflared Tunnel
+
+Cloudflared tunnel creates a secure, encrypted connection from Cloudflare's edge to your cluster, allowing you to expose services without opening firewall ports.
+
+```bash
+export CLOUDFLARE_TUNNEL_TOKEN="<INSERT_YOUR_CLOUDFLARE_TUNNEL_TOKEN_HERE>"
+vault kv put kubernetes-homelab/cloudflare/tunnel private-key="$CLOUDFLARE_TUNNEL_TOKEN"
 ```
 
 ### Pod Rescheduling

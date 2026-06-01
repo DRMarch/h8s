@@ -1,0 +1,49 @@
+# https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/deployment-guides/kubernetes/
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: cloudflared
+  name: cloudflared-deployment
+spec:
+  selector:
+    matchLabels:
+      pod: cloudflared
+  template:
+    metadata:
+      labels:
+        pod: cloudflared
+    spec:
+      containers:
+        - command:
+            - cloudflared
+            - tunnel
+            - --no-autoupdate
+            - --loglevel
+            - info
+            # Add prometheus metrics
+            - --metrics
+            - 0.0.0.0:2000
+            - run
+          args:
+            - --token
+            - $(CLOUDFLARE_TOKEN)
+          env:
+            - name: CLOUDFLARE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflared-token
+                  key: token
+          image: cloudflare/cloudflared:2026.5.2
+          name: cloudflared
+          ports:
+            - containerPort: 2000
+              name: metrics
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 2000
+            failureThreshold: 1
+            initialDelaySeconds: 10
+            periodSeconds: 10

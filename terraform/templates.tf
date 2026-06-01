@@ -91,8 +91,8 @@ resource "local_file" "coredfile_coredns_lan" {
 #############
 # Gateways
 resource "local_file" "gateway_default" {
-    filename = "${path.module}/${local.project_root}/networking/gateway/resources/gateways/default.yaml"
-    content = templatefile("${path.module}/templates/networking/gateway/resources/gateways/default.yaml.tftpl", {
+    filename = "${path.module}/${local.project_root}/networking/gateway/resources/gateways/lan.yaml"
+    content = templatefile("${path.module}/templates/networking/gateway/resources/gateways/lan.yaml.tftpl", {
         gateway_lan_ip  = var.gateway_lan_ip
         kubernetes_domain = var.kubernetes_domain
     })
