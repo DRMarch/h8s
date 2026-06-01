@@ -8,6 +8,8 @@ spec:
     - name: lan-gateway
       namespace: default
       sectionName: home-lan-hello-world
+    - name: cloudflare-gateway
+      namespace: cloudflare
   hostnames:
     - helloworld.drmarchent.com
   rules:
