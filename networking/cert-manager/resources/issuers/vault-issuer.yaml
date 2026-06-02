@@ -6,7 +6,7 @@ metadata:
 spec:
   vault:
     server: http://vault.vault.svc.cluster.local:8200
-    path: pki/sign/homelab-dot-local
+    path: pki/sign/drmarchent-dot-com
     auth:
       kubernetes:
         mountPath: /v1/auth/kubernetes
