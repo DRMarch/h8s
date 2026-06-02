@@ -13,6 +13,7 @@ spec:
       path: applications/hello-world
   destination:
     server: https://kubernetes.default.svc
+    namespace: hello-world
   syncPolicy:
     automated:
       prune: true
@@ -21,3 +22,4 @@ spec:
     syncOptions:
       - PruneLast=true
       - ServerSideApply=true
+      - CreateNamespace=true
