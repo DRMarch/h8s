@@ -83,3 +83,9 @@ spec:
         certificateRefs:
           - name: renovate-homelab-local-tls
             namespace: renovate-operator
+    - protocol: HTTP
+      name: http-redirect
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All

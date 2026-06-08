@@ -141,6 +141,12 @@ resource "local_file" "http_route_renovate" {
     })
 }
 
+resource "local_file" "http_route_http_to_https_redirect" {
+    filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/http-to-https-redirect.yaml"
+    content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/http-to-https-redirect.yaml.tftpl", {
+    })
+}
+
 ############
 ## Garage ##
 ############
