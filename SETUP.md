@@ -2,7 +2,7 @@
 
 A guide to building a highly available, three-node home Kubernetes cluster using kubeadm and kube-vip, running on Ubuntu Server 26.04. This setup focuses on simplicity, reliability, and security.
 
-_Last updated: 2026-06-01
+_Last updated: 2026-06-08
 
 ## Table of Contents
 
@@ -182,6 +182,35 @@ Next you can setup [argocd](./ci-cd/argo-cd/README.md) that will bootstrap all t
 
 You will need to setup Vault that can be found [here](./security/vault/README.md).
 
+## Trusting Cluster Certificates
+
+Your cluster uses a self-signed root CA (stored in Vault) to issue certificates for all services. To avoid browser warnings, you need to trust this CA on your local machine.
+
+### Export the Root CA
+
+```bash
+kubectl exec -ti vault-0 -n vault -- vault read -field=certificate pki/cert/ca > ~/cluster-root-ca.pem
+```
+
+### Install on Ubuntu (System-Wide)
+
+```bash
+sudo cp ~/cluster-root-ca.pem /usr/local/share/ca-certificates/cluster-root-ca.crt
+sudo update-ca-certificates
+```
+
+This makes Chrome, Edge, `curl`, `wget`, and other system tools trust the CA.
+
+### Firefox Configuration
+
+Firefox uses its own certificate store by default. To use the system CA store:
+
+1. Open `about:config`
+2. Set `security.enterprise_roots.enabled = true`
+
+Alternatively, import the `.pem` file manually via **Settings > Privacy & Security > Certificates > View Certificates > Import**.
+
+After completing these steps, browsers will trust `https://*.drmarchent.com` without warnings.
 
 ## Harbor Setup
 
