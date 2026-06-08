@@ -144,7 +144,12 @@ Next you will need to copy the contents of `$HOME/.kube/config` from the node wh
 
 ### 6. Install CNI (Cilium)
 
-On your local machine you can run the following to install a Cilium CNI for the cluster:
+Cilium is the CNI for the cluster. It must be installed manually during initial setup
+since ArgoCD cannot run without a working CNI. After ArgoCD is deployed, the `cilium-helm`
+Application (managed via the App-of-Apps pattern at sync-wave -1000) adopts the release
+and handles all future upgrades.
+
+On your local machine run:
 
 ```bash
 # Install helm
@@ -152,8 +157,17 @@ sudo snap install helm --classic
 
 # Helm install cilium
 helm repo add cilium https://helm.cilium.io/
-helm install cilium cilium/cilium --version 1.19.3 --namespace kube-system -f networking/cilium/helm/values.yaml
+helm install cilium cilium/cilium --version 1.20.0-pre.3 --namespace kube-system -f networking/cilium/helm/values.yaml
 ```
+
+Once ArgoCD is running, deploy the Cilium resources:
+
+```bash
+kubectl apply -k networking/cilium/resources
+```
+
+Future Cilium version bumps are done by changing `targetRevision` in
+`ci-cd/argo-cd/applications/bootstrap/cilium-helm.yaml`.
 
 ### 7. Untaint Control Plane Nodes
 
