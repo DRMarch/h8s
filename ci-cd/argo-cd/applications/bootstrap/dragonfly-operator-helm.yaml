@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dragonfly-operator-helm
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "-397"
+spec:
+  project: default
+  sources:
+    - repoURL: ghcr.io/dragonflydb/dragonfly-operator/helm
+      chart: dragonfly-operator
+      targetRevision: v1.5.0
+      helm:
+        releaseName: dragonfly-operator
+        valueFiles:
+          - $h8s/storage/dragonfly/operator/values.yaml
+    - repoURL: https://github.com/DRMarch/h8s.git
+      targetRevision: HEAD
+      ref: h8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dragonfly-operator-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - PruneLast=true
+      - ServerSideApply=true
+      - CreateNamespace=true

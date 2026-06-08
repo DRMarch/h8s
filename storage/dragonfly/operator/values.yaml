@@ -1,0 +1,5 @@
+# https://raw.githubusercontent.com/dragonflydb/dragonfly-operator/refs/tags/v1.5.0/charts/dragonfly-operator/values.yaml
+
+serviceMonitor:
+  enabled: true
+

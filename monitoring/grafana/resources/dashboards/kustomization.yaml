@@ -4,6 +4,7 @@ resources:
   - ./argocd/
   - ./cert-manager/
   - ./cloudnative-pg/
+  - ./dragonfly/
   - ./external-secrets/
   - ./garage/
   - ./harbor/
