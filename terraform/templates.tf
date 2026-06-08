@@ -39,6 +39,13 @@ resource "local_file" "certificates_harbor" {
     })
 }
 
+resource "local_file" "certificates_authentik" {
+    filename = "${path.module}/${local.project_root}/networking/cert-manager/resources/certificates/authentik-homelab-local.yaml"
+    content = templatefile("${path.module}/templates/networking/cert-manager/resources/certificates/authentik-homelab-local.yaml.tftpl", {
+        kubernetes_domain = var.kubernetes_domain
+    })
+}
+
 resource "local_file" "certificates_endurain" {
     filename = "${path.module}/${local.project_root}/networking/cert-manager/resources/certificates/endurain-homelab-local.yaml"
     content = templatefile("${path.module}/templates/networking/cert-manager/resources/certificates/endurain-homelab-local.yaml.tftpl", {
@@ -137,6 +144,13 @@ resource "local_file" "http_route_grafana" {
 resource "local_file" "http_route_harbor" {
     filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/harbor.yaml"
     content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/harbor.yaml.tftpl", {
+        kubernetes_domain = var.kubernetes_domain
+    })
+}
+
+resource "local_file" "http_route_authentik" {
+    filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/authentik.yaml"
+    content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/authentik.yaml.tftpl", {
         kubernetes_domain = var.kubernetes_domain
     })
 }

@@ -7,12 +7,14 @@ resources:
   - ./http-routes/garage.yaml
   - ./http-routes/grafana.yaml
   - ./http-routes/harbor.yaml
+  - ./http-routes/authentik.yaml
   - ./http-routes/endurain.yaml
   - ./http-routes/hello-world.yaml
   - ./http-routes/hubble.yaml
   - ./http-routes/renovate.yaml
   - ./http-routes/http-to-https-redirect.yaml
   - ./reference-grants/lan-gateway-argocd-tls.yaml
+  - ./reference-grants/lan-gateway-authentik-tls.yaml
   - ./reference-grants/lan-gateway-endurain-tls.yaml
   - ./reference-grants/lan-gateway-garage-tls.yaml
   - ./reference-grants/lan-gateway-grafana-tls.yaml

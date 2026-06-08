@@ -1,0 +1,13 @@
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  args:
+    - --proactor_threads=1
+  resources:
+    requests:
+      memory: 128Mi
+    limits:
+      memory: 512Mi

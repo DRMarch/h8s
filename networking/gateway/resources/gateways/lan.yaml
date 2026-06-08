@@ -84,6 +84,18 @@ spec:
           - name: endurain-homelab-local-tls
             namespace: endurain
     - protocol: HTTPS
+      name: home-lan-authentik
+      hostname: auth.drmarchent.com
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: authentik-homelab-local-tls
+            namespace: authentik
+    - protocol: HTTPS
       name: home-lan-renovate
       hostname: renovate.drmarchent.com
       port: 443

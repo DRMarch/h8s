@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: authentik-homelab-local
+  namespace: authentik
+spec:
+  secretName: authentik-homelab-local-tls
+  issuerRef:
+    name: vault-issuer
+    kind: ClusterIssuer
+  commonName: auth.drmarchent.com
+  dnsNames:
+    - auth.drmarchent.com

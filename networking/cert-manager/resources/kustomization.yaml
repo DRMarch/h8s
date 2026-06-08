@@ -8,6 +8,7 @@ resources:
   - ./certificates/garage-homelab-local.yaml
   - ./certificates/grafana-homelab-local.yaml
   - ./certificates/harbor-homelab-local.yaml
+  - ./certificates/authentik-homelab-local.yaml
   - ./certificates/endurain-homelab-local.yaml
   - ./certificates/hello-world-homelab-local.yaml
   - ./certificates/renovate-homelab-local.yaml

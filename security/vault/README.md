@@ -132,18 +132,25 @@ kubectl exec -ti vault-0 -n vault -- /bin/sh
 
 vault login
 
-vault secrets enable -path=secret kv-v2
 ```
 
 Follow the next subsections for the expected API keys
 
-#### GitHub App
+#### GitHub App 
 
+##### Argo Events
 Argo Events uses a GitHub App private key to authenticate with your repository and trigger Argo Workflows based on repository events.
 
 ```bash
 export ARGO_EVENTS_GITHUB_APP_PRIVATE_KEY="<INSERT_YOUR_GITHUB_APP_PRIVATE_KEY_HERE>"
 vault kv put kubernetes-homelab/argo-events/github-app private-key="$ARGO_EVENTS_GITHUB_APP_PRIVATE_KEY"
+```
+
+##### Renovate
+
+```bash
+export RENOVATE_GITHUB_APP_PRIVATE_KEY="<INSERT_YOUR_GITHUB_APP_PRIVATE_KEY_HERE>"
+vault kv put kubernetes-homelab/renovate/github-app private-key="$RENOVATE_GITHUB_APP_PRIVATE_KEY"
 ```
 
 #### Cloudflared Tunnel
