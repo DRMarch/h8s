@@ -39,6 +39,13 @@ resource "local_file" "certificates_harbor" {
     })
 }
 
+resource "local_file" "certificates_endurain" {
+    filename = "${path.module}/${local.project_root}/networking/cert-manager/resources/certificates/endurain-homelab-local.yaml"
+    content = templatefile("${path.module}/templates/networking/cert-manager/resources/certificates/endurain-homelab-local.yaml.tftpl", {
+        kubernetes_domain = var.kubernetes_domain
+    })
+}
+
 resource "local_file" "certificates_hello_world" {
     filename = "${path.module}/${local.project_root}/networking/cert-manager/resources/certificates/hello-world-homelab-local.yaml"
     content = templatefile("${path.module}/templates/networking/cert-manager/resources/certificates/hello-world-homelab-local.yaml.tftpl", {
@@ -130,6 +137,13 @@ resource "local_file" "http_route_grafana" {
 resource "local_file" "http_route_harbor" {
     filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/harbor.yaml"
     content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/harbor.yaml.tftpl", {
+        kubernetes_domain = var.kubernetes_domain
+    })
+}
+
+resource "local_file" "http_route_endurain" {
+    filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/endurain.yaml"
+    content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/endurain.yaml.tftpl", {
         kubernetes_domain = var.kubernetes_domain
     })
 }

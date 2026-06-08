@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: endurain-homelab-local
+  namespace: endurain
+spec:
+  secretName: endurain-homelab-local-tls
+  issuerRef:
+    name: vault-issuer
+    kind: ClusterIssuer
+  commonName: endurain.${kubernetes_domain}
+  dnsNames:
+    - endurain.${kubernetes_domain}

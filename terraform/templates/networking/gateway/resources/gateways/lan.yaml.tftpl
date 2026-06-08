@@ -72,6 +72,18 @@ spec:
           - name: hello-world-homelab-local-tls
             namespace: hello-world
     - protocol: HTTPS
+      name: home-lan-endurain
+      hostname: endurain.${kubernetes_domain}
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: endurain-homelab-local-tls
+            namespace: endurain
+    - protocol: HTTPS
       name: home-lan-renovate
       hostname: renovate.${kubernetes_domain}
       port: 443

@@ -1,0 +1,10 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: endurain
+  namespace: endurain
+spec:
+  name: endurain
+  owner: endurain
+  cluster:
+    name: cnpg-endurain

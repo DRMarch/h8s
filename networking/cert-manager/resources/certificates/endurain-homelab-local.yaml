@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: endurain-homelab-local
+  namespace: endurain
+spec:
+  secretName: endurain-homelab-local-tls
+  issuerRef:
+    name: vault-issuer
+    kind: ClusterIssuer
+  commonName: endurain.drmarchent.com
+  dnsNames:
+    - endurain.drmarchent.com

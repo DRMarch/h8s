@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: endurain
+spec:
+  type: ClusterIP
+  selector:
+    app: endurain
+  ports:
+    - port: 8080
+      targetPort: 8080
