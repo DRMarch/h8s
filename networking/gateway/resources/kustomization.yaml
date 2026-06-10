@@ -8,6 +8,7 @@ resources:
   - ./http-routes/grafana.yaml
   - ./http-routes/harbor.yaml
   - ./http-routes/hello-world.yaml
+  - ./http-routes/hubble.yaml
   - ./http-routes/renovate.yaml
   - ./http-routes/http-to-https-redirect.yaml
   - ./reference-grants/lan-gateway-argocd-tls.yaml
@@ -16,6 +17,7 @@ resources:
   - ./reference-grants/lan-gateway-harbor-tls.yaml
   - ./reference-grants/lan-gateway-hello-world-tls.yaml
   - ./reference-grants/lan-gateway-renovate-tls.yaml
+  - ./reference-grants/lan-gateway-hubble-tls.yaml
 patches:
   - target:
       kind: ReferenceGrant

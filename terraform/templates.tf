@@ -53,6 +53,13 @@ resource "local_file" "certificates_renovate" {
     })
 }
 
+resource "local_file" "certificates_hubble" {
+    filename = "${path.module}/${local.project_root}/networking/cert-manager/resources/certificates/hubble-homelab-local.yaml"
+    content = templatefile("${path.module}/templates/networking/cert-manager/resources/certificates/hubble-homelab-local.yaml.tftpl", {
+        kubernetes_domain = var.kubernetes_domain
+    })
+}
+
 
 
 ############
@@ -137,6 +144,13 @@ resource "local_file" "http_route_hello_world" {
 resource "local_file" "http_route_renovate" {
     filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/renovate.yaml"
     content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/renovate.yaml.tftpl", {
+        kubernetes_domain = var.kubernetes_domain
+    })
+}
+
+resource "local_file" "http_route_hubble" {
+    filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/hubble.yaml"
+    content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/hubble.yaml.tftpl", {
         kubernetes_domain = var.kubernetes_domain
     })
 }

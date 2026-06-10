@@ -83,6 +83,18 @@ spec:
         certificateRefs:
           - name: renovate-homelab-local-tls
             namespace: renovate-operator
+    - protocol: HTTPS
+      name: home-lan-hubble
+      hostname: hubble.${kubernetes_domain}
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: hubble-homelab-local-tls
+            namespace: kube-system
     - protocol: HTTP
       name: http-redirect
       port: 80
