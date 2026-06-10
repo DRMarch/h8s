@@ -11,10 +11,38 @@ spec:
   hostnames:
     - harbor.${kubernetes_domain}
   rules:
+    # Bypass Authentik callback paths to prevent infinite redirect loops
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /outpost.goauthentik.io
+        - path:
+            type: PathPrefix
+            value: /if/  # Matches all Authentik flow/UI paths
+        - path:
+            type: PathPrefix
+            value: /application/ # Matches OAuth callbacks
+      backendRefs:
+        - name: authentik-server
+          namespace: authentik
+          port: 80
+    # Main protected route — delegates auth to Authentik via ExternalAuth
     - matches:
         - path:
             type: PathPrefix
             value: /
+      filters:
+        - type: ExternalAuth
+          externalAuth:
+            protocol: HTTP
+            backendRef:
+              name: authentik-server
+              namespace: authentik
+              port: 80
+            http:
+              path: /outpost.goauthentik.io/auth/envoy/
+              allowedHeaders:
+                - cookie
       backendRefs:
         - name: harbor
           port: 80

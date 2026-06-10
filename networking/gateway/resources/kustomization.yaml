@@ -19,6 +19,7 @@ resources:
   - ./reference-grants/lan-gateway-garage-tls.yaml
   - ./reference-grants/lan-gateway-grafana-tls.yaml
   - ./reference-grants/lan-gateway-harbor-tls.yaml
+  - ./reference-grants/harbor-external-auth-authentik.yaml
   - ./reference-grants/lan-gateway-hello-world-tls.yaml
   - ./reference-grants/lan-gateway-renovate-tls.yaml
   - ./reference-grants/lan-gateway-hubble-tls.yaml

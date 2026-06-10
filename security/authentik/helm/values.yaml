@@ -24,6 +24,7 @@ postgresql:
 blueprints:
   configMaps:
     - authentik-google-blueprint
+    - authentik-harbor-blueprint
 
 server:
   replicas: 1

@@ -24,6 +24,8 @@ data:
           provider_type: google
           consumer_key: "PLACEHOLDER"
           consumer_secret: "PLACEHOLDER"
+          authentication_flow: !Find [authentik_flows.flow, [slug, default-source-authentication]]
+          enrollment_flow: !Find [authentik_flows.flow, [slug, default-source-enrollment]]
 
       # Add the Google source to the default authentication identification stage
       # so the "Login with Google" button appears on the Authentik login page.
@@ -41,9 +43,21 @@ data:
       - model: authentik_policies_expression.expressionpolicy
         state: present
         identifiers:
-          name: google-username-from-email
+          name: google-users-only
         attrs:
           expression: |
-            email = request.context["prompt_data"]["email"]
-            request.context["prompt_data"]["username"] = email
+            # 1. Allow the admin (local user) to always access
+            if request.user.is_superuser:
+                return True
+            
+            # 2. Check source safely using getattr to avoid the AttributeError
+            # if the user is not a superuser and has no source (local account), 
+            # this will be None.
+            source = getattr(request.user, "source", None)
+            
+            # 3. Allow only if the source is 'google'
+            if source and source.slug == "google":
+                return True
+                
+            # 4. Deny everyone else
             return False
