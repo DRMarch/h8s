@@ -11,27 +11,53 @@ spec:
   hostnames:
     - harbor.${kubernetes_domain}
   rules:
-    # Bypass Authentik callback paths to prevent infinite redirect loops
+    # Redirect ext_authz path hits back to root so the browser
+    # doesn't get stuck on Authentik's opaque ext_authz response.
     - matches:
         - path:
             type: PathPrefix
             value: /outpost.goauthentik.io
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /
+
+    # Forward Authentik flow/UI and OAuth callback paths directly.
+    - matches:
         - path:
             type: PathPrefix
-            value: /if/  # Matches all Authentik flow/UI paths
+            value: /if/
         - path:
             type: PathPrefix
-            value: /application/ # Matches OAuth callbacks
+            value: /application/
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Host
+                value: harbor.${kubernetes_domain}
+              - name: X-Forwarded-Proto
+                value: https
       backendRefs:
         - name: authentik-server
           namespace: authentik
           port: 80
-    # Main protected route — delegates auth to Authentik via ExternalAuth
+
+    # Main protected route — delegates auth to Authentik via ExternalAuth.
     - matches:
         - path:
             type: PathPrefix
             value: /
       filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Host
+                value: harbor.${kubernetes_domain}
+              - name: X-Forwarded-Proto
+                value: https
         - type: ExternalAuth
           externalAuth:
             protocol: HTTP
