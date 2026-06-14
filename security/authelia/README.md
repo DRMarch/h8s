@@ -9,7 +9,7 @@ A single ArgoCD Application (`authelia-helm`, sync-wave `-394`) deploys everythi
 - **Source 2:** Values from `security/authelia/helm/values.yaml`
 - **Source 3:** Raw manifests from `security/authelia/helm/resources/`
 
-Raw manifests include the configuration ConfigMap, secrets (session, storage encryption, admin password), and an `ExternalSecret` for the Grafana OIDC client secret (used in Phase 2).
+Raw manifests include the configuration ConfigMap and four Secrets (session, storage encryption, admin password, Grafana OIDC client secret) — all four are auto-generated in-cluster by the mittwald `kubernetes-secret-generator` operator.
 
 ```
 Browser ──HTTPS──> Cilium Gateway (Envoy) ──> backend service (e.g. Harbor, Grafana)
@@ -28,8 +28,7 @@ Browser ◀──redirect to login── Authelia (login UI at auth.drmarchent.c
 ## Deployment
 
 ```bash
-# 1. Push the secrets to Vault (see Vault Setup below)
-# 2. ArgoCD picks up the change and deploys automatically
+# 1. ArgoCD picks up the change and deploys automatically
 kubectl get applications -n argocd -w
 # 3. Verify the pod is up
 kubectl get pods -n authelia -w
@@ -40,26 +39,23 @@ kubectl get secret authelia-admin-password -n authelia -o jsonpath='{.data.passw
 # 6. Browse https://auth.drmarchent.com
 ```
 
-## Vault Setup
+## OIDC client secret
 
-This cluster uses Vault to store secret API keys to avoid exposing them in manifests. The `ExternalSecret` in `helm/resources/external-secret.yaml` reads from this path:
+The OIDC `client_secret` that Grafana will present to Authelia in Phase 2 lives in the `authelia-oidc-client-secrets` Secret. It is auto-generated in-cluster by the mittwald `kubernetes-secret-generator` operator — the same mechanism used for the session, storage encryption, and admin password Secrets.
 
-- `kubernetes-homelab/authelia/grafana-oidc` — Grafana OIDC client_secret
+The Secret holds a single data key:
 
-For Phase 1 you can skip Vault entirely. The `oidc-client-secrets-secret.yaml` will be created empty and that's fine — the configuration doesn't reference it yet.
+- `grafana-secret` — 64-character hex string (256 bits), used as the OIDC `client_secret`.
 
-For Phase 2 (when we add OIDC for Grafana), run:
+Authelia reads it via the volumeMount in `security/authelia/helm/values.yaml` (mountPath `/secrets/oidc/grafana-secret`). In Phase 2, Grafana will read the same Secret via `secretKeyRef` in `monitoring/grafana/resources/grafana.yaml` — there is no copy-paste of the value between manifests.
+
+### Rotation
 
 ```bash
-kubectl exec -ti vault-0 -n vault -- /bin/sh
-vault login
-
-# Grafana OIDC client secret
-GRAFANA_SECRET=$(openssl rand -hex 32)
-vault kv put kubernetes-homelab/authelia/grafana-oidc \
-  client_secret="$GRAFANA_SECRET"
-# IMPORTANT: copy $GRAFANA_SECRET — you'll paste it into
-# monitoring/grafana/resources/grafana.yaml as the OIDC client_secret
+kubectl annotate secret authelia-oidc-client-secrets -n authelia \
+  secret-generator.v1.mittwald.de/regenerate=true
+kubectl rollout restart deploy/authelia -n authelia
+# Grafana picks up the new value on its next pod start (Phase 2).
 ```
 
 ## User Management
