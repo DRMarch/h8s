@@ -53,6 +53,9 @@ pod:
     - name: authelia-oidc-client-secrets
       secret:
         secretName: authelia-oidc-client-secrets
+    - name: authelia-oidc-hmac-secret
+      secret:
+        secretName: authelia-oidc-hmac-secret
     - name: authelia-session
       secret:
         secretName: authelia-session-secret
@@ -69,6 +72,10 @@ pod:
     - name: authelia-oidc-client-secrets
       mountPath: /secrets/oidc/grafana-secret
       subPath: grafana-secret
+      readOnly: true
+    - name: authelia-oidc-hmac-secret
+      mountPath: /secrets/oidc/hmac-secret
+      subPath: hmac-secret
       readOnly: true
     - name: authelia-session
       mountPath: /secrets/session

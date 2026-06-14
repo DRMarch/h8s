@@ -5,6 +5,23 @@ metadata:
   labels:
     dashboards: grafana
 spec:
+  config:
+    server:
+      domain: "grafana.drmarchent.com"
+      root_url: "https://%(domain)s/"
+    auth.generic_oauth:
+      enabled: "true"
+      name: Authelia
+      icon: signin
+      client_id: grafana
+      client_secret: $__env{GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}
+      scopes: openid profile email groups
+      empty_scopes: "false"
+      auth_url: https://auth.drmarchent.com/api/oidc/authorization
+      token_url: https://auth.drmarchent.com/api/oidc/token
+      api_url: https://auth.drmarchent.com/api/oidc/userinfo
+      role_attribute_path: contains(groups[*], 'admins') && 'Admin' || 'Viewer'
+      allow_sign_up: "true"
   deployment:
     spec:
       template:
@@ -32,9 +49,14 @@ spec:
                 - name: GF_AUTH_PROXY_HEADER_PROPERTY
                   value: username
                 - name: GF_AUTH_PROXY_HEADERS
-                  value: "Remote-Groups:groups"
+                  value: "groups:Remote-Groups"
                 - name: GF_AUTH_PROXY_AUTO_SIGN_UP
                   value: "true"
+                - name: GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: grafana-oidc-client-secret
+                      key: grafana-secret
   persistentVolumeClaim:
     spec:
       accessModes:

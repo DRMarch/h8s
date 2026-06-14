@@ -39,23 +39,31 @@ kubectl get secret authelia-admin-password -n authelia -o jsonpath='{.data.passw
 # 6. Browse https://auth.drmarchent.com
 ```
 
-## OIDC client secret
+## OIDC secrets
 
-The OIDC `client_secret` that Grafana will present to Authelia in Phase 2 lives in the `authelia-oidc-client-secrets` Secret. It is auto-generated in-cluster by the mittwald `kubernetes-secret-generator` operator — the same mechanism used for the session, storage encryption, and admin password Secrets.
+Two Secrets back the OIDC provider. Both are auto-generated in-cluster by the mittwald `kubernetes-secret-generator` operator.
 
-The Secret holds a single data key:
+| Secret | Key | Mounted at | Purpose |
+|---|---|---|---|
+| `authelia/authelia-oidc-client-secrets` | `grafana-secret` | `/secrets/oidc/grafana-secret` | OIDC `client_secret` Grafana presents during the token exchange |
+| `authelia/authelia-oidc-hmac-secret` | `hmac-secret` | `/secrets/oidc/hmac-secret` | HMAC key for signing OIDC ID tokens |
 
-- `grafana-secret` — 64-character hex string (256 bits), used as the OIDC `client_secret`.
-
-Authelia reads it via the volumeMount in `security/authelia/helm/values.yaml` (mountPath `/secrets/oidc/grafana-secret`). In Phase 2, Grafana will read the same Secret via `secretKeyRef` in `monitoring/grafana/resources/grafana.yaml` — there is no copy-paste of the value between manifests.
+Grafana reads the client secret from `monitoring/grafana-oidc-client-secret`, a copy of `authelia/authelia-oidc-client-secrets` maintained by the mittwald operator's `copy-from-secret-*` annotations. There is no copy-paste of values between manifests.
 
 ### Rotation
 
 ```bash
+# OIDC client secret (Grafana picks up the new value on its next pod start)
 kubectl annotate secret authelia-oidc-client-secrets -n authelia \
   secret-generator.v1.mittwald.de/regenerate=true
 kubectl rollout restart deploy/authelia -n authelia
-# Grafana picks up the new value on its next pod start (Phase 2).
+kubectl rollout restart deploy/grafana-deployment -n monitoring  # adjust to actual Grafana Deployment name
+
+# OIDC HMAC signing key (rotating this invalidates all in-flight OIDC
+# sessions — users will need to re-authenticate)
+kubectl annotate secret authelia-oidc-hmac-secret -n authelia \
+  secret-generator.v1.mittwald.de/regenerate=true
+kubectl rollout restart deploy/authelia -n authelia
 ```
 
 ## User Management
