@@ -1,8 +1,8 @@
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant
 metadata:
-  name: authentik-tls-access
-  namespace: authentik
+  name: authelia-tls-access
+  namespace: authelia
 spec:
   from:
     - group: gateway.networking.k8s.io
@@ -11,4 +11,4 @@ spec:
   to:
     - group: ""
       kind: Secret
-      name: authentik-homelab-local-tls
+      name: authelia-homelab-local-tls

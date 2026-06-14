@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authelia-config
+  namespace: authelia
+data:
+  configuration.yaml: |
+    # yaml-language-server: $schema=https://www.authelia.com/integration/schemas/latest/json-schema/configuration.json
+    #
+    # Authelia configuration. Sourced from a ConfigMap and mounted by the Helm chart.
+    # Secret material (session secret, storage encryption key) is loaded from
+    # files under /secrets/ (see security/authelia/helm/values.yaml extraVolumeMounts).
+
+    server:
+      address: "tcp4://0.0.0.0:9091"
+
+      endpoints:
+        # Enables Cilium Gateway API ExternalAuth integration.
+        # This is what makes the POST /api/authz/ext-authz/ endpoint work.
+        #
+        # `ExtAuthz` is the correct implementation for Cilium because Cilium
+        # translates the Gateway API `ExternalAuth` filter into Envoy's
+        # `ext_authz` HCM filter (GEP-1494, added in Cilium 1.20). `AuthRequest`
+        # is designed for nginx's `auth_request` module and returns a 401 with
+        # a `Location` header that nginx intercepts — which Envoy's ext_authz
+        # doesn't handle, resulting in the sub-request failure bubbling up to
+        # the browser as a 404.
+        authz:
+          ext-authz:
+            implementation: 'ExtAuthz'
+
+    log:
+      level: info
+      format: text
+
+    # local file-based authentication backend. The admin user is generated
+    # at startup by the init container from the auto-generated password Secret.
+    # Password reset / email-based flows disabled — we don't run SMTP.
+    authentication_backend:
+      file:
+        # Mounted at /users_database.yml by the chart (see values.yaml
+        # pod.extraVolumeMounts with subPath: users_database.yml).
+        path: /users_database.yml
+      password_reset:
+        disable: true
+      password_change:
+        disable: true
+
+    session:
+      # Read the session HMAC secret from a file mounted by the chart.
+      secret: /secrets/session
+      cookies:
+        - domain: 'drmarchent.com'                   # parent of all cluster hostnames
+          authelia_url: 'https://auth.drmarchent.com'
+          # Where users land after login when they didn't come from a
+          # protected HTTPRoute (i.e. visited the Authelia portal directly).
+          # Points at ArgoCD as the cluster's central dashboard.
+          default_redirection_url: 'https://argocd.drmarchent.com'
+
+    storage:
+      local:
+        path: /config/db.sqlite3
+      # Read the storage encryption key from a file. This encrypts the SQLite DB
+      # at rest; rotating requires deleting the PVC and re-onboarding users.
+      encryption_key: /secrets/storage-encryption
+
+    # Per-domain access control. First matching rule wins.
+    # Single admin user — any authenticated user has full access.
+    access_control:
+      default_policy: deny
+      rules:
+        # Bypass: auth portal (no point requiring auth to view the login page)
+        - domain: 'auth.drmarchent.com'
+          policy: bypass
+        # Catch-all: any authenticated user (the sole admin)
+        - domain: '*.drmarchent.com'
+          policy: one_factor
+
+    # Password reset / email-based flows disabled via the
+    # authentication_backend.password_reset.disable flag (above).
+    # Authelia still requires a jwt_secret to be set for the
+    # identity_validation.reset_password block, so we point it at the
+    # session secret file. It's never used because password_reset is
+    # disabled.
+    identity_validation:
+      reset_password:
+        jwt_secret: /secrets/session
+
+    notifier:
+      # No SMTP. The "filesystem" notifier writes reset emails to a local
+      # file instead of sending them. Required for the config to validate
+      # but unused in our setup.
+      filesystem:
+        filename: '/config/notifier.log'

@@ -1,31 +1,31 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: authentik-helm
+  name: authelia-helm
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   annotations:
-    argocd.argoproj.io/sync-wave: "-395"
+    argocd.argoproj.io/sync-wave: "-394"
 spec:
   project: default
   sources:
-    - repoURL: https://charts.goauthentik.io
-      chart: authentik
-      targetRevision: 2026.5.2
+    - repoURL: https://charts.authelia.com
+      chart: authelia
+      targetRevision: 0.11.6
       helm:
-        releaseName: authentik
+        releaseName: authelia
         valueFiles:
-          - $h8s/security/authentik/helm/values.yaml
+          - $h8s/security/authelia/helm/values.yaml
     - repoURL: https://github.com/DRMarch/h8s.git
       targetRevision: HEAD
       ref: h8s
     - repoURL: https://github.com/DRMarch/h8s.git
       targetRevision: HEAD
-      path: security/authentik/helm/resources
+      path: security/authelia/helm/resources
   destination:
     server: https://kubernetes.default.svc
-    namespace: authentik
+    namespace: authelia
   syncPolicy:
     automated:
       prune: true

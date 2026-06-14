@@ -6,63 +6,54 @@
 
 ### What it does in this cluster
 
-DragonflyDB provides a Redis-compatible datastore for applications that need caching, session storage, or task queuing. In this cluster, it:
+The DragonflyDB **operator** is installed in this cluster (via the official [Dragonfly Operator](https://github.com/dragonflydb/dragonfly-operator)) but no Dragonfly instances are currently deployed. The operator is kept available so future workloads (e.g. an application that needs Redis) can install a `Dragonfly` CR without having to install the operator separately.
 
-- Serves as the session store and task broker for Authentik
-- Provides Redis-compatible APIs (port 6379) as a drop-in replacement
-- Exports Prometheus metrics via ServiceMonitor
-- Includes a pre-built Grafana dashboard
+> **Note:** As of the Authentik → Authelia migration (Phase 3, June 2026), the only consumer of Dragonfly was Authentik. With Authentik removed, the `redis` Dragonfly instance in the `authentik` namespace has been pruned and no replacement instance has been created. The operator remains installed for future use.
 
 ## Architecture
 
-DragonflyDB is deployed via the official [Dragonfly Operator](https://github.com/dragonflydb/dragonfly-operator) and managed by ArgoCD.
-
 | Component | Detail |
 |-----------|--------|
-| **Operator** | `dragonfly-operator-system` namespace, sync-wave `-397` |
+| **Operator namespace** | `dragonfly-operator-system` |
+| **Operator sync-wave** | `-397` (ArgoCD) |
 | **Chart** | `oci://ghcr.io/dragonflydb/dragonfly-operator/helm/dragonfly-operator` v1.5.0 |
-| **Dragonfly instance** | `authentik` namespace, sync-wave `-396` |
-| **CRD name** | `redis` (produces service `redis.authentik.svc.cluster.local:6379`) |
-| **Replicas** | 1 |
-| **Persistence** | Operator-managed PVC |
-| **Metrics** | ServiceMonitor for Prometheus + Grafana dashboard |
-
-The CRD is intentionally named `redis` so existing applications can connect without configuration changes.
+| **Dragonfly CRs** | None deployed. |
+| **CRDs** | `dragonflies.dragonflydb.io` is installed by the operator. |
 
 ## Deployment
 
 ### Operator
 
-The Dragonfly Operator is deployed via the ArgoCD Helm application `dragonfly-operator-helm.yaml`. Values are defined in `storage/dragonfly/operator/values.yaml`.
+The Dragonfly Operator is deployed via the ArgoCD Helm application `dragonfly-operator-helm.yaml` (sync-wave `-397`). Values are defined in `storage/dragonfly/operator/values.yaml`.
 
-### Dragonfly instance
+### Adding a new Dragonfly instance
 
-The Dragonfly CRD is deployed via the ArgoCD Kustomize application `dragonfly-operator-resources.yaml` pointing at `storage/dragonfly/resources/`.
+If a future workload needs Redis-compatible storage, create a `Dragonfly` CR in the target namespace. For example, to spin up a `redis` instance in a new `myapp` namespace:
 
-Sync order: `dragonfly-operator-helm` (`-397`) → `dragonfly-operator-resources` (`-396`) → `authentik-helm` (`-395`)
+```yaml
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: redis
+  namespace: myapp
+spec:
+  replicas: 1
+  args:
+    - --proactor_threads=1
+  resources:
+    requests:
+      memory: 128Mi
+    limits:
+      memory: 512Mi
+```
 
-### Verify
+Apply it with `kubectl apply -f` and the operator will provision the StatefulSet + Service.
+
+### Verify operator is running
 
 ```bash
 kubectl get pods -n dragonfly-operator-system
-kubectl get dragonfly -n authentik
-kubectl get pods -n authentik -l app=dragonfly
-kubectl get svc redis -n authentik
 ```
-
-### Testing connectivity
-
-```bash
-kubectl exec -n authentik deploy/authentik-server -c server -- redis-cli -h redis PING
-```
-
-### Scaling
-
-```bash
-kubectl patch dragonfly redis -n authentik --type merge -p '{"spec":{"replicas":3}}'
-```
-
-Or update `storage/dragonfly/resources/dragonfly.yaml` and let ArgoCD sync.
 
 ## Resources
 

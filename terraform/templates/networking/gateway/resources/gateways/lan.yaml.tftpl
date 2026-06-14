@@ -84,7 +84,7 @@ spec:
           - name: endurain-homelab-local-tls
             namespace: endurain
     - protocol: HTTPS
-      name: home-lan-authentik
+      name: home-lan-auth
       hostname: auth.${kubernetes_domain}
       port: 443
       allowedRoutes:
@@ -93,8 +93,8 @@ spec:
       tls:
         mode: Terminate
         certificateRefs:
-          - name: authentik-homelab-local-tls
-            namespace: authentik
+          - name: authelia-homelab-local-tls
+            namespace: authelia
     - protocol: HTTPS
       name: home-lan-renovate
       hostname: renovate.${kubernetes_domain}

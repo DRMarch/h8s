@@ -1,13 +1,13 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: authentik
-  namespace: authentik
+  name: authelia
+  namespace: authelia
 spec:
   parentRefs:
     - name: lan-gateway
       namespace: default
-      sectionName: home-lan-authentik
+      sectionName: home-lan-auth
   hostnames:
     - auth.${kubernetes_domain}
   rules:
@@ -16,5 +16,5 @@ spec:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: authentik-server
+        - name: authelia
           port: 80

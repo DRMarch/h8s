@@ -39,9 +39,9 @@ resource "local_file" "certificates_harbor" {
     })
 }
 
-resource "local_file" "certificates_authentik" {
-    filename = "${path.module}/${local.project_root}/networking/cert-manager/resources/certificates/authentik-homelab-local.yaml"
-    content = templatefile("${path.module}/templates/networking/cert-manager/resources/certificates/authentik-homelab-local.yaml.tftpl", {
+resource "local_file" "certificates_authelia" {
+    filename = "${path.module}/${local.project_root}/networking/cert-manager/resources/certificates/authelia-homelab-local.yaml"
+    content = templatefile("${path.module}/templates/networking/cert-manager/resources/certificates/authelia-homelab-local.yaml.tftpl", {
         kubernetes_domain = var.kubernetes_domain
     })
 }
@@ -148,9 +148,9 @@ resource "local_file" "http_route_harbor" {
     })
 }
 
-resource "local_file" "http_route_authentik" {
-    filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/authentik.yaml"
-    content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/authentik.yaml.tftpl", {
+resource "local_file" "http_route_authelia" {
+    filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/authelia.yaml"
+    content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/authelia.yaml.tftpl", {
         kubernetes_domain = var.kubernetes_domain
     })
 }

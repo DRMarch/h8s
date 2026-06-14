@@ -1,0 +1,127 @@
+# https://raw.githubusercontent.com/authelia/chartrepo/refs/tags/authelia-0.11.6/charts/authelia/values.yaml
+#
+# Authelia Helm chart values for the h8s cluster.
+# Replaces Authentik as the SSO / forward-auth provider.
+#
+# This file overrides ONLY the chart's structural values. The actual
+# Authelia configuration (server, access_control, etc.) lives in a
+# separate ConfigMap (security/authelia/helm/resources/configuration-configmap.yaml)
+# referenced by configMap.existingConfigMap below.
+
+# Run as a Deployment (not DaemonSet) so SQLite is on a single PVC.
+pod:
+  kind: Deployment
+  replicas: 1
+  revisionHistoryLimit: 3
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  securityContext:
+    pod:
+      fsGroup: 1000
+    container:
+      runAsUser: 1000
+      runAsGroup: 1000
+
+  # Init container generates /shared/users_database.yml at startup by
+  # hashing the auto-generated admin password from the Secret.
+  initContainers:
+    - name: generate-users-db
+      image: ghcr.io/authelia/authelia:latest
+      command: ["/bin/sh", "-c"]
+      args:
+        - |
+          PASSWORD=$(cat /secrets/admin-password/password)
+          HASH=$(/app/authelia crypto hash generate argon2 --password "$PASSWORD" --no-confirm)
+          HASH=${HASH#Digest: }
+          printf 'users:\n  admin:\n    displayname: Homelab Admin\n    password: '\''%s'\''\n    email: admin@drmarchent.com\n    groups:\n      - admins\n' "$HASH" > /shared/users_database.yml
+      volumeMounts:
+        - name: authelia-admin-password
+          mountPath: /secrets/admin-password
+          readOnly: true
+        - name: authelia-users
+          mountPath: /shared
+
+  # Mount all the secret files. Authelia reads them as plain text from
+  # the configuration.yaml at /secrets/<path>. See the file references
+  # in configuration-configmap.yaml.
+  extraVolumes:
+    - name: authelia-oidc-client-secrets
+      secret:
+        secretName: authelia-oidc-client-secrets
+    - name: authelia-session
+      secret:
+        secretName: authelia-session-secret
+    - name: authelia-storage
+      secret:
+        secretName: authelia-storage-encryption-key
+    - name: authelia-admin-password
+      secret:
+        secretName: authelia-admin-password
+    - name: authelia-users
+      emptyDir: {}
+
+  extraVolumeMounts:
+    - name: authelia-oidc-client-secrets
+      mountPath: /secrets/oidc/grafana-secret
+      subPath: grafana-secret
+      readOnly: true
+    - name: authelia-session
+      mountPath: /secrets/session
+      subPath: value
+      readOnly: true
+    - name: authelia-storage
+      mountPath: /secrets/storage-encryption
+      subPath: value
+      readOnly: true
+    # The users database file. Populated at startup by the generate-users-db
+    # init container from the auto-generated admin password. Authelia's file
+    # backend reads it via `authentication_backend.file.path: /users_database.yml`.
+    - name: authelia-users
+      mountPath: /users_database.yml
+      subPath: users_database.yml
+      readOnly: true
+
+# ClusterIP service, port 80 -> 9091 (Authelia's default internal port).
+service:
+  type: ClusterIP
+  port: 80
+
+# Disable the chart's built-in ingress; the Cilium Gateway handles ingress.
+ingress:
+  enabled: false
+
+# Use our own ConfigMap for configuration.yaml.
+configMap:
+  existingConfigMap: authelia-config
+  key: configuration.yaml
+  filters:
+    disabled: false
+  # Telemetry (Prometheus metrics) is configured via the chart's
+  # configMap.telemetry block, but the actual configuration values are
+  # set in our own configuration.yaml.
+  telemetry:
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+
+# Disable the chart-managed Secret. We mount our own secrets via
+# pod.extraVolumes / pod.extraVolumeMounts above. Both disabled and
+# existingSecret must be set to fully suppress chart secret generation
+# and the in-pod /secrets/internal volume.
+secret:
+  disabled: true
+  existingSecret: 'authelia-session-secret'
+
+# Longhorn-backed PVC for the SQLite database + session state.
+persistence:
+  enabled: true
+  size: 1Gi
+  storageClass: longhorn
+  accessModes:
+    - ReadWriteOnce

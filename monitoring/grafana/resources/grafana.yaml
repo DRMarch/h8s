@@ -22,6 +22,19 @@ spec:
                     secretKeyRef:
                       name: grafana-admin-credentials
                       key: GF_SECURITY_ADMIN_PASSWORD
+                # Trust Remote-User / Remote-Groups headers from the Authelia
+                # ext_authz filter in front of Grafana (see
+                # networking/gateway/resources/http-routes/grafana.yaml).
+                - name: GF_AUTH_PROXY_ENABLED
+                  value: "true"
+                - name: GF_AUTH_PROXY_HEADER_NAME
+                  value: Remote-User
+                - name: GF_AUTH_PROXY_HEADER_PROPERTY
+                  value: username
+                - name: GF_AUTH_PROXY_HEADERS
+                  value: "Remote-Groups:groups"
+                - name: GF_AUTH_PROXY_AUTO_SIGN_UP
+                  value: "true"
   persistentVolumeClaim:
     spec:
       accessModes:

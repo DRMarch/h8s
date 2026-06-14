@@ -11,41 +11,7 @@ spec:
   hostnames:
     - harbor.drmarchent.com
   rules:
-    # Rule 1: Redirect ext_authz path hits back to root so the browser
-    #         doesn't get stuck on Authentik's opaque ext_authz response.
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /outpost.goauthentik.io
-      filters:
-        - type: RequestRedirect
-          requestRedirect:
-            path:
-              type: ReplaceFullPath
-              replaceFullPath: /
-
-    # Rule 2: Forward Authentik flow/UI and OAuth callback paths directly.
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /if/
-        - path:
-            type: PathPrefix
-            value: /application/
-      filters:
-        - type: RequestHeaderModifier
-          requestHeaderModifier:
-            set:
-              - name: X-Forwarded-Host
-                value: harbor.drmarchent.com
-              - name: X-Forwarded-Proto
-                value: https
-      backendRefs:
-        - name: authentik-server
-          namespace: authentik
-          port: 80
-
-    # Rule 3: Main protected route — delegates auth to Authentik via ExternalAuth.
+    # Main protected route — delegates auth to Authelia via ExternalAuth.
     - matches:
         - path:
             type: PathPrefix
@@ -62,13 +28,24 @@ spec:
           externalAuth:
             protocol: HTTP
             backendRef:
-              name: authentik-server
-              namespace: authentik
+              name: authelia
+              namespace: authelia
               port: 80
             http:
-              path: /outpost.goauthentik.io/auth/envoy/
+              path: /api/authz/ext-authz/
               allowedHeaders:
+                - accept
+                - host
                 - cookie
+                - authorization
+                - proxy-authorization
+                - x-forwarded-method
+                - x-forwarded-uri
+                - x-forwarded-host
+                - x-forwarded-proto
+                - x-forwarded-for
+                - x-real-ip
+                - x-envoy-original-path
       backendRefs:
         - name: harbor
           port: 80
