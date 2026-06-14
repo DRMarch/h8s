@@ -55,7 +55,7 @@ path "kubernetes-homelab/data/*" {
   capabilities = ["create", "read", "update", "delete", "patch"]
 }
 path "kubernetes-homelab/metadata/*" {
-  capabilities = ["list", "delete"]
+  capabilities = ["create", "read", "update", "list", "delete"]
 }
 EOF
 

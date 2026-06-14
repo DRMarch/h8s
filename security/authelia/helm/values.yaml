@@ -3,12 +3,23 @@
 # Authelia Helm chart values for the h8s cluster.
 # Replaces Authentik as the SSO / forward-auth provider.
 #
-# This file overrides ONLY the chart's structural values. The actual
-# Authelia configuration (server, access_control, etc.) lives in a
-# separate ConfigMap (security/authelia/helm/resources/configuration-configmap.yaml)
-# referenced by configMap.existingConfigMap below.
+# All Authelia configuration (server, session, storage, access_control,
+# OIDC, etc.) is expressed as structured values under configMap.* below and
+# rendered into the `authelia` ConfigMap by the chart's
+# templates/configMap.yaml. The four backing Secrets (session, storage
+# encryption, OIDC HMAC, Grafana client) are declared once in
+# secret.additionalSecrets; the chart mounts each as a directory at
+# /secrets/<secret_name>/ and sets the corresponding *_FILE env var that
+# Authelia reads at startup.
+#
+# The admin-password Secret and the users-database emptyDir are kept in
+# pod.extraVolumes because they back the generate-users-db init container,
+# not the chart's structured configMap. See security/authelia/README.md
+# for the full architecture.
 
-# Run as a Deployment (not DaemonSet) so SQLite is on a single PVC.
+# ---------------------------------------------------------------------------
+# Pod shape: Deployment (not DaemonSet) so SQLite is on a single PVC.
+# ---------------------------------------------------------------------------
 pod:
   kind: Deployment
   replicas: 1
@@ -46,22 +57,12 @@ pod:
         - name: authelia-users
           mountPath: /shared
 
-  # Mount all the secret files. Authelia reads them as plain text from
-  # the configuration.yaml at /secrets/<path>. See the file references
-  # in configuration-configmap.yaml.
+  # The admin-password Secret is mounted ONLY for the init container above
+  # (the main container never reads it; the admin user is generated
+  # dynamically, not validated against the plaintext password). The
+  # users-database emptyDir is shared with the main container at
+  # /users_database.yml via subPath.
   extraVolumes:
-    - name: authelia-oidc-client-secrets
-      secret:
-        secretName: authelia-oidc-client-secrets
-    - name: authelia-oidc-hmac-secret
-      secret:
-        secretName: authelia-oidc-hmac-secret
-    - name: authelia-session
-      secret:
-        secretName: authelia-session-secret
-    - name: authelia-storage
-      secret:
-        secretName: authelia-storage-encryption-key
     - name: authelia-admin-password
       secret:
         secretName: authelia-admin-password
@@ -69,63 +70,255 @@ pod:
       emptyDir: {}
 
   extraVolumeMounts:
-    - name: authelia-oidc-client-secrets
-      mountPath: /secrets/oidc/grafana-secret
-      subPath: grafana-secret
-      readOnly: true
-    - name: authelia-oidc-hmac-secret
-      mountPath: /secrets/oidc/hmac-secret
-      subPath: hmac-secret
-      readOnly: true
-    - name: authelia-session
-      mountPath: /secrets/session
-      subPath: value
-      readOnly: true
-    - name: authelia-storage
-      mountPath: /secrets/storage-encryption
-      subPath: value
-      readOnly: true
-    # The users database file. Populated at startup by the generate-users-db
-    # init container from the auto-generated admin password. Authelia's file
-    # backend reads it via `authentication_backend.file.path: /users_database.yml`.
     - name: authelia-users
       mountPath: /users_database.yml
       subPath: users_database.yml
       readOnly: true
 
-# ClusterIP service, port 80 -> 9091 (Authelia's default internal port).
+# ---------------------------------------------------------------------------
+# Service: ClusterIP, port 80 -> 9091 (Authelia's default internal port).
+# ---------------------------------------------------------------------------
 service:
   type: ClusterIP
   port: 80
 
-# Disable the chart's built-in ingress; the Cilium Gateway handles ingress.
+# ---------------------------------------------------------------------------
+# Ingress: chart-managed Ingress disabled. Cilium Gateway handles ingress.
+# ---------------------------------------------------------------------------
 ingress:
   enabled: false
 
-# Use our own ConfigMap for configuration.yaml.
+# ---------------------------------------------------------------------------
+# External Secrets the chart should mount and expose as *_FILE env vars.
+# Each entry is mounted as a directory at /secrets/<secret_name>/ containing
+# all data keys of that Secret. The configMap.* values below tell the chart
+# which env var to set (and thus which file Authelia should read).
+#
+# Secret data keys (must match the ExternalSecret definitions in
+# security/authelia/resources/*-externalsecret.yaml):
+#   authelia-session-secret        -> key: value
+#   authelia-storage-encryption-key -> key: value
+#   authelia-oidc-hmac-secret      -> key: hmac-secret
+#   authelia-grafana-client-secret -> key: client-secret
+# ---------------------------------------------------------------------------
+secret:
+  # Use one of our existing Secrets as the "chart-managed" Secret reference
+  # (existingSecret is non-empty), which suppresses generation of the
+  # chart-managed `authelia` Secret. The volume mount at /secrets/internal
+  # is still created but has no items (all configMap.* secret refs have
+  # their own secret_name), so it's an empty directory — harmless.
+  #
+  # We do NOT set `secret.disabled: true` here: that flag also suppresses
+  # the *_FILE env vars in the chart's deployment template, which we
+  # need (they tell Authelia where to find the session/storage/OIDC/HMAC
+  # secret files mounted via additionalSecrets below).
+  existingSecret: 'authelia-session-secret'
+  additionalSecrets:
+    authelia-session-secret: {}
+    authelia-storage-encryption-key: {}
+    authelia-oidc-hmac-secret: {}
+    authelia-grafana-client-secret: {}
+    cnpg-authelia-user-credentials: {}
+    authelia-oidc-rsa-key: {}
+
+# ---------------------------------------------------------------------------
+# Authelia configuration. Rendered into the `authelia` ConfigMap by
+# the chart's templates/configMap.yaml. Field-by-field mapping vs the
+# previous raw configuration.yaml is documented inline below.
+# ---------------------------------------------------------------------------
 configMap:
-  existingConfigMap: authelia-config
-  key: configuration.yaml
-  filters:
-    disabled: false
-  # Telemetry (Prometheus metrics) is configured via the chart's
-  # configMap.telemetry block, but the actual configuration values are
-  # set in our own configuration.yaml.
+  # Telemetry (Prometheus metrics) is configured here; the ServiceMonitor
+  # is created by the chart from these settings.
   telemetry:
     metrics:
       enabled: true
       serviceMonitor:
         enabled: true
 
-# Disable the chart-managed Secret. We mount our own secrets via
-# pod.extraVolumes / pod.extraVolumeMounts above. Both disabled and
-# existingSecret must be set to fully suppress chart secret generation
-# and the in-pod /secrets/internal volume.
-secret:
-  disabled: true
-  existingSecret: 'authelia-session-secret'
+  # Server. Chart computes the address from server.port (and server.path
+  # if set; we leave it empty so the address is tcp://0.0.0.0:9091/,
+  # dual-stack with a trailing slash from the empty path).
+  server:
+    port: 9091
+    endpoints:
+      # Enables Cilium Gateway API ExternalAuth integration.
+      # `ExtAuthz` is the correct implementation for Cilium because Cilium
+      # translates the Gateway API `ExternalAuth` filter into Envoy's
+      # `ext_authz` HCM filter (GEP-1494, added in Cilium 1.20). `AuthRequest`
+      # is designed for nginx's `auth_request` module and returns a 401 with
+      # a `Location` header that nginx intercepts — which Envoy's ext_authz
+      # doesn't handle, resulting in the sub-request failure bubbling up to
+      # the browser as a 404.
+      authz:
+        ext-authz:
+          implementation: 'ExtAuthz'
 
-# Longhorn-backed PVC for the SQLite database + session state.
+  log:
+    level: info
+    format: text
+
+  # File-based authentication backend. The admin user is generated at
+  # startup by the init container from the auto-generated password Secret.
+  # Password reset / email-based flows disabled — we don't run SMTP.
+  authentication_backend:
+    file:
+      enabled: true
+      # Mounted at /users_database.yml by the chart (see pod.extraVolumeMounts
+      # with subPath: users_database.yml).
+      path: /users_database.yml
+    password_reset:
+      disable: true
+    password_change:
+      disable: true
+
+  # Session: name, lifecycle, cookies. The HMAC key is NOT configured here
+  # directly — the chart sets AUTHELIA_SESSION_SECRET_FILE from
+  # configMap.session.encryption_key below, which Authelia reads as
+  # session.secret. (The chart's "encryption_key" naming is historical
+  # and confusingly maps to Authelia's session.secret env var.)
+  session:
+    # Path inside authelia-session-secret (key: value). Combined with
+    # secret_name, the chart sets AUTHELIA_SESSION_SECRET_FILE to
+    # /secrets/authelia-session-secret/value.
+    encryption_key:
+      disabled: false
+      secret_name: authelia-session-secret
+      path: value
+    cookies:
+      # authelia_url is auto-computed by the chart from subdomain+domain
+      # (see authelia.ingress.uri). Setting subdomain=auth + domain=
+      # drmarchent.com yields https://auth.drmarchent.com.
+      - subdomain: 'auth'
+        domain: 'drmarchent.com'                   # parent of all cluster hostnames
+        # Where users land after login when they didn't come from a
+        # protected HTTPRoute (i.e. visited the Authelia portal directly).
+        # Points at ArgoCD as the cluster's central dashboard.
+        default_redirection_url: 'https://argocd.drmarchent.com'
+
+  # Storage: PostgreSQL via CloudNative-PG.
+  # The authelia database lives on the cnpg-authelia Cluster in the authelia
+  # namespace, exposed at cnpg-authelia-rw.authelia.svc.cluster.local:5432.
+  # The role ("authelia") and database ("authelia") are managed by the CNPG
+  # Cluster's `managed.roles` and the Database CR (see
+  # storage/cloudnative-pg/resources/clusters/authelia/).
+  #
+  # We deliberately reuse the SAME Secret that the CNPG operator consumes
+  # to set the role's password (cnpg-authelia-user-credentials). This is
+  # one source of truth for the password:
+  #   - CNPG reads `cnpg-authelia-user-credentials.password` to set the
+  #     authelia role's password in Postgres.
+  #   - The chart mounts the same Secret at /secrets/ and sets
+  #     AUTHELIA_STORAGE_POSTGRES_PASSWORD_FILE=...password, so Authelia
+  #     reads the same value.
+  # The password is auto-generated once by the mittwald
+  # kubernetes-secret-generator annotation on the Secret manifest.
+  storage:
+    # Required to keep `false` even though unused — the chart still emits
+    # both blocks into the rendered ConfigMap and Authelia refuses to
+    # start with two backends enabled.
+    local:
+      enabled: false
+    postgres:
+      enabled: true
+      address: 'tcp://cnpg-authelia-rw.authelia.svc.cluster.local:5432'
+      database: 'authelia'
+      username: 'authelia'
+      timeout: '5 seconds'
+      password:
+        disabled: false
+        secret_name: cnpg-authelia-user-credentials
+        path: password
+    # storage.encryption_key is still required — Authelia uses it to
+    # encrypt sensitive values stored in the backend, independent of
+    # which SQL backend is in use.
+    encryption_key:
+      disabled: false
+      secret_name: authelia-storage-encryption-key
+      path: value
+
+  # Per-domain access control. First matching rule wins.
+  # Single admin user — any authenticated user has full access.
+  access_control:
+    default_policy: deny
+    rules:
+      # Bypass: auth portal (no point requiring auth to view the login page)
+      - domain: 'auth.drmarchent.com'
+        policy: bypass
+      # Catch-all: any authenticated user (the sole admin)
+      - domain: '*.drmarchent.com'
+        policy: one_factor
+
+  # Password reset / email-based flows disabled via the
+  # authentication_backend.password_reset.disable flag (above).
+  # Authelia still requires a jwt_secret to be set for the
+  # identity_validation.reset_password block, so we configure it here.
+  # The chart sets AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE
+  # from configMap.identity_validation.reset_password.secret below, which
+  # Authelia reads as identity_validation.reset_password.jwt_secret.
+  identity_validation:
+    reset_password:
+      # Reuse the session Secret for the JWT secret. The Secret is also
+      # mounted for session.encryption_key, so the file is already there.
+      secret:
+        disabled: false
+        secret_name: authelia-session-secret
+        path: value
+
+  # No SMTP. The "filesystem" notifier writes reset emails to a local
+  # file instead of sending them. Required for the config to validate
+  # but unused in our setup.
+  notifier:
+    filesystem:
+      enabled: true
+      filename: '/config/notifier.log'
+
+  # OIDC provider. The chart sets AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET_FILE
+  # from identity_providers.oidc.hmac_secret below, which Authelia reads as
+  # identity_providers.oidc.hmac_secret. Each OIDC client's client_secret
+  # is rendered directly into the configMap by files/configuration.oidc.client.yaml
+  # as a '{{ secret "<path>" }}' template directive that Authelia's
+  # X_AUTHELIA_CONFIG_FILTERS=template env var resolves at startup.
+  identity_providers:
+    oidc:
+      enabled: true
+      hmac_secret:
+        disabled: false
+        secret_name: authelia-oidc-hmac-secret
+        path: hmac-secret
+      jwks:
+        - key_id: default-rsa-key
+          algorithm: RS256
+          use: sig
+          key:
+            path: /secrets/authelia-oidc-rsa-key/tls.key
+      clients:
+        - client_id: 'grafana'
+          client_secret:
+            # Mounted by secret.additionalSecrets at
+            # /secrets/authelia-grafana-client-secret/client-secret
+            path: /secrets/authelia-grafana-client-secret/client-secret
+          public: false
+          token_endpoint_auth_method: 'client_secret_post'
+          authorization_policy: 'one_factor'
+          redirect_uris:
+            - 'https://grafana.drmarchent.com/login/generic_oauth'
+          scopes:
+            - 'openid'
+            - 'profile'
+            - 'email'
+            - 'groups'
+          grant_types:
+            - 'authorization_code'
+          response_types:
+            - 'code'
+          response_modes:
+            - 'query'
+
+# ---------------------------------------------------------------------------
+# Longhorn-backed PVC for the filesystem notifier log at /config/notifier.log.
+# The SQL storage is PostgreSQL (no on-disk DB); this PVC is only needed
+# because notifier.filesystem.filename points into /config.
+# ---------------------------------------------------------------------------
 persistence:
   enabled: true
   size: 1Gi
