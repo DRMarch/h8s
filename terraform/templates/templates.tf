@@ -224,3 +224,47 @@ resource "local_file" "garage_bucket_key" {
     })
 }
 
+##################
+## Authelia ESO ##
+##################
+# ExternalSecrets that pull static values from Vault (replaces ESO Password generators)
+
+resource "local_file" "authelia_encryption_key_externalsecret" {
+    filename = "${path.module}/${local.project_root}/security/authelia/helm/resources/encryption-key-externalsecret.yaml"
+    content = templatefile("${path.module}/templates/security/authelia/encryption-key-externalsecret.yaml.tftpl", {})
+}
+
+resource "local_file" "authelia_session_secret_externalsecret" {
+    filename = "${path.module}/${local.project_root}/security/authelia/helm/resources/session-secret-externalsecret.yaml"
+    content = templatefile("${path.module}/templates/security/authelia/session-secret-externalsecret.yaml.tftpl", {})
+}
+
+resource "local_file" "authelia_hmac_secret_externalsecret" {
+    filename = "${path.module}/${local.project_root}/security/authelia/helm/resources/hmac-secret-externalsecret.yaml"
+    content = templatefile("${path.module}/templates/security/authelia/hmac-secret-externalsecret.yaml.tftpl", {})
+}
+
+resource "local_file" "authelia_admin_password_externalsecret" {
+    filename = "${path.module}/${local.project_root}/security/authelia/helm/resources/admin-password-externalsecret.yaml"
+    content = templatefile("${path.module}/templates/security/authelia/admin-password-externalsecret.yaml.tftpl", {})
+}
+
+resource "local_file" "authelia_grafana_client_secret_externalsecret" {
+    filename = "${path.module}/${local.project_root}/security/authelia/helm/resources/grafana-client-secret-externalsecret.yaml"
+    content = templatefile("${path.module}/templates/security/authelia/grafana-client-secret-externalsecret.yaml.tftpl", {})
+}
+
+resource "local_file" "authelia_cnpg_credentials_externalsecret" {
+    filename = "${path.module}/${local.project_root}/security/authelia/helm/resources/cnpg-credentials-externalsecret.yaml"
+    content = templatefile("${path.module}/templates/security/authelia/cnpg-credentials-externalsecret.yaml.tftpl", {})
+}
+
+#####################
+## Grafana OIDC ESO ##
+#####################
+
+resource "local_file" "grafana_oidc_client_secret_externalsecret" {
+    filename = "${path.module}/${local.project_root}/monitoring/grafana/resources/oidc-client-secret-externalsecret.yaml"
+    content = templatefile("${path.module}/templates/monitoring/grafana/grafana-oidc-client-secret-externalsecret.yaml.tftpl", {})
+}
+

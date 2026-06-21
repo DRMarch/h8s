@@ -6,11 +6,10 @@
 # All Authelia configuration (server, session, storage, access_control,
 # OIDC, etc.) is expressed as structured values under configMap.* below and
 # rendered into the `authelia` ConfigMap by the chart's
-# templates/configMap.yaml. The four backing Secrets (session, storage
-# encryption, OIDC HMAC, Grafana client) are declared once in
-# secret.additionalSecrets; the chart mounts each as a directory at
-# /secrets/<secret_name>/ and sets the corresponding *_FILE env var that
-# Authelia reads at startup.
+# templates/configMap.yaml. Backing Secrets are populated by ESO
+# ExternalSecrets from Vault and declared in secret.additionalSecrets;
+# the chart mounts each as a directory at /secrets/<secret_name>/ and sets
+# the corresponding *_FILE env var that Authelia reads at startup.
 #
 # The admin-password Secret and the users-database emptyDir are kept in
 # pod.extraVolumes because they back the generate-users-db init container,
@@ -38,17 +37,15 @@ pod:
       runAsUser: 1000
       runAsGroup: 1000
 
-  # Init container generates /shared/users_database.yml at startup by
-  # hashing the auto-generated admin password from the Secret.
+  # Init container reads the pre-hashed admin password from the Secret
+  # mounted at /secrets/admin-password/ and writes the users database.
   initContainers:
     - name: generate-users-db
       image: ghcr.io/authelia/authelia:latest
       command: ["/bin/sh", "-c"]
       args:
         - |
-          PASSWORD=$(cat /secrets/admin-password/password)
-          HASH=$(/app/authelia crypto hash generate argon2 --password "$PASSWORD" --no-confirm)
-          HASH=${HASH#Digest: }
+          HASH=$(cat /secrets/admin-password/hash)
           printf 'users:\n  admin:\n    displayname: Homelab Admin\n    password: '\''%s'\''\n    email: admin@drmarchent.com\n    groups:\n      - admins\n' "$HASH" > /shared/users_database.yml
       volumeMounts:
         - name: authelia-admin-password
@@ -96,10 +93,10 @@ ingress:
 #
 # Secret data keys (must match the ExternalSecret definitions in
 # security/authelia/resources/*-externalsecret.yaml):
-#   authelia-session-secret        -> key: value
-#   authelia-storage-encryption-key -> key: value
-#   authelia-oidc-hmac-secret      -> key: hmac-secret
-#   authelia-grafana-client-secret -> key: client-secret
+#   authelia-session-secret        -> key: session-secret
+#   authelia-encryption-key        -> key: encryption-key
+#   authelia-hmac-secret           -> key: hmac-secret
+#   authelia-grafana-client-secret -> key: client-secret-hash
 # ---------------------------------------------------------------------------
 secret:
   # Use one of our existing Secrets as the "chart-managed" Secret reference
@@ -115,8 +112,8 @@ secret:
   existingSecret: 'authelia-session-secret'
   additionalSecrets:
     authelia-session-secret: {}
-    authelia-storage-encryption-key: {}
-    authelia-oidc-hmac-secret: {}
+    authelia-encryption-key: {}
+    authelia-hmac-secret: {}
     authelia-grafana-client-secret: {}
     cnpg-authelia-user-credentials: {}
     authelia-oidc-rsa-key: {}
@@ -177,13 +174,13 @@ configMap:
   # session.secret. (The chart's "encryption_key" naming is historical
   # and confusingly maps to Authelia's session.secret env var.)
   session:
-    # Path inside authelia-session-secret (key: value). Combined with
+    # Path inside authelia-session-secret (key: session-secret). Combined with
     # secret_name, the chart sets AUTHELIA_SESSION_SECRET_FILE to
-    # /secrets/authelia-session-secret/value.
+    # /secrets/authelia-session-secret/session-secret.
     encryption_key:
       disabled: false
       secret_name: authelia-session-secret
-      path: value
+      path: session-secret
     cookies:
       # authelia_url is auto-computed by the chart from subdomain+domain
       # (see authelia.ingress.uri). Setting subdomain=auth + domain=
@@ -210,8 +207,8 @@ configMap:
   #   - The chart mounts the same Secret at /secrets/ and sets
   #     AUTHELIA_STORAGE_POSTGRES_PASSWORD_FILE=...password, so Authelia
   #     reads the same value.
-  # The password is auto-generated once by the mittwald
-  # kubernetes-secret-generator annotation on the Secret manifest.
+  # The password is provisioned by ESO from Vault (see
+  # terraform/templates/security/authelia/cnpg-credentials-externalsecret.yaml.tftpl).
   storage:
     # Required to keep `false` even though unused — the chart still emits
     # both blocks into the rendered ConfigMap and Authelia refuses to
@@ -233,8 +230,8 @@ configMap:
     # which SQL backend is in use.
     encryption_key:
       disabled: false
-      secret_name: authelia-storage-encryption-key
-      path: value
+      secret_name: authelia-encryption-key
+      path: encryption-key
 
   # Per-domain access control. First matching rule wins.
   # Single admin user — any authenticated user has full access.
@@ -262,7 +259,7 @@ configMap:
       secret:
         disabled: false
         secret_name: authelia-session-secret
-        path: value
+        path: session-secret
 
   # No SMTP. The "filesystem" notifier writes reset emails to a local
   # file instead of sending them. Required for the config to validate
@@ -283,7 +280,7 @@ configMap:
       enabled: true
       hmac_secret:
         disabled: false
-        secret_name: authelia-oidc-hmac-secret
+        secret_name: authelia-hmac-secret
         path: hmac-secret
       jwks:
         - key_id: default-rsa-key
@@ -295,8 +292,8 @@ configMap:
         - client_id: 'grafana'
           client_secret:
             # Mounted by secret.additionalSecrets at
-            # /secrets/authelia-grafana-client-secret/client-secret
-            path: /secrets/authelia-grafana-client-secret/client-secret
+            # /secrets/authelia-grafana-client-secret/client-secret-hash
+            path: /secrets/authelia-grafana-client-secret/client-secret-hash
           public: false
           token_endpoint_auth_method: 'client_secret_post'
           authorization_policy: 'one_factor'
