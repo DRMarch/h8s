@@ -8,6 +8,8 @@ spec:
     - name: lan-gateway
       namespace: default
       sectionName: home-lan-auth
+    - name: cloudflare-gateway
+      namespace: cloudflare
   hostnames:
     - auth.${kubernetes_domain}
   rules:
