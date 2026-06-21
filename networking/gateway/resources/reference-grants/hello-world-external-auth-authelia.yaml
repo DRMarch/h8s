@@ -1,13 +1,13 @@
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant
 metadata:
-  name: grafana-external-auth-authelia
+  name: hello-world-external-auth-authelia
   namespace: authelia
 spec:
   from:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
-      namespace: monitoring
+      namespace: hello-world
   to:
     - group: ""
       kind: Service

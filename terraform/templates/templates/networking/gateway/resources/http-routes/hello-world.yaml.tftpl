@@ -17,6 +17,36 @@ spec:
         - path:
             type: PathPrefix
             value: /
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Host
+                value: helloworld.${kubernetes_domain}
+              - name: X-Forwarded-Proto
+                value: https
+        - type: ExternalAuth
+          externalAuth:
+            protocol: HTTP
+            backendRef:
+              name: authelia
+              namespace: authelia
+              port: 80
+            http:
+              path: /api/authz/ext-authz/
+              allowedHeaders:
+                - accept
+                - host
+                - cookie
+                - authorization
+                - proxy-authorization
+                - x-forwarded-method
+                - x-forwarded-uri
+                - x-forwarded-host
+                - x-forwarded-proto
+                - x-forwarded-for
+                - x-real-ip
+                - x-envoy-original-path
       backendRefs:
         - name: nginx-hello-world
           port: 80

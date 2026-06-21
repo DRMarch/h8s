@@ -278,6 +278,11 @@ configMap:
   identity_providers:
     oidc:
       enabled: true
+      # Workaround for Grafana's non-conformant OIDC client.
+      # https://www.authelia.com/integration/openid-connect/clients/grafana/
+      claims_policies:
+        grafana:
+          id_token: ['email', 'name', 'groups', 'preferred_username']
       hmac_secret:
         disabled: false
         secret_name: authelia-hmac-secret
@@ -290,6 +295,7 @@ configMap:
             path: /secrets/authelia-oidc-rsa-key/tls.key
       clients:
         - client_id: 'grafana'
+          claims_policy: 'grafana'
           client_secret:
             # Mounted by secret.additionalSecrets at
             # /secrets/authelia-grafana-client-secret/client-secret-hash

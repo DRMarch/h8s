@@ -20,10 +20,11 @@ resources:
   - ./reference-grants/lan-gateway-grafana-tls.yaml
   - ./reference-grants/lan-gateway-harbor-tls.yaml
   - ./reference-grants/harbor-external-auth-authelia.yaml
-  - ./reference-grants/grafana-external-auth-authelia.yaml
   - ./reference-grants/lan-gateway-hello-world-tls.yaml
+  - ./reference-grants/hello-world-external-auth-authelia.yaml
   - ./reference-grants/lan-gateway-renovate-tls.yaml
   - ./reference-grants/lan-gateway-hubble-tls.yaml
+  - ./reference-grants/hubble-external-auth-authelia.yaml
 patches:
   - target:
       kind: ReferenceGrant
