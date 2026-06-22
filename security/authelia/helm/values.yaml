@@ -321,7 +321,11 @@ configMap:
           client_secret:
             path: /secrets/authelia-endurain-client-secret/client-secret-hash
           public: false
-          token_endpoint_auth_method: 'client_secret_post'
+          # client_secret_basic is the OIDC default and matches what
+          # authlib (Endurain's OIDC client) sends. The Grafana client
+          # above uses client_secret_post because Grafana doesn't
+          # support Basic auth; Endurain does, so we keep the default.
+          token_endpoint_auth_method: 'client_secret_basic'
           authorization_policy: 'one_factor'
           redirect_uris:
             - 'https://endurain.drmarchent.com/api/v1/public/idp/callback/authelia'

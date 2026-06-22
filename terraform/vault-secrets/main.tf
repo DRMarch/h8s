@@ -15,6 +15,8 @@
 #   - authelia/endurain-oidc         -> client-secret-hash (pbkdf2)
 #                                      client-secret-plaintext
 #   - cnpg/authelia-user-credentials -> username, password
+#   - endurain/fernet-key           -> fernet_key  (url-safe base64, 44 chars)
+#   - endurain/secret-key           -> secret_key  (url-safe base64, 44 chars)
 #
 # Requires:
 #   - Vault initialised and unsealed
@@ -59,6 +61,43 @@ resource "random_password" "cnpg_authelia_password" {
   length           = 32
   special          = true
   override_special = "!#%&*()-_=+[]{}<>?"
+}
+
+# Endurain application secrets. The previous setup used the
+# `kubernetes-secret-generator` annotation on the Secret manifest, but
+# that chart only generates a fixed-length random string and has no
+# per-key type awareness — it produced a 40-char random string for
+# `fernet_key` which Fernet rejects (`ValueError: Fernet key must be 32
+# url-safe base64-encoded bytes`). These resources generate the
+# correct format: 32 random bytes, base64url-encoded (= 44 chars with
+# the `=` padding, which Fernet accepts).
+resource "random_bytes" "endurain_fernet_key" {
+  length = 32
+}
+
+resource "random_bytes" "endurain_secret_key" {
+  length = 32
+}
+
+locals {
+  # `random_bytes` exposes `.base64` directly (standard base64 with
+  # '+', '/' and '='). Fernet requires the url-safe alphabet, so swap
+  # '+' -> '-' and '/' -> '_'. The trailing '=' padding is preserved
+  # and accepted by Fernet.
+  endurain_fernet_key_b64 = replace(
+    replace(
+      random_bytes.endurain_fernet_key.base64,
+      "+", "-",
+    ),
+    "/", "_",
+  )
+  endurain_secret_key_b64 = replace(
+    replace(
+      random_bytes.endurain_secret_key.base64,
+      "+", "-",
+    ),
+    "/", "_",
+  )
 }
 
 # ---- Vault Push: Encryption Key ----
@@ -309,6 +348,46 @@ resource "null_resource" "vault_cnpg_authelia_credentials" {
   }
 }
 
+# ---- Vault Push: Endurain Fernet Key ----
+
+resource "null_resource" "vault_endurain_fernet_key" {
+  triggers = {
+    value = local.endurain_fernet_key_b64
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      VAULT_TOKEN=$(jq -r '.root_token' ${var.vault_token_file})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/endurain/fernet-key \
+          fernet_key='${local.endurain_fernet_key_b64}'
+      "
+    EOT
+  }
+}
+
+# ---- Vault Push: Endurain Session Secret Key ----
+
+resource "null_resource" "vault_endurain_secret_key" {
+  triggers = {
+    value = local.endurain_secret_key_b64
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      VAULT_TOKEN=$(jq -r '.root_token' ${var.vault_token_file})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/endurain/secret-key \
+          secret_key='${local.endurain_secret_key_b64}'
+      "
+    EOT
+  }
+}
+
 # ---- Outputs (plaintext values for reference) ----
 
 output "authelia_admin_password" {
@@ -328,5 +407,15 @@ output "endurain_oidc_client_secret" {
 
 output "cnpg_authelia_password" {
   value     = random_password.cnpg_authelia_password.result
+  sensitive = true
+}
+
+output "endurain_fernet_key" {
+  value     = local.endurain_fernet_key_b64
+  sensitive = true
+}
+
+output "endurain_secret_key" {
+  value     = local.endurain_secret_key_b64
   sensitive = true
 }

@@ -3,7 +3,7 @@ kind: Kustomization
 namespace: endurain
 resources:
   - ./pvc.yaml
-  - ./secret-key.yaml
-  - ./fernet-key.yaml
+  - ./secret-key-externalsecret.yaml
+  - ./fernet-key-externalsecret.yaml
   - ./deployment.yaml
   - ./service.yaml
