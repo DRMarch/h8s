@@ -1,3 +1,62 @@
 {
-    "$schema": "https://docs.renovatebot.com/renovate-schema.json"
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:recommended"
+    ],
+    "enabledManagers": [
+        "argocd",
+        "helm-values",
+        "kubernetes",
+        "dockerfile",
+        "devbox"
+    ],
+    "argocd": {
+        "managerFilePatterns": [
+            "^ci-cd/argo-cd/applications/.+\\.yaml$"
+        ]
+    },
+    "kubernetes": {
+        "managerFilePatterns": [
+            "^ci-cd/renovate/resources/.+\\.yaml$"
+        ]
+    },
+    "helm-values": {
+        "managerFilePatterns": [
+            "/(^|/)values\\.ya?ml$/"
+        ]
+    },
+    "customManagers": [
+        {
+            "customType": "regex",
+            "description": "Update Argo CD Helm chart version in README install snippet",
+            "fileMatch": [
+                "^ci-cd/argo-cd/README\\.md$"
+            ],
+            "matchStrings": [
+                "export ARGOCD_HELM_VER=(?<currentValue>\\d+\\.\\d+\\.\\d+)"
+            ],
+            "datasourceTemplate": "helm",
+            "depNameTemplate": "argo-cd",
+            "registryUrlTemplate": "https://argoproj.github.io/argo-helm"
+        }
+    ],
+    "packageRules": [
+        {
+            "description": "Allow Cilium pre-release updates",
+            "matchManagers": ["argocd"],
+            "matchPackageNames": ["cilium"],
+            "matchDatasources": ["helm"],
+            "ignoreUnstable": false
+        },
+        {
+            "description": "Optional: automerge patch and minor Helm chart updates",
+            "matchManagers": ["argocd"],
+            "matchUpdateTypes": ["patch", "minor"],
+            "automerge": true,
+            "automergeType": "pr",
+            "platformAutomerge": true
+        }
+    ],
+    "dependencyDashboard": true,
+    "dependencyDashboardTitle": "Renovate Dependency Dashboard"
 }
