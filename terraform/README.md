@@ -20,8 +20,12 @@ authelia/encryption-key
 authelia/session-secret
 authelia/hmac-secret
 authelia/admin-password
+authelia/guest-password
 authelia/grafana-oidc
+authelia/endurain-oidc
 cnpg/authelia-user-credentials
+endurain/fernet-key
+endurain/secret-key
        │
        │  ESO ExternalSecret pulls
        ▼
@@ -29,7 +33,7 @@ templates/templates/*.tftpl         ← renders ExternalSecret YAMLs (no variabl
        │
        │  ArgoCD applies
        ▼
-K8s Secrets → ESO mounts → Authelia / Grafana read
+K8s Secrets → ESO mounts → Authelia / Grafana / Endurain read
 ```
 
 ## Templates workspace (`templates/`)
@@ -86,11 +90,40 @@ Edit [`vault-secrets/variables.tf`](./vault-secrets/variables.tf):
 
 ### Outputs (sensitive)
 
+All values that are recoverable in plaintext live as Terraform outputs. The user-facing login passwords are `authelia_admin_password` and `authelia_guest_password`; the rest are application-to-application credentials (OIDC client secrets, DB passwords, app encryption keys) you typically only need for debugging or rotation.
+
 ```bash
-terraform output -raw authelia_admin_password    # Authelia login password
-terraform output -raw grafana_oidc_client_secret  # Grafana OIDC plaintext secret
-terraform output -raw cnpg_authelia_password      # CNPG database password
+# Standard users (hand these out to humans)
+terraform output -raw authelia_admin_password     # Admin login at https://auth.drmarchent.com
+terraform output -raw authelia_guest_password     # Guest login (forward-auth only, no OIDC)
+
+# OIDC client secrets (between Authelia and the relying party)
+terraform output -raw grafana_oidc_client_secret   # Grafana -> Authelia token exchange
+terraform output -raw endurain_oidc_client_secret  # Endurain -> Authelia token exchange
+
+# Database + app secrets (rarely needed; keep safe)
+terraform output -raw cnpg_authelia_password       # Postgres role `authelia`
+terraform output -raw endurain_fernet_key          # Endurain Fernet key
+terraform output -raw endurain_secret_key          # Endurain session secret
 ```
+
+**Persisting for later:** Terraform does not retain sensitive outputs across `terraform apply` runs once the state is read. To preserve them after the initial bootstrap:
+
+```bash
+terraform output -json > terraform.tfstate.outputs.json
+chmod 600 terraform.tfstate.outputs.json
+```
+
+Then retrieve later with:
+
+```bash
+terraform output -raw authelia_guest_password      # works as long as state is intact
+# OR, if the state is gone but Vault still has the value:
+kubectl exec -n vault vault-0 -- \
+  vault kv get -format=json kubernetes-homelab/authelia/guest-password
+```
+
+> **Note:** for the `authelia/*-password` paths, Vault only stores the **argon2 hash**, not the plaintext. Once the Terraform state is lost, the plaintext is unrecoverable and the user must be reset (see "Rotation" in `security/authelia/README.md`).
 
 ### Secrets generated
 
@@ -99,6 +132,10 @@ terraform output -raw cnpg_authelia_password      # CNPG database password
 | `kubernetes-homelab/authelia/encryption-key` | `encryption-key` | Authelia storage encryption |
 | `kubernetes-homelab/authelia/session-secret` | `session-secret` | Authelia session + identity validation |
 | `kubernetes-homelab/authelia/hmac-secret` | `hmac-secret` | Authelia OIDC token signing |
-| `kubernetes-homelab/authelia/admin-password` | `hash` (argon2) | Authelia init container |
+| `kubernetes-homelab/authelia/admin-password` | `hash` (argon2) | Authelia init container — `admin` user |
+| `kubernetes-homelab/authelia/guest-password` | `hash` (argon2) | Authelia init container — `guest` user (restricted) |
 | `kubernetes-homelab/authelia/grafana-oidc` | `client-secret-hash` (pbkdf2), `client-secret-plaintext` | Authelia (hash) + Grafana (plaintext) |
+| `kubernetes-homelab/authelia/endurain-oidc` | `client-secret-hash` (pbkdf2), `client-secret-plaintext` | Authelia (hash) + Endurain (plaintext) |
 | `kubernetes-homelab/cnpg/authelia-user-credentials` | `username`, `password` | CNPG + Authelia Postgres auth |
+| `kubernetes-homelab/endurain/fernet-key` | `fernet_key` | Endurain Fernet crypto |
+| `kubernetes-homelab/endurain/secret-key` | `secret_key` | Endurain session signing |

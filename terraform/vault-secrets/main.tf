@@ -47,6 +47,11 @@ resource "random_password" "authelia_admin_password" {
   override_special = "!#%&*()-_=+[]{}<>?"
 }
 
+resource "random_password" "authelia_guest_password" {
+  length  = 12
+  special = false
+}
+
 resource "random_password" "authelia_grafana_oidc_plaintext" {
   length  = 64
   special = false
@@ -209,6 +214,61 @@ resource "null_resource" "vault_authelia_admin_password" {
       kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
         export VAULT_TOKEN='$VAULT_TOKEN'
         vault kv put ${var.vault_kv_mount}/authelia/admin-password \
+          hash='$HASH'
+      "
+    EOT
+  }
+}
+
+# ---- Vault Push: Guest Password (argon2 hashed) ----
+
+resource "null_resource" "vault_authelia_guest_password" {
+  triggers = {
+    password = random_password.authelia_guest_password.result
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      # Authelia 4.39+ requires authentication_backend.file to be configured
+      # for the `crypto hash generate` subcommand. Mount a minimal stub config
+      # so the CLI loads; the file path is unused by hash generation itself.
+      TMP_CONFIG=$(mktemp)
+      trap 'rm -f "$TMP_CONFIG"' EXIT
+      cat > "$TMP_CONFIG" <<EOF
+      authentication_backend:
+        file:
+          path: /dev/null
+      EOF
+
+      if ! RAW=$(docker run --rm \
+          -v "$TMP_CONFIG:/config/configuration.yml:ro" \
+          ${var.authelia_docker_image} \
+          authelia crypto hash generate argon2 \
+          --password '${random_password.authelia_guest_password.result}' \
+          --no-confirm 2>&1); then
+        echo "ERROR: authelia crypto hash generate (argon2) for guest failed. Output:" >&2
+        echo "$RAW" >&2
+        exit 1
+      fi
+      HASH=$(echo "$RAW" | sed -n 's/^Digest: //p' | tr -d '\r\n ')
+
+      case "$HASH" in
+        '$'*) ;;
+        *) echo "ERROR: authelia guest password hash invalid. Raw output:" >&2
+           echo "$RAW" >&2
+           echo "Extracted hash: '$HASH'" >&2
+           exit 1 ;;
+      esac
+      if echo "$HASH" | grep -q ' '; then
+        echo "ERROR: authelia guest password hash contains whitespace: $HASH" >&2
+        exit 1
+      fi
+
+      VAULT_TOKEN=$(jq -r '.root_token' ${var.vault_token_file})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/authelia/guest-password \
           hash='$HASH'
       "
     EOT
@@ -392,6 +452,11 @@ resource "null_resource" "vault_endurain_secret_key" {
 
 output "authelia_admin_password" {
   value     = random_password.authelia_admin_password.result
+  sensitive = true
+}
+
+output "authelia_guest_password" {
+  value     = random_password.authelia_guest_password.result
   sensitive = true
 }
 

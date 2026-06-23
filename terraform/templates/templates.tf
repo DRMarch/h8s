@@ -263,6 +263,11 @@ resource "local_file" "authelia_admin_password_externalsecret" {
     content = templatefile("${path.module}/templates/security/authelia/admin-password-externalsecret.yaml.tftpl", {})
 }
 
+resource "local_file" "authelia_guest_password_externalsecret" {
+    filename = "${path.module}/${local.project_root}/security/authelia/helm/resources/guest-password-externalsecret.yaml"
+    content = templatefile("${path.module}/templates/security/authelia/guest-password-externalsecret.yaml.tftpl", {})
+}
+
 resource "local_file" "authelia_grafana_client_secret_externalsecret" {
     filename = "${path.module}/${local.project_root}/security/authelia/helm/resources/grafana-client-secret-externalsecret.yaml"
     content = templatefile("${path.module}/templates/security/authelia/grafana-client-secret-externalsecret.yaml.tftpl", {})
