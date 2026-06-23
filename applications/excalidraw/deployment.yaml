@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: excalidraw
-          image: excalidraw/excalidraw@sha256:3d243e15afde6c6511be36b14cef3d095b9d91bcd35ba98aca3b546f4b477df9
+          image: excalidraw/excalidraw@sha256:4542f30bea392b833822d0e7db4fa2220e6706ca962c082add2665159fa91758
           imagePullPolicy: Always
           ports:
             - name: http
