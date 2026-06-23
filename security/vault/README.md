@@ -149,13 +149,37 @@ vault kv put kubernetes-homelab/argo-events/github-app private-key="$ARGO_EVENTS
 ##### Renovate
 
 The Renovate GitHub PAT is managed by Terraform (`terraform/vault-secrets/`).
-If you haven't already, set up `secrets.auto.tfvars`:
 
-1. Copy the template: `cp terraform/vault-secrets/secrets.example.tfvars terraform/vault-secrets/secrets.auto.tfvars`
-2. Fill in your Vault root token and GitHub fine-grained PAT
-3. Create a PAT at https://github.com/settings/personal-access-tokens with
-   Contents (r/w), Pull requests (r/w), Metadata (read-only)
-4. Run `terraform apply` from `terraform/vault-secrets/`
+**1. Create a GitHub fine-grained PAT** (https://github.com/settings/personal-access-tokens → "Generate new token" → "Fine-grained token"):
+
+- **Token name**: e.g. `renovate-h8s`
+- **Resource owner**: your account
+- **Expiration**: pick one (rotate before it expires)
+- **Repository access**: "Only select repositories" → select `DRMarch/h8s`
+- **Permissions → Repository permissions** (all others: "No access"):
+  - **Contents**: Read and write
+  - **Pull requests**: Read and write
+  - **Metadata**: Read-only (auto-set, but verify)
+
+> ⚠️ A read-only PAT will let Renovate authenticate but fail when pushing, with:
+> `remote: Permission to DRMarch/h8s.git denied to DRMarch. ... 403`
+> The PAT MUST have Contents: Write and Pull requests: Write.
+
+**2. Set up `secrets.auto.tfvars`**:
+
+```bash
+cp terraform/vault-secrets/secrets.example.tfvars terraform/vault-secrets/secrets.auto.tfvars
+$EDITOR terraform/vault-secrets/secrets.auto.tfvars
+```
+
+Fill in `vault_token` and `github_pat_token` (the value from step 1).
+
+**3. Run Terraform**:
+
+```bash
+cd terraform/vault-secrets
+terraform apply
+```
 
 The Terraform pushes the PAT to `kubernetes-homelab/renovate/github` (key `token`).
 The renovate-operator picks it up via the ExternalSecret at

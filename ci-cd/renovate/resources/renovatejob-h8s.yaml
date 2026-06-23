@@ -1,0 +1,26 @@
+apiVersion: renovate-operator.mogenius.com/v1alpha1
+kind: RenovateJob
+metadata:
+  name: renovate-h8s
+  namespace: renovate-operator
+  annotations:
+    renovate-operator.mogenius.com/display-name: "h8s homelab"
+spec:
+  schedule: "0 19 * * *"
+  image: renovate/renovate:43.104.1
+  secretRef: renovate-secret
+  extraEnv:
+    - name: RENOVATE_GIT_AUTHOR
+      value: "DRMarch <drmarchent@gmail.com>"
+  discoveryFilters:
+    - "DRMarch/h8s"
+  provider:
+    name: github
+  parallelism: 1
+  skipForks: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
