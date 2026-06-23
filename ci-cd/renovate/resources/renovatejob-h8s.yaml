@@ -1,0 +1,39 @@
+apiVersion: renovate-operator.mogenius.com/v1alpha1
+kind: RenovateJob
+metadata:
+  name: renovate-h8s
+  namespace: renovate-operator
+  annotations:
+    renovate-operator.mogenius.com/display-name: "h8s homelab"
+spec:
+  schedule: "0 19 * * *"
+  image: renovate/renovate:43.104.1
+  secretRef: renovate-secret
+  discoveryFilters:
+    - "DRMarch/h8s"
+  provider:
+    name: github
+  parallelism: 1
+  skipForks: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+  # Security context for the discovery + execution pods.
+  securityContext:
+    pod:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+      runAsNonRoot: true
+    container:
+      runAsUser: 1000
+      runAsGroup: 1000
+      runAsNonRoot: true
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
