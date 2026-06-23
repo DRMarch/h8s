@@ -66,12 +66,12 @@
       }
     },
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
-      "last_modified": "2025-10-16T06:36:44Z",
-      "resolved": "github:NixOS/nixpkgs/3cbe716e2346710d6e1f7c559363d14e11c32a43?lastModified=1760596604&narHash=sha256-J%2Fi5K6AAz%2Fy5dBePHQOuzC7MbhyTOKsd%2FGLezSbEFiM%3D"
+      "last_modified": "2026-06-22T09:00:13Z",
+      "resolved": "github:NixOS/nixpkgs/b3c092d3c36d91e2f61f3dfb39a159f180a56659?lastModified=1782118813&narHash=sha256-BnbXO5s5EhV89lLXMAGCzPdEN5a6vNqvMk71obeTEUw%3D"
     },
     "helm@0.9.0": {
-      "last_modified": "2025-10-07T08:41:47Z",
-      "resolved": "github:NixOS/nixpkgs/bce5fe2bb998488d8e7e7856315f90496723793c#helm",
+      "last_modified": "2026-05-21T08:15:18Z",
+      "resolved": "github:NixOS/nixpkgs/4a29d733e8a7d5b824c3d8c958a946a9867b3eb2#helm",
       "source": "devbox-search",
       "version": "0.9.0",
       "systems": {
@@ -79,21 +79,21 @@
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/bipp93ab9hpzd7xf3k34fm65a49r9j6p-helm-0.9.0",
+              "path": "/nix/store/vbcgk7iswlg02n33jsxscrm8jjaksczn-helm-0.9.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/bipp93ab9hpzd7xf3k34fm65a49r9j6p-helm-0.9.0"
+          "store_path": "/nix/store/vbcgk7iswlg02n33jsxscrm8jjaksczn-helm-0.9.0"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/wb74582zb06mpjsxq85anawn693sn9ah-helm-0.9.0",
+              "path": "/nix/store/21ysjpyqfaxzdsxsgydxvv7b42qf446l-helm-0.9.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/wb74582zb06mpjsxq85anawn693sn9ah-helm-0.9.0"
+          "store_path": "/nix/store/21ysjpyqfaxzdsxsgydxvv7b42qf446l-helm-0.9.0"
         }
       }
     },
