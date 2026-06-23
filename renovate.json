@@ -15,7 +15,7 @@
     "prConcurrentLimit": 0,
     "argocd": {
         "managerFilePatterns": [
-            "^ci-cd/argo-cd/.*/.*\\.ya?ml$/"
+            "/^ci-cd\\/argo-cd\\/.+\\.ya?ml$/"
         ]
     },
     "kubernetes": {
