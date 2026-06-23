@@ -34,7 +34,7 @@ spec:
       # into /app/frontend/dist at runtime to inject runtime config.
       initContainers:
         - name: init-permissions
-          image: busybox:1.37.0
+          image: busybox:1.38.0
           command:
             - sh
             - -c
