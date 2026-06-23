@@ -12,7 +12,7 @@ spec:
   sources:
     - repoURL: https://helm.goharbor.io
       chart: harbor
-      targetRevision: 1.19.0 # May 2026
+      targetRevision: 1.19.1 # May 2026
       helm:
         releaseName: harbor
         valueFiles:
