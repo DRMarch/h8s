@@ -148,10 +148,18 @@ vault kv put kubernetes-homelab/argo-events/github-app private-key="$ARGO_EVENTS
 
 ##### Renovate
 
-```bash
-export RENOVATE_GITHUB_APP_PRIVATE_KEY="<INSERT_YOUR_GITHUB_APP_PRIVATE_KEY_HERE>"
-vault kv put kubernetes-homelab/renovate/github-app private-key="$RENOVATE_GITHUB_APP_PRIVATE_KEY"
-```
+The Renovate GitHub PAT is managed by Terraform (`terraform/vault-secrets/`).
+If you haven't already, set up `secrets.auto.tfvars`:
+
+1. Copy the template: `cp terraform/vault-secrets/secrets.example.tfvars terraform/vault-secrets/secrets.auto.tfvars`
+2. Fill in your Vault root token and GitHub fine-grained PAT
+3. Create a PAT at https://github.com/settings/personal-access-tokens with
+   Contents (r/w), Pull requests (r/w), Metadata (read-only)
+4. Run `terraform apply` from `terraform/vault-secrets/`
+
+The Terraform pushes the PAT to `kubernetes-homelab/renovate/github` (key `token`).
+The renovate-operator picks it up via the ExternalSecret at
+`ci-cd/renovate/resources/github-token-secret.yaml`.
 
 #### Cloudflared Tunnel
 

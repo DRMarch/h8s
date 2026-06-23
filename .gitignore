@@ -5,3 +5,6 @@
 *.tfstate
 *.tfstate.*
 .terraform.tfstate.lock.info
+
+# Bring-your-own secrets file for Terraform vault-secrets
+**/secrets.auto.tfvars

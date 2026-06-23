@@ -1,9 +1,9 @@
 # ============================================================
-# Vault Secrets Provisioning — Authelia + CNPG
+# Vault Secrets Provisioning — Authelia + CNPG + Renovate
 # ============================================================
 # Provisions secret values in Vault for Authelia (encryption key,
-# session secret, HMAC secret, admin password, OIDC client secrets)
-# and CNPG (database credentials).
+# session secret, HMAC secret, admin password, OIDC client secrets),
+# CNPG (database credentials), and the Renovate GitHub App.
 #
 # Generated secrets:
 #   - authelia/encryption-key        -> encryption-key
@@ -17,11 +17,15 @@
 #   - cnpg/authelia-user-credentials -> username, password
 #   - endurain/fernet-key           -> fernet_key  (url-safe base64, 44 chars)
 #   - endurain/secret-key           -> secret_key  (url-safe base64, 44 chars)
+#   - renovate/github               -> token (GitHub fine-grained PAT)
+#
+# Bring-your-own secrets (via secrets.auto.tfvars):
+#   - vault_token, github_pat_token
 #
 # Requires:
 #   - Vault initialised and unsealed
 #   - kubectl access to the cluster
-#   - VAULT_TOKEN available (or vault_token_file variable set)
+#   - secrets.auto.tfvars (or vault_token_file + -var flags)
 # ============================================================
 
 # ---- Random Password Generators ----
@@ -103,6 +107,9 @@ locals {
     ),
     "/", "_",
   )
+
+  # Resolve the Vault token — prefer direct vault_token, fall back to vault_token_file
+  vault_token_cmd = var.vault_token != "" ? "echo '${var.vault_token}'" : "jq -r '.root_token' ${var.vault_token_file}"
 }
 
 # ---- Vault Push: Encryption Key ----
@@ -115,7 +122,7 @@ resource "null_resource" "vault_authelia_encryption_key" {
   provisioner "local-exec" {
     command = <<-EOT
       set -e
-      VAULT_TOKEN=$(jq -r '.root_token' ${var.vault_token_file})
+      VAULT_TOKEN=$(${local.vault_token_cmd})
       kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
         export VAULT_TOKEN='$VAULT_TOKEN'
         vault kv put ${var.vault_kv_mount}/authelia/encryption-key \
@@ -135,7 +142,7 @@ resource "null_resource" "vault_authelia_session_secret" {
   provisioner "local-exec" {
     command = <<-EOT
       set -e
-      VAULT_TOKEN=$(jq -r '.root_token' ${var.vault_token_file})
+      VAULT_TOKEN=$(${local.vault_token_cmd})
       kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
         export VAULT_TOKEN='$VAULT_TOKEN'
         vault kv put ${var.vault_kv_mount}/authelia/session-secret \
@@ -155,7 +162,7 @@ resource "null_resource" "vault_authelia_hmac_secret" {
   provisioner "local-exec" {
     command = <<-EOT
       set -e
-      VAULT_TOKEN=$(jq -r '.root_token' ${var.vault_token_file})
+      VAULT_TOKEN=$(${local.vault_token_cmd})
       kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
         export VAULT_TOKEN='$VAULT_TOKEN'
         vault kv put ${var.vault_kv_mount}/authelia/hmac-secret \
@@ -210,7 +217,7 @@ resource "null_resource" "vault_authelia_admin_password" {
         exit 1
       fi
 
-      VAULT_TOKEN=$(jq -r '.root_token' ${var.vault_token_file})
+      VAULT_TOKEN=$(${local.vault_token_cmd})
       kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
         export VAULT_TOKEN='$VAULT_TOKEN'
         vault kv put ${var.vault_kv_mount}/authelia/admin-password \
@@ -265,7 +272,7 @@ resource "null_resource" "vault_authelia_guest_password" {
         exit 1
       fi
 
-      VAULT_TOKEN=$(jq -r '.root_token' ${var.vault_token_file})
+      VAULT_TOKEN=$(${local.vault_token_cmd})
       kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
         export VAULT_TOKEN='$VAULT_TOKEN'
         vault kv put ${var.vault_kv_mount}/authelia/guest-password \
@@ -320,7 +327,7 @@ resource "null_resource" "vault_authelia_grafana_oidc" {
         exit 1
       fi
 
-      VAULT_TOKEN=$(jq -r '.root_token' ${var.vault_token_file})
+      VAULT_TOKEN=$(${local.vault_token_cmd})
       kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
         export VAULT_TOKEN='$VAULT_TOKEN'
         vault kv put ${var.vault_kv_mount}/authelia/grafana-oidc \
@@ -376,7 +383,7 @@ resource "null_resource" "vault_authelia_endurain_oidc" {
         exit 1
       fi
 
-      VAULT_TOKEN=$(jq -r '.root_token' ${var.vault_token_file})
+      VAULT_TOKEN=$(${local.vault_token_cmd})
       kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
         export VAULT_TOKEN='$VAULT_TOKEN'
         vault kv put ${var.vault_kv_mount}/authelia/endurain-oidc \
@@ -397,7 +404,7 @@ resource "null_resource" "vault_cnpg_authelia_credentials" {
   provisioner "local-exec" {
     command = <<-EOT
       set -e
-      VAULT_TOKEN=$(jq -r '.root_token' ${var.vault_token_file})
+      VAULT_TOKEN=$(${local.vault_token_cmd})
       kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
         export VAULT_TOKEN='$VAULT_TOKEN'
         vault kv put ${var.vault_kv_mount}/cnpg/authelia-user-credentials \
@@ -418,7 +425,7 @@ resource "null_resource" "vault_endurain_fernet_key" {
   provisioner "local-exec" {
     command = <<-EOT
       set -e
-      VAULT_TOKEN=$(jq -r '.root_token' ${var.vault_token_file})
+      VAULT_TOKEN=$(${local.vault_token_cmd})
       kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
         export VAULT_TOKEN='$VAULT_TOKEN'
         vault kv put ${var.vault_kv_mount}/endurain/fernet-key \
@@ -438,11 +445,31 @@ resource "null_resource" "vault_endurain_secret_key" {
   provisioner "local-exec" {
     command = <<-EOT
       set -e
-      VAULT_TOKEN=$(jq -r '.root_token' ${var.vault_token_file})
+      VAULT_TOKEN=$(${local.vault_token_cmd})
       kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
         export VAULT_TOKEN='$VAULT_TOKEN'
         vault kv put ${var.vault_kv_mount}/endurain/secret-key \
           secret_key='${local.endurain_secret_key_b64}'
+      "
+    EOT
+  }
+}
+
+# ---- Vault Push: Renovate GitHub PAT ----
+
+resource "null_resource" "vault_github_pat" {
+  triggers = {
+    token = var.github_pat_token
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/renovate/github \
+          token='${var.github_pat_token}'
       "
     EOT
   }

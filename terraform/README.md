@@ -26,6 +26,7 @@ authelia/endurain-oidc
 cnpg/authelia-user-credentials
 endurain/fernet-key
 endurain/secret-key
+renovate/github                    (token — GitHub fine-grained PAT)
        │
        │  ESO ExternalSecret pulls
        ▼
@@ -33,7 +34,7 @@ templates/templates/*.tftpl         ← renders ExternalSecret YAMLs (no variabl
        │
        │  ArgoCD applies
        ▼
-K8s Secrets → ESO mounts → Authelia / Grafana / Endurain read
+K8s Secrets → ESO mounts → Authelia / Grafana / Endurain / Renovate read
 ```
 
 ## Templates workspace (`templates/`)
@@ -62,12 +63,35 @@ Edit [`templates/variables.tf`](./templates/variables.tf):
 
 ## Secrets workspace (`vault-secrets/`)
 
-Run once after Vault is initialised and unsealed:
+Run once after Vault is initialised and unsealed.
+
+### Quick start (recommended)
+
+The recommended workflow is to put all bring-your-own secrets in a single
+`secrets.auto.tfvars` file, which Terraform loads automatically — no `-var`
+flags needed:
+
+```bash
+cd terraform/vault-secrets
+cp secrets.example.tfvars secrets.auto.tfvars
+$EDITOR secrets.auto.tfvars      # fill in vault_token, github_app_id, etc.
+
+terraform init
+terraform apply
+```
+
+`secrets.auto.tfvars` is gitignored — never commit real values.
+
+### Legacy: passing variables on the CLI
+
+You can still pass variables on the command line (backward compatible):
 
 ```bash
 cd terraform/vault-secrets
 terraform init
-terraform apply -var='vault_token_file=/path/to/vault-init.json'
+terraform apply \
+  -var='vault_token_file=/path/to/vault-init.json' \
+  -var='github_pat_token=github_pat_xxxxxxxxxxxxx'
 ```
 
 Save the sensitive outputs:
@@ -85,8 +109,10 @@ Edit [`vault-secrets/variables.tf`](./vault-secrets/variables.tf):
 | `vault_namespace` | `vault` | K8s namespace where Vault runs |
 | `vault_pod` | `vault-0` | Vault pod name |
 | `vault_kv_mount` | `kubernetes-homelab` | Vault KV v2 mount path |
-| `vault_token_file` | *(required)* | Path to JSON file with `.root_token` key |
+| `vault_token_file` | `""` | Path to JSON file with `.root_token` key (fallback if `vault_token` not set) |
 | `authelia_docker_image` | `ghcr.io/authelia/authelia:latest` | Image for crypto hash generation |
+| `vault_token` | `""` | Vault root token (preferred over `vault_token_file`) |
+| `github_pat_token` | `""` | GitHub fine-grained PAT for Renovate |
 
 ### Outputs (sensitive)
 
@@ -139,3 +165,4 @@ kubectl exec -n vault vault-0 -- \
 | `kubernetes-homelab/cnpg/authelia-user-credentials` | `username`, `password` | CNPG + Authelia Postgres auth |
 | `kubernetes-homelab/endurain/fernet-key` | `fernet_key` | Endurain Fernet crypto |
 | `kubernetes-homelab/endurain/secret-key` | `secret_key` | Endurain session signing |
+| `kubernetes-homelab/renovate/github` | `token` | Renovate GitHub fine-grained PAT |
