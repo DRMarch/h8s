@@ -1,3 +1,87 @@
 {
-    "$schema": "https://docs.renovatebot.com/renovate-schema.json"
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:recommended"
+    ],
+    "enabledManagers": [
+        "argocd",
+        "helm-values",
+        "kubernetes",
+        "dockerfile",
+        "devbox"
+    ],
+    "automerge": false,
+    "prHourlyLimit": 0,
+    "prConcurrentLimit": 0,
+    "argocd": {
+        "managerFilePatterns": [
+            "^ci-cd/argo-cd/.*/.*\\.ya?ml$/"
+        ]
+    },
+    "kubernetes": {
+        "managerFilePatterns": [
+            "/.*\\.yaml$/",
+            "/.*\\.yml$/"
+        ]
+    },
+    "helm-values": {
+        "managerFilePatterns": [
+            "/(^|/)values\\.ya?ml$/"
+        ]
+    },
+    "lockFileMaintenance": {
+        "enabled": true
+    },
+    "customManagers": [
+        {
+            "customType": "regex",
+            "description": "Update Argo CD Helm chart version in README install snippet",
+            "fileMatch": [
+                "^ci-cd/argo-cd/README\\.md$"
+            ],
+            "matchStrings": [
+                "export ARGOCD_HELM_VER=(?<currentValue>\\d+\\.\\d+\\.\\d+)"
+            ],
+            "datasourceTemplate": "helm",
+            "depNameTemplate": "argo-cd",
+            "registryUrlTemplate": "https://argoproj.github.io/argo-helm"
+        }
+    ],
+    "packageRules": [
+        {
+            "description": "Label major updates for manual review",
+            "matchUpdateTypes": [
+                "major"
+            ],
+            "labels": [
+                "dependencies",
+                "major-update"
+            ]
+        },
+        {
+            "description": "Allow Cilium pre-release updates",
+            "matchManagers": [
+                "argocd"
+            ],
+            "matchPackageNames": [
+                "cilium"
+            ],
+            "matchDatasources": [
+                "helm"
+            ],
+            "ignoreUnstable": false
+        },
+        {
+            "description": "Ensure OCI Helm chart from ghcr.io/grafana is processed",
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchPackageNames": [
+                "ghcr.io/grafana/helm-charts/grafana-operator"
+            ],
+            "enabled": true
+        }
+    ],
+    "dependencyDashboard": true,
+    "dependencyDashboardTitle": "Renovate Dependency Dashboard"
 }
