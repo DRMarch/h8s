@@ -84,6 +84,18 @@ spec:
           - name: endurain-homelab-local-tls
             namespace: endurain
     - protocol: HTTPS
+      name: home-lan-excalidraw
+      hostname: excalidraw.${kubernetes_domain}
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: excalidraw-homelab-local-tls
+            namespace: excalidraw
+    - protocol: HTTPS
       name: home-lan-auth
       hostname: auth.${kubernetes_domain}
       port: 443

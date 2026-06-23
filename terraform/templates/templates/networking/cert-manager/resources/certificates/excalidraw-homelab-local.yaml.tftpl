@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: excalidraw-homelab-local
+  namespace: excalidraw
+spec:
+  secretName: excalidraw-homelab-local-tls
+  issuerRef:
+    name: vault-issuer
+    kind: ClusterIssuer
+  commonName: excalidraw.${kubernetes_domain}
+  dnsNames:
+    - excalidraw.${kubernetes_domain}

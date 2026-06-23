@@ -74,6 +74,13 @@ resource "local_file" "certificates_hubble" {
     })
 }
 
+resource "local_file" "certificates_excalidraw" {
+    filename = "${path.module}/${local.project_root}/networking/cert-manager/resources/certificates/excalidraw-homelab-local.yaml"
+    content = templatefile("${path.module}/templates/networking/cert-manager/resources/certificates/excalidraw-homelab-local.yaml.tftpl", {
+        kubernetes_domain = var.kubernetes_domain
+    })
+}
+
 
 
 ############
@@ -179,6 +186,13 @@ resource "local_file" "http_route_renovate" {
 resource "local_file" "http_route_hubble" {
     filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/hubble.yaml"
     content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/hubble.yaml.tftpl", {
+        kubernetes_domain = var.kubernetes_domain
+    })
+}
+
+resource "local_file" "http_route_excalidraw" {
+    filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/excalidraw.yaml"
+    content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/excalidraw.yaml.tftpl", {
         kubernetes_domain = var.kubernetes_domain
     })
 }

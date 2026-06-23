@@ -14,3 +14,4 @@ resources:
   - ./certificates/hello-world-homelab-local.yaml
   - ./certificates/renovate-homelab-local.yaml
   - ./certificates/hubble-homelab-local.yaml
+  - ./certificates/excalidraw-homelab-local.yaml

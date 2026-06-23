@@ -9,6 +9,7 @@ resources:
   - ./http-routes/harbor.yaml
   - ./http-routes/authelia.yaml
   - ./http-routes/endurain.yaml
+  - ./http-routes/excalidraw.yaml
   - ./http-routes/hello-world.yaml
   - ./http-routes/hubble.yaml
   - ./http-routes/renovate.yaml
@@ -25,6 +26,8 @@ resources:
   - ./reference-grants/lan-gateway-renovate-tls.yaml
   - ./reference-grants/lan-gateway-hubble-tls.yaml
   - ./reference-grants/hubble-external-auth-authelia.yaml
+  - ./reference-grants/lan-gateway-excalidraw-tls.yaml
+  - ./reference-grants/excalidraw-external-auth-authelia.yaml
 patches:
   - target:
       kind: ReferenceGrant
