@@ -36,8 +36,8 @@
         {
             "customType": "regex",
             "description": "Update Argo CD Helm chart version in README install snippet",
-            "fileMatch": [
-                "^ci-cd/argo-cd/README\\.md$"
+            "managerFilePatterns": [
+                "/^ci-cd/argo-cd/README\\.md$/"
             ],
             "matchStrings": [
                 "export ARGOCD_HELM_VER=(?<currentValue>\\d+\\.\\d+\\.\\d+)"
