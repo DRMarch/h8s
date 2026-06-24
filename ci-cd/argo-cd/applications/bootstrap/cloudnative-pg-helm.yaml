@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: https://cloudnative-pg.github.io/charts
       chart: cloudnative-pg
-      targetRevision: 0.28.0 # April 2026
+      targetRevision: 0.28.3 # April 2026
       helm:
         valueFiles:
           - $h8s/storage/cloudnative-pg/operator/values.yaml
