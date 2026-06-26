@@ -67,16 +67,25 @@ sudo sed -i '/ swap / s/^/#/' /etc/fstab
 
 #### Configure containerd
 
+
 ```bash
 sudo mkdir -p /etc/containerd
 containerd config default | sudo tee /etc/containerd/config.toml
 ```
 
-Ensure the following is set in `/etc/containerd/config.toml`:
-```toml
-[plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc.options]
-SystemdCgroup = true
+The default config uses the `cgroupfs` driver. On a systemd host the kubelet defaults to the `systemd` cgroup driver, so containerd must match — otherwise pods will fail with `OCI runtime create failed: expected cgroupsPath to be of format "slice:prefix:name" for systemd cgroups` (`FailedCreatePodSandBox` warning, with `burstable` / `besteffort` / `guaranteed` in the failing cgroup path). Flip the runc option to systemd and verify:
+
+```bash
+sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+
+sudo grep -A2 'runtimes.runc.options' /etc/containerd/config.toml
+# expect:
+#   [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc.options]
+#     SystemdCgroup = true
 ```
+
+> **Note:** an `apt upgrade` of the `containerd` package regenerates `/etc/containerd/config.toml` from the package default and silently reverts this setting. Re-run the `sed` after any containerd upgrade, or pin the `containerd` package version.
+
 
 #### Install kubeadm, kubelet, and kubectl
 
@@ -112,11 +121,20 @@ On **other control plane nodes**, copy and adapt `/etc/kubernetes/manifests/kube
 On the first node:
 
 ```bash
-VIP=${kube_vip_ip}
+VIP=192.168.1.10
 sudo kubeadm init --control-plane-endpoint "$VIP:6443" --upload-certs
 
 # https://github.com/kube-vip/kube-vip/issues/684#issuecomment-1864855405
 sudo sed -i 's#path: /etc/kubernetes/super-admin.conf#path: /etc/kubernetes/admin.conf#' /etc/kubernetes/manifests/kube-vip.yaml
+```
+
+Verify the kubelet picked up the matching systemd cgroup driver (kubeadm
+auto-detects this from the host on modern systemd / cgroup v2 systems, so it
+should match the `SystemdCgroup = true` set in [Configure containerd](#configure-containerd)):
+
+```bash
+sudo grep cgroupDriver /var/lib/kubelet/config.yaml
+# expect: cgroupDriver: systemd
 ```
 
 Note down the command to join the control plane cluster command that will be given to you at the end.
@@ -243,24 +261,7 @@ Next you will need to get containerd to accept the cert of harbor
 ```bash
 
 kubectl -n harbor get secret harbor-homelab-local-tls -o jsonpath='{.data.ca\.crt}' | base64 --decode > /tmp/ca.crt
-
 sudo cp /tmp/ca.crt /usr/local/share/ca-certificates/harbor.crt && sudo update-ca-certificates
 
 sudo systemctl restart containerd
-```
-
-If you see an error like:
-
-```text
-failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: expected cgroupsPa │
-│ th to be of format "slice:prefix:name" for systemd cgroups, got "/kubepods/besteffort/pod22d0e089-6763-4a6f-b30e-31dfcdced190/cd825cd6576eb5957d113e48a1566d462358db5c9a4a2 │
-```
-
-Then you will need to fix containerd c groups with:
-
-```bash
-sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
-
-sudo systemctl restart containerd
-sudo systemctl restart kubelet
 ```
