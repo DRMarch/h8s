@@ -12,7 +12,7 @@ Before ArgoCD exists, Cilium must be installed manually so the cluster has a wor
 
 ```bash
 helm repo add cilium https://helm.cilium.io/
-helm install cilium cilium/cilium --version 1.20.0-pre.3 --namespace kube-system \
+helm install cilium cilium/cilium --version 1.20.0-pre.4 --namespace kube-system \
   -f networking/cilium/helm/values.yaml
 ```
 

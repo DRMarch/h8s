@@ -2,7 +2,7 @@
 
 A guide to building a highly available, three-node home Kubernetes cluster using kubeadm and kube-vip, running on Ubuntu Server 26.04. This setup focuses on simplicity, reliability, and security.
 
-_Last updated: 2026-06-08
+_Last updated: 2026-07-03
 
 ## Table of Contents
 
@@ -67,6 +67,7 @@ sudo sed -i '/ swap / s/^/#/' /etc/fstab
 
 #### Configure containerd
 
+
 ```bash
 sudo mkdir -p /etc/containerd
 containerd config default | sudo tee /etc/containerd/config.toml
@@ -84,6 +85,7 @@ sudo grep -A2 'runtimes.runc.options' /etc/containerd/config.toml
 ```
 
 > **Note:** an `apt upgrade` of the `containerd` package regenerates `/etc/containerd/config.toml` from the package default and silently reverts this setting. Re-run the `sed` after any containerd upgrade, or pin the `containerd` package version.
+
 
 #### Install kubeadm, kubelet, and kubectl
 
@@ -173,7 +175,7 @@ sudo snap install helm --classic
 
 # Helm install cilium
 helm repo add cilium https://helm.cilium.io/
-helm install cilium cilium/cilium --version 1.20.0-pre.3 --namespace kube-system -f networking/cilium/helm/values.yaml
+helm install cilium cilium/cilium --version 1.20.0-pre.4 --namespace kube-system -f networking/cilium/helm/values.yaml
 ```
 
 Once ArgoCD is running, deploy the Cilium resources:

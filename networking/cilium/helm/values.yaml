@@ -1,4 +1,4 @@
-# https://artifacthub.io/packages/helm/cilium/cilium/1.20.0-pre.3?modal=values
+# https://artifacthub.io/packages/helm/cilium/cilium/1.20.0-pre.4?modal=values
 operator:
   enabled: true
   replicas: 1

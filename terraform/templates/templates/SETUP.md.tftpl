@@ -175,7 +175,7 @@ sudo snap install helm --classic
 
 # Helm install cilium
 helm repo add cilium https://helm.cilium.io/
-helm install cilium cilium/cilium --version 1.20.0-pre.3 --namespace kube-system -f networking/cilium/helm/values.yaml
+helm install cilium cilium/cilium --version 1.20.0-pre.4 --namespace kube-system -f networking/cilium/helm/values.yaml
 ```
 
 Once ArgoCD is running, deploy the Cilium resources:
