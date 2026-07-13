@@ -15,6 +15,7 @@ resources:
   - ./http-routes/longhorn.yaml
   - ./http-routes/bytestash.yaml
   - ./http-routes/renovate.yaml
+  - ./http-routes/searxng.yaml
   - ./http-routes/http-to-https-redirect.yaml
   - ./reference-grants/lan-gateway-argocd-tls.yaml
   - ./reference-grants/lan-gateway-authelia-tls.yaml
@@ -33,6 +34,8 @@ resources:
   - ./reference-grants/lan-gateway-bytestash-tls.yaml
   - ./reference-grants/lan-gateway-excalidraw-tls.yaml
   - ./reference-grants/excalidraw-external-auth-authelia.yaml
+  - ./reference-grants/lan-gateway-searxng-tls.yaml
+  - ./reference-grants/searxng-external-auth-authelia.yaml
 patches:
   - target:
       kind: ReferenceGrant

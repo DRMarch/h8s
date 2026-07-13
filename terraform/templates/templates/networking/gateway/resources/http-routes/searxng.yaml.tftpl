@@ -1,0 +1,53 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: searxng
+  namespace: searxng
+spec:
+  parentRefs:
+    - name: lan-gateway
+      namespace: default
+      sectionName: home-lan-searxng
+    - name: cloudflare-gateway
+      namespace: cloudflare
+      sectionName: home-lan
+  hostnames:
+    - search.${kubernetes_domain}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Host
+                value: search.${kubernetes_domain}
+              - name: X-Forwarded-Proto
+                value: https
+        - type: ExternalAuth
+          externalAuth:
+            protocol: HTTP
+            backendRef:
+              name: authelia
+              namespace: authelia
+              port: 80
+            http:
+              path: /api/authz/ext-authz/
+              allowedHeaders:
+                - accept
+                - host
+                - cookie
+                - authorization
+                - proxy-authorization
+                - x-forwarded-method
+                - x-forwarded-uri
+                - x-forwarded-host
+                - x-forwarded-proto
+                - x-forwarded-for
+                - x-real-ip
+                - x-envoy-original-path
+      backendRefs:
+        - name: searxng
+          port: 8080

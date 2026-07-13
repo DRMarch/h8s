@@ -155,6 +155,18 @@ spec:
         certificateRefs:
           - name: bytestash-homelab-local-tls
             namespace: bytestash
+    - protocol: HTTPS
+      name: home-lan-searxng
+      hostname: search.${kubernetes_domain}
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: searxng-homelab-local-tls
+            namespace: searxng
     - protocol: HTTP
       name: http-redirect
       port: 80

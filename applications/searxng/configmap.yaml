@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: searxng-settings
+  namespace: searxng
+data:
+  settings.yml: |-
+    use_default_settings: true
+
+    general:
+      debug: false
+      instance_name: "Homelab Search"
+      privacypolicy_url: false
+      donation_url: false
+      contact_url: https://www.drmarchent.com
+      enable_metrics: true
+      open_metrics: ''
+
+    brand:
+      new_issue_url: ""
+      docs_url: ""
+      public_instances: ""
+      wiki_url: ""
+      issue_url: ""
+
+    search:
+      safe_search: 0
+      autocomplete: "duckduckgo"
+      max_page: 0
+      formats:
+        - html
+        - json
+
+    server:
+      port: 8080
+      limiter: true
+      public_instance: true
+      image_proxy: true
+
+    valkey:
+      url: "redis://searxng-dragonfly:6379/0"
+
+    engines:
+      - name: google
+        disabled: false
+      - name: duckduckgo
+        disabled: false
+      - name: startpage
+      - name: qwant
+      - name: wikipedia
+      - name: archlinux
+      - name: github
+      - name: reddit
+        disabled: false
+      - name: wikidata
+        disabled: true

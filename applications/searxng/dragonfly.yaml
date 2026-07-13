@@ -1,0 +1,18 @@
+apiVersion: dragonflydb.io/v1alpha1
+kind: Dragonfly
+metadata:
+  name: searxng-dragonfly
+  namespace: searxng
+spec:
+  image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+  replicas: 1
+  args:
+    - --proactor_threads=1
+    - --maxmemory=256mb
+    - --cache_mode=true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 512Mi

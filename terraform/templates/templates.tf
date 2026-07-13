@@ -102,6 +102,13 @@ resource "local_file" "certificates_bytestash" {
   })
 }
 
+resource "local_file" "certificates_searxng" {
+  filename = "${path.module}/${local.project_root}/networking/cert-manager/resources/certificates/searxng-homelab-local.yaml"
+  content = templatefile("${path.module}/templates/networking/cert-manager/resources/certificates/searxng-homelab-local.yaml.tftpl", {
+    kubernetes_domain = var.kubernetes_domain
+  })
+}
+
 ############
 ## Cilium ##
 ############
@@ -241,6 +248,13 @@ resource "local_file" "http_route_excalidraw" {
 resource "local_file" "http_route_bytestash" {
   filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/bytestash.yaml"
   content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/bytestash.yaml.tftpl", {
+    kubernetes_domain = var.kubernetes_domain
+  })
+}
+
+resource "local_file" "http_route_searxng" {
+  filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/searxng.yaml"
+  content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/searxng.yaml.tftpl", {
     kubernetes_domain = var.kubernetes_domain
   })
 }
