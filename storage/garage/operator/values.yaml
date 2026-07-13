@@ -6,7 +6,7 @@ replicaCount: 1
 image:
   repository: ghcr.io/rajsinghtech/garage-operator
   pullPolicy: IfNotPresent
-  tag: "v0.6.21"
+  tag: "v0.6.23"
 
 
 # Pod security context
