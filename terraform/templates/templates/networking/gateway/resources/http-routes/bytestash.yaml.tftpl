@@ -8,6 +8,9 @@ spec:
     - name: lan-gateway
       namespace: default
       sectionName: home-lan-bytestash
+    - name: cloudflare-gateway
+      namespace: cloudflare
+      sectionName: home-lan
   hostnames:
     - bytestash.${kubernetes_domain}
   rules:
