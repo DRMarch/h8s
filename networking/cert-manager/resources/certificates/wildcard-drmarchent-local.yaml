@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-drmarchent-local
+  namespace: cloudflare
+spec:
+  secretName: wildcard-drmarchent-local-tls
+  issuerRef:
+    name: vault-issuer
+    kind: ClusterIssuer
+  commonName: "*.drmarchent.com"
+  dnsNames:
+    - "*.drmarchent.com"
+    - drmarchent.com

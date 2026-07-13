@@ -7,11 +7,11 @@ spec:
   gatewayClassName: cilium
   infrastructure:
     annotations:
-      io.cilium/lb-ipam-ips: 20.0.0.0
+      io.cilium/lb-ipam-ips: ${gateway_cloudflare_ip}
   listeners:
     - protocol: HTTPS
       name: home-lan
-      hostname: "*.drmarchent.com"
+      hostname: "*.${kubernetes_domain}"
       port: 443
       allowedRoutes:
         namespaces:

@@ -1,0 +1,10 @@
+apiVersion: cilium.io/v2
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: cloudflare-gateway-pool
+spec:
+  blocks:
+    - cidr: ${gateway_cloudflare_ip}/32
+  serviceSelector:
+    matchLabels:
+      io.cilium.gateway/owning-gateway: cloudflare-gateway

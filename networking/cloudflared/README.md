@@ -8,9 +8,15 @@
    - Log in to the Cloudflare dashboard and go to Zero Trust > Networks > Connectors > Cloudflare Tunnels.
    - Create a tunnel and save the token (you'll need it in the next step).
    - Note the tunnel ID.
-   - Open the tunnel's **Published application routes** and add a route:
-     - **Domain**: `*.your-domain.com` (replace with your domain)
-     - **Service**: `cilium-gateway-cloudflare-gateway.cloudflare.svc.cluster.local:80`
+   - Open the tunnel's **Public Hostname** tab and add a route:
+     - **Subdomain**: leave empty to match the wildcard, or set the specific subdomain (e.g. `helloworld`)
+     - **Domain**: `your-domain.com` (replace with your domain)
+     - **Service**: `https://cilium-gateway-cloudflare-gateway.cloudflare.svc.cluster.local:443`
+   - Under **Additional application settings** → **TLS**:
+     - Enable **No TLS Verify** (the gateway uses a cert signed by the internal Vault PKI, which cloudflared does not trust)
+     - Enable **Match SNI to Host** (cloudflared defaults to using the service URL as the SNI, which does not match any of the Cilium gateway listener hostnames; this makes cloudflared use the incoming request's `Host` header — e.g. `helloworld.drmarchent.com` — as the SNI so the gateway can route by SNI and present the correct certificate)
+   - Under **Additional application settings** → **HTTP Settings**:
+     - Leave **HTTP Host header** blank to preserve the original `Host` header
    - Configure a CNAME DNS record:
      - **Host**: `*`
      - **Target**: `<TUNNEL_ID>.cfargotunnel.com` (replace `<TUNNEL_ID>` with your tunnel ID)

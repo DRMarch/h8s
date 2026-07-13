@@ -18,6 +18,13 @@ variable "gateway_lan_ip" {
 }
 
 
+variable "gateway_cloudflare_ip" {
+  description = "Fixed IP for the cloudflare tunnel gateway service"
+  type        = string
+  default     = "20.0.0.0"
+}
+
+
 variable "kubernetes_domain" {
   description = "The domain name for ingress traffic into the cluster services"
   type        = string

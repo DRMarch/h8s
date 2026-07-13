@@ -15,3 +15,4 @@ resources:
   - ./certificates/renovate-homelab-local.yaml
   - ./certificates/hubble-homelab-local.yaml
   - ./certificates/excalidraw-homelab-local.yaml
+  - ./certificates/wildcard-drmarchent-local.yaml

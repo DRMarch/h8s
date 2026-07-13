@@ -10,6 +10,7 @@ spec:
       sectionName: home-lan-excalidraw
     - name: cloudflare-gateway
       namespace: cloudflare
+      sectionName: home-lan
   hostnames:
     - excalidraw.drmarchent.com
   rules:
