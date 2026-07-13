@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: searxng
+  namespace: searxng
+  labels:
+    app: searxng
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: searxng
+  template:
+    metadata:
+      labels:
+        app: searxng
+    spec:
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 977
+        runAsGroup: 977
+        fsGroup: 977
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: init-config
+          image: docker.io/library/busybox:1.38.0
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsUser: 977
+            runAsGroup: 977
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: METRICS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: searxng-secret
+                  key: METRICS_PASSWORD
+          command:
+            - "sh"
+            - "-c"
+            - |
+              cp /tmp/config/settings.yml /etc/searxng/settings.yml
+              sed -i "s/open_metrics: ''/open_metrics: '${METRICS_PASSWORD}'/" /etc/searxng/settings.yml
+          volumeMounts:
+            - name: config-source
+              mountPath: /tmp/config
+            - name: config-writable
+              mountPath: /etc/searxng
+      containers:
+        - name: searxng
+          image: searxng/searxng:2026.7.13-9e25585ae
+          ports:
+            - name: http
+              containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: SEARXNG_BASE_URL
+              value: "https://search.drmarchent.com"
+            - name: SEARXNG_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: searxng-secret
+                  key: SECRET
+          volumeMounts:
+            - name: config-writable
+              mountPath: /etc/searxng
+            - name: limiter-config
+              mountPath: /etc/searxng/limiter.toml
+              subPath: limiter.toml
+            - name: cache
+              mountPath: /var/cache/searxng
+            - name: tmp
+              mountPath: /tmp
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              memory: 1Gi
+      volumes:
+        - name: config-source
+          configMap:
+            name: searxng-settings
+        - name: config-writable
+          emptyDir: {}
+        - name: limiter-config
+          configMap:
+            name: searxng-limiter
+        - name: cache
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}

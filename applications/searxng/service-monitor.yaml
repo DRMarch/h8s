@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: searxng
+  namespace: searxng
+spec:
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scheme: http
+      basicAuth:
+        username:
+          name: searxng-secret
+          key: METRICS_USERNAME
+        password:
+          name: searxng-secret
+          key: METRICS_PASSWORD
+  selector:
+    matchLabels:
+      app: searxng

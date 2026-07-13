@@ -1,10 +1,10 @@
 # ============================================================
-# Vault Secrets Provisioning — Authelia + CNPG + Renovate + Bytestash
+# Vault Secrets Provisioning — Authelia + CNPG + Renovate + Bytestash + SearXNG
 # ============================================================
 # Provisions secret values in Vault for Authelia (encryption key,
 # session secret, HMAC secret, admin password, OIDC client secrets),
-# CNPG (database credentials), the Renovate GitHub App, and ByteStash
-# (JWT secret, OIDC client secret).
+# CNPG (database credentials), the Renovate GitHub App, ByteStash
+# (JWT secret, OIDC client secret), and SearXNG (secret key, metrics).
 #
 # Generated secrets:
 #   - authelia/encryption-key        -> encryption-key
@@ -23,6 +23,7 @@
 #   - bytestash/jwt                 -> secret, token-expiry
 #   - bytestash/oidc                -> client-secret-plaintext
 #   - renovate/github               -> token (GitHub fine-grained PAT)
+#   - searxng/searxng-secret        -> SECRET, METRICS_PASSWORD, METRICS_USERNAME
 #
 # Bring-your-own secrets (via secrets.auto.tfvars):
 #   - vault_token, github_pat_token
@@ -78,6 +79,16 @@ resource "random_password" "authelia_bytestash_oidc_plaintext" {
 
 resource "random_password" "bytestash_jwt_secret" {
   length  = 64
+  special = false
+}
+
+resource "random_password" "searxng_secret_key" {
+  length  = 64
+  special = false
+}
+
+resource "random_password" "searxng_metrics_password" {
+  length  = 32
   special = false
 }
 
@@ -503,6 +514,29 @@ resource "null_resource" "vault_bytestash_oidc" {
   }
 }
 
+# ---- Vault Push: SearXNG Secret ----
+
+resource "null_resource" "vault_searxng_secret" {
+  triggers = {
+    secret          = random_password.searxng_secret_key.result
+    metrics_password = random_password.searxng_metrics_password.result
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/searxng/searxng-secret \
+          SECRET='${random_password.searxng_secret_key.result}' \
+          METRICS_PASSWORD='${random_password.searxng_metrics_password.result}' \
+          METRICS_USERNAME='prometheus'
+      "
+    EOT
+  }
+}
+
 # ---- Vault Push: CNPG Authelia Credentials ----
 
 resource "null_resource" "vault_cnpg_authelia_credentials" {
@@ -623,5 +657,15 @@ output "endurain_fernet_key" {
 
 output "endurain_secret_key" {
   value     = local.endurain_secret_key_b64
+  sensitive = true
+}
+
+output "searxng_secret_key" {
+  value     = random_password.searxng_secret_key.result
+  sensitive = true
+}
+
+output "searxng_metrics_password" {
+  value     = random_password.searxng_metrics_password.result
   sensitive = true
 }
