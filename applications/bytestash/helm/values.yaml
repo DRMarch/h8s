@@ -1,0 +1,105 @@
+# ByteStash Helm values for h8s homelab.
+#
+# Architecture:
+#   - Single replica, Longhorn PVC for SQLite (/data/snippets)
+#   - OIDC to Authelia at app level (no gateway ExternalAuth)
+#   - JWT secret pulled from Vault via ExternalSecret (existingJwtSecret)
+#   - OIDC client secret pulled from Vault via extraEnvSecrets
+#   - Admins: admin user via OIDC preferred_username
+#
+# Values from:
+# https://github.com/jordan-dalby/ByteStash/blob/main/helm-charts/bytestash/values.yaml
+replicaCount: 1
+
+strategy:
+  type: Recreate
+
+persistence:
+  enabled: true
+  storageClassName: longhorn
+  size: 5Gi
+
+image:
+  repository: ghcr.io/jordan-dalby/bytestash
+  pullPolicy: IfNotPresent
+  tag: 1.5.12
+
+bytestash:
+  baseUrl: ""
+  debug: false
+  disableAccount: false
+  disableAllAccount: true
+  allowNewAccount: false
+  existingJwtSecret:
+    secretName: "bytestash-secrets"
+    jwtKey: "jwt-secret"
+    expirityKey: "token-expiry"
+
+oidc:
+  enabled: false
+
+extraEnv:
+  - name: OIDC_ENABLED
+    value: "true"
+  - name: OIDC_DISPLAY_NAME
+    value: "Authelia"
+  - name: OIDC_ISSUER_URL
+    value: "https://auth.drmarchent.com"
+  - name: OIDC_CLIENT_ID
+    value: "bytestash"
+  - name: OIDC_SCOPES
+    value: "openid profile email groups"
+  - name: ADMIN_USERNAMES
+    value: "admin"
+
+extraEnvSecrets:
+  OIDC_CLIENT_SECRET:
+    name: bytestash-oidc
+    key: client-secret
+
+service:
+  type: ClusterIP
+  port: 5000
+
+ingress:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+livenessProbe:
+  httpGet:
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 10
+  failureThreshold: 3
+  successThreshold: 1
+
+readinessProbe:
+  httpGet:
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 10
+  failureThreshold: 3
+  successThreshold: 1
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+containerSecurityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000

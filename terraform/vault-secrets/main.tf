@@ -1,9 +1,10 @@
 # ============================================================
-# Vault Secrets Provisioning — Authelia + CNPG + Renovate
+# Vault Secrets Provisioning — Authelia + CNPG + Renovate + Bytestash
 # ============================================================
 # Provisions secret values in Vault for Authelia (encryption key,
 # session secret, HMAC secret, admin password, OIDC client secrets),
-# CNPG (database credentials), and the Renovate GitHub App.
+# CNPG (database credentials), the Renovate GitHub App, and ByteStash
+# (JWT secret, OIDC client secret).
 #
 # Generated secrets:
 #   - authelia/encryption-key        -> encryption-key
@@ -14,9 +15,13 @@
 #                                      client-secret-plaintext
 #   - authelia/endurain-oidc         -> client-secret-hash (pbkdf2)
 #                                      client-secret-plaintext
+#   - authelia/bytestash-oidc        -> client-secret-hash (pbkdf2)
+#                                      client-secret-plaintext
 #   - cnpg/authelia-user-credentials -> username, password
 #   - endurain/fernet-key           -> fernet_key  (url-safe base64, 44 chars)
 #   - endurain/secret-key           -> secret_key  (url-safe base64, 44 chars)
+#   - bytestash/jwt                 -> secret, token-expiry
+#   - bytestash/oidc                -> client-secret-plaintext
 #   - renovate/github               -> token (GitHub fine-grained PAT)
 #
 # Bring-your-own secrets (via secrets.auto.tfvars):
@@ -62,6 +67,16 @@ resource "random_password" "authelia_grafana_oidc_plaintext" {
 }
 
 resource "random_password" "authelia_endurain_oidc_plaintext" {
+  length  = 64
+  special = false
+}
+
+resource "random_password" "authelia_bytestash_oidc_plaintext" {
+  length  = 64
+  special = false
+}
+
+resource "random_password" "bytestash_jwt_secret" {
   length  = 64
   special = false
 }
@@ -394,6 +409,100 @@ resource "null_resource" "vault_authelia_endurain_oidc" {
   }
 }
 
+# ---- Vault Push: ByteStash OIDC (pbkdf2 hash + plaintext) ----
+
+resource "null_resource" "vault_authelia_bytestash_oidc" {
+  triggers = {
+    plaintext = random_password.authelia_bytestash_oidc_plaintext.result
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      TMP_CONFIG=$(mktemp)
+      trap 'rm -f "$TMP_CONFIG"' EXIT
+      cat > "$TMP_CONFIG" <<EOF
+      authentication_backend:
+        file:
+          path: /dev/null
+      EOF
+
+      if ! RAW=$(docker run --rm \
+          -v "$TMP_CONFIG:/config/configuration.yml:ro" \
+          ${var.authelia_docker_image} \
+          authelia crypto hash generate pbkdf2 \
+          --password '${random_password.authelia_bytestash_oidc_plaintext.result}' \
+          --no-confirm 2>&1); then
+        echo "ERROR: authelia crypto hash generate (pbkdf2) for bytestash failed. Output:" >&2
+        echo "$RAW" >&2
+        exit 1
+      fi
+      HASH=$(echo "$RAW" | sed -n 's/^Digest: //p' | tr -d '\r\n ')
+
+      case "$HASH" in
+        '$'*) ;;
+        *) echo "ERROR: bytestash OIDC client secret hash invalid. Raw output:" >&2
+           echo "$RAW" >&2
+           echo "Extracted hash: '$HASH'" >&2
+           exit 1 ;;
+      esac
+      if echo "$HASH" | grep -q ' '; then
+        echo "ERROR: bytestash OIDC client secret hash contains whitespace: $HASH" >&2
+        exit 1
+      fi
+
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/authelia/bytestash-oidc \
+          client-secret-hash='$HASH' \
+          client-secret-plaintext='${random_password.authelia_bytestash_oidc_plaintext.result}'
+      "
+    EOT
+  }
+}
+
+# ---- Vault Push: ByteStash JWT Secret ----
+
+resource "null_resource" "vault_bytestash_jwt" {
+  triggers = {
+    secret = random_password.bytestash_jwt_secret.result
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/bytestash/jwt \
+          secret='${random_password.bytestash_jwt_secret.result}' \
+          token-expiry=24h
+      "
+    EOT
+  }
+}
+
+# ---- Vault Push: ByteStash OIDC Client Secret ----
+
+resource "null_resource" "vault_bytestash_oidc" {
+  triggers = {
+    plaintext = random_password.authelia_bytestash_oidc_plaintext.result
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/bytestash/oidc \
+          client-secret-plaintext='${random_password.authelia_bytestash_oidc_plaintext.result}'
+      "
+    EOT
+  }
+}
+
 # ---- Vault Push: CNPG Authelia Credentials ----
 
 resource "null_resource" "vault_cnpg_authelia_credentials" {
@@ -494,6 +603,11 @@ output "grafana_oidc_client_secret" {
 
 output "endurain_oidc_client_secret" {
   value     = random_password.authelia_endurain_oidc_plaintext.result
+  sensitive = true
+}
+
+output "bytestash_oidc_client_secret" {
+  value     = random_password.authelia_bytestash_oidc_plaintext.result
   sensitive = true
 }
 

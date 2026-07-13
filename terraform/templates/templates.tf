@@ -95,6 +95,13 @@ resource "local_file" "certificates_longhorn" {
   })
 }
 
+resource "local_file" "certificates_bytestash" {
+  filename = "${path.module}/${local.project_root}/networking/cert-manager/resources/certificates/bytestash-homelab-local.yaml"
+  content = templatefile("${path.module}/templates/networking/cert-manager/resources/certificates/bytestash-homelab-local.yaml.tftpl", {
+    kubernetes_domain = var.kubernetes_domain
+  })
+}
+
 ############
 ## Cilium ##
 ############
@@ -227,6 +234,13 @@ resource "local_file" "http_route_longhorn" {
 resource "local_file" "http_route_excalidraw" {
   filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/excalidraw.yaml"
   content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/excalidraw.yaml.tftpl", {
+    kubernetes_domain = var.kubernetes_domain
+  })
+}
+
+resource "local_file" "http_route_bytestash" {
+  filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/bytestash.yaml"
+  content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/bytestash.yaml.tftpl", {
     kubernetes_domain = var.kubernetes_domain
   })
 }

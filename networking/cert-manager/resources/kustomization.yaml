@@ -15,5 +15,6 @@ resources:
   - ./certificates/renovate-homelab-local.yaml
   - ./certificates/hubble-homelab-local.yaml
   - ./certificates/excalidraw-homelab-local.yaml
+  - ./certificates/bytestash-homelab-local.yaml
   - ./certificates/wildcard-drmarchent-local.yaml
   - ./certificates/longhorn-homelab-local.yaml

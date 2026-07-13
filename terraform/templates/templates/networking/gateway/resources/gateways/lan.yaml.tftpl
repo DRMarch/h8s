@@ -143,6 +143,18 @@ spec:
         certificateRefs:
           - name: hubble-homelab-local-tls
             namespace: kube-system
+    - protocol: HTTPS
+      name: home-lan-bytestash
+      hostname: bytestash.${kubernetes_domain}
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: bytestash-homelab-local-tls
+            namespace: bytestash
     - protocol: HTTP
       name: http-redirect
       port: 80
