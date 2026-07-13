@@ -88,6 +88,13 @@ resource "local_file" "certificates_wildcard_drmarchent" {
   })
 }
 
+resource "local_file" "certificates_longhorn" {
+  filename = "${path.module}/${local.project_root}/networking/cert-manager/resources/certificates/longhorn-homelab-local.yaml"
+  content = templatefile("${path.module}/templates/networking/cert-manager/resources/certificates/longhorn-homelab-local.yaml.tftpl", {
+    kubernetes_domain = var.kubernetes_domain
+  })
+}
+
 ############
 ## Cilium ##
 ############
@@ -206,6 +213,13 @@ resource "local_file" "http_route_renovate" {
 resource "local_file" "http_route_hubble" {
   filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/hubble.yaml"
   content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/hubble.yaml.tftpl", {
+    kubernetes_domain = var.kubernetes_domain
+  })
+}
+
+resource "local_file" "http_route_longhorn" {
+  filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/longhorn.yaml"
+  content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/longhorn.yaml.tftpl", {
     kubernetes_domain = var.kubernetes_domain
   })
 }

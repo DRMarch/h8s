@@ -12,6 +12,7 @@ resources:
   - ./http-routes/excalidraw.yaml
   - ./http-routes/hello-world.yaml
   - ./http-routes/hubble.yaml
+  - ./http-routes/longhorn.yaml
   - ./http-routes/renovate.yaml
   - ./http-routes/http-to-https-redirect.yaml
   - ./reference-grants/lan-gateway-argocd-tls.yaml
@@ -26,6 +27,8 @@ resources:
   - ./reference-grants/lan-gateway-renovate-tls.yaml
   - ./reference-grants/lan-gateway-hubble-tls.yaml
   - ./reference-grants/hubble-external-auth-authelia.yaml
+  - ./reference-grants/lan-gateway-longhorn-tls.yaml
+  - ./reference-grants/longhorn-external-auth-authelia.yaml
   - ./reference-grants/lan-gateway-excalidraw-tls.yaml
   - ./reference-grants/excalidraw-external-auth-authelia.yaml
 patches:
