@@ -12,12 +12,14 @@ Key features include:
 - Role-based access control (RBAC) for secure multi-team collaboration.
 
 ## Deployment
-The following steps demonstrate how to deploy Argo CD into your Kubernetes cluster using the official Helm chart. 
-This method allows you to customize your deployment via Helm values and ensures your Argo CD installation is reproducible and version-controlled.
+
+ArgoCD is self-managed via GitOps after the initial bootstrap.
+The `argocd-helm` Application (in `applications/bootstrap/argocd-helm.yaml`)
+adopts the Helm release and handles all future upgrades.
+
+### Initial Bootstrap (one-time)
+
 ```bash
-
-kubectl create namespace monitoring
-
 export ARGOCD_HELM_VER=9.5.13 # May 2026
 
 helm repo add argo https://argoproj.github.io/argo-helm && helm repo update
@@ -28,7 +30,13 @@ helm upgrade argocd argo/argo-cd \
     --create-namespace \
     --version ${ARGOCD_HELM_VER} \
     -f ./values.yaml
+
+kubectl apply -f applications/app-of-apps-bootstrap.yaml
 ```
+
+After bootstrap, all future changes to ArgoCD configuration are made by editing
+`values.yaml` and pushing to Git. The `argocd-helm` Application will sync them
+automatically — no more manual `helm upgrade` needed.
 
 ## App of Apps Pattern
 

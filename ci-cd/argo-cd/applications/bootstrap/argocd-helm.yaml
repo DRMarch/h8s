@@ -1,21 +1,26 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: external-secrets-resources
+  name: argocd-helm
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
-  annotations:
-    argocd.argoproj.io/sync-wave: "-397"
 spec:
   project: default
-  source:
-    repoURL: https://github.com/DRMarch/h8s.git
-    targetRevision: HEAD
-    path: security/external-secrets/resources
+  sources:
+    - repoURL: https://argoproj.github.io/argo-helm
+      chart: argo-cd
+      targetRevision: 9.5.13
+      helm:
+        releaseName: argocd
+        valueFiles:
+          - $h8s/ci-cd/argo-cd/values.yaml
+    - repoURL: https://github.com/DRMarch/h8s.git
+      targetRevision: HEAD
+      ref: h8s
   destination:
     server: https://kubernetes.default.svc
-    namespace: external-secrets
+    namespace: argocd
   syncPolicy:
     automated:
       prune: true
