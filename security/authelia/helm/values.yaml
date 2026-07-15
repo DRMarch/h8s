@@ -181,6 +181,22 @@ configMap:
     level: info
     format: text
 
+  # Set the default second factor method for new users.
+  default_2fa_method: 'totp'
+
+  # TOTP (Time-based One-Time Password) — authenticator apps
+  totp:
+    disable: false
+    issuer: 'drmarchent.com'
+    algorithm: 'SHA1'
+    digits: 6
+    period: 30
+    skew: 1
+    secret_size: 32
+    allowed_algorithms: ['SHA1']
+    allowed_digits: [6]
+    allowed_periods: [30]
+
   # File-based authentication backend. The admin user is generated at
   # startup by the init container from the auto-generated password Secret.
   # Password reset / email-based flows disabled — we don't run SMTP.
@@ -268,7 +284,11 @@ configMap:
       # Bypass: auth portal (no point requiring auth to view the login page)
       - domain: 'auth.drmarchent.com'
         policy: bypass
-      # Catch-all: any authenticated user (the sole admin)
+      # Admin users: require 2FA for all forward-auth-protected services
+      - domain: '*.drmarchent.com'
+        policy: two_factor
+        subject: 'group:admins'
+      # Guest users: password-only access to forward-auth services
       - domain: '*.drmarchent.com'
         policy: one_factor
 
@@ -322,11 +342,13 @@ configMap:
         restrict-to-admins:
           default_policy: deny
           rules:
-            - policy: one_factor
+            - policy: two_factor
               subject: 'group:admins'
         allow-all:
           default_policy: one_factor
           rules:
+            - policy: two_factor
+              subject: 'group:admins'
             - policy: one_factor
               subject: 'user:*'
       hmac_secret:
