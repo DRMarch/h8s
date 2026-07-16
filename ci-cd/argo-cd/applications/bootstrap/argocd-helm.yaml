@@ -18,6 +18,9 @@ spec:
     - repoURL: https://github.com/DRMarch/h8s.git
       targetRevision: HEAD
       ref: h8s
+    - repoURL: https://github.com/DRMarch/h8s.git
+      targetRevision: HEAD
+      path: ci-cd/argo-cd/resources
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
