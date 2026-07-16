@@ -17,6 +17,8 @@
 #                                      client-secret-plaintext
 #   - authelia/bytestash-oidc        -> client-secret-hash (pbkdf2)
 #                                      client-secret-plaintext
+#   - authelia/argocd-oidc          -> client-secret-hash (pbkdf2)
+#                                      client-secret-plaintext
 #   - cnpg/authelia-user-credentials -> username, password
 #   - endurain/fernet-key           -> fernet_key  (url-safe base64, 44 chars)
 #   - endurain/secret-key           -> secret_key  (url-safe base64, 44 chars)
@@ -73,6 +75,11 @@ resource "random_password" "authelia_endurain_oidc_plaintext" {
 }
 
 resource "random_password" "authelia_bytestash_oidc_plaintext" {
+  length  = 64
+  special = false
+}
+
+resource "random_password" "authelia_argocd_oidc_plaintext" {
   length  = 64
   special = false
 }
@@ -514,6 +521,59 @@ resource "null_resource" "vault_bytestash_oidc" {
   }
 }
 
+# ---- Vault Push: ArgoCD OIDC (pbkdf2 hash + plaintext) ----
+
+resource "null_resource" "vault_authelia_argocd_oidc" {
+  triggers = {
+    plaintext = random_password.authelia_argocd_oidc_plaintext.result
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      TMP_CONFIG=$(mktemp)
+      trap 'rm -f "$TMP_CONFIG"' EXIT
+      cat > "$TMP_CONFIG" <<EOF
+      authentication_backend:
+        file:
+          path: /dev/null
+      EOF
+
+      if ! RAW=$(docker run --rm \
+          -v "$TMP_CONFIG:/config/configuration.yml:ro" \
+          ${var.authelia_docker_image} \
+          authelia crypto hash generate pbkdf2 \
+          --password '${random_password.authelia_argocd_oidc_plaintext.result}' \
+          --no-confirm 2>&1); then
+        echo "ERROR: authelia crypto hash generate (pbkdf2) for argocd failed. Output:" >&2
+        echo "$RAW" >&2
+        exit 1
+      fi
+      HASH=$(echo "$RAW" | sed -n 's/^Digest: //p' | tr -d '\r\n ')
+
+      case "$HASH" in
+        '$'*) ;;
+        *) echo "ERROR: argocd OIDC client secret hash invalid. Raw output:" >&2
+           echo "$RAW" >&2
+           echo "Extracted hash: '$HASH'" >&2
+           exit 1 ;;
+      esac
+      if echo "$HASH" | grep -q ' '; then
+        echo "ERROR: argocd OIDC client secret hash contains whitespace: $HASH" >&2
+        exit 1
+      fi
+
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/authelia/argocd-oidc \
+          client-secret-hash='$HASH' \
+          client-secret-plaintext='${random_password.authelia_argocd_oidc_plaintext.result}'
+      "
+    EOT
+  }
+}
+
 # ---- Vault Push: SearXNG Secret ----
 
 resource "null_resource" "vault_searxng_secret" {
@@ -642,6 +702,11 @@ output "endurain_oidc_client_secret" {
 
 output "bytestash_oidc_client_secret" {
   value     = random_password.authelia_bytestash_oidc_plaintext.result
+  sensitive = true
+}
+
+output "argocd_oidc_client_secret" {
+  value     = random_password.authelia_argocd_oidc_plaintext.result
   sensitive = true
 }
 

@@ -3,8 +3,32 @@ configs:
   cm:
     resource.compareoptions: |
       ignoreResourceStatusField: all
+    admin.enabled: true
+    url: https://argocd.drmarchent.com
+    dex.config: |
+      connectors:
+        - type: oidc
+          id: authelia
+          name: Authelia
+          config:
+            issuer: https://auth.drmarchent.com
+            clientID: argocd
+            clientSecret: $dex.authelia.clientSecret
+            insecureEnableGroups: true
+            scopes:
+              - openid
+              - profile
+              - email
+              - groups
   params:
     server.insecure: true
+  rbac:
+    create: true
+    scopes: "[groups]"
+    policy.default: ""
+    policy.csv: |
+      g, admins, role:admin
+
 controller:
   metrics:
     enabled: true

@@ -340,6 +340,16 @@ resource "local_file" "authelia_cnpg_credentials_externalsecret" {
   content  = templatefile("${path.module}/templates/security/authelia/cnpg-credentials-externalsecret.yaml.tftpl", {})
 }
 
+resource "local_file" "authelia_argocd_client_secret_externalsecret" {
+  filename = "${path.module}/${local.project_root}/security/authelia/helm/resources/argocd-client-secret-externalsecret.yaml"
+  content  = templatefile("${path.module}/templates/security/authelia/argocd-client-secret-externalsecret.yaml.tftpl", {})
+}
+
+resource "local_file" "argocd_dex_oidc_secret_externalsecret" {
+  filename = "${path.module}/${local.project_root}/ci-cd/argo-cd/resources/dex-oidc-secret-externalsecret.yaml"
+  content  = templatefile("${path.module}/templates/ci-cd/argo-cd/dex-oidc-secret-externalsecret.yaml.tftpl", {})
+}
+
 #####################
 ## Grafana OIDC ESO ##
 #####################
