@@ -144,6 +144,7 @@ secret:
     cnpg-authelia-user-credentials: {}
     authelia-oidc-rsa-key: {}
     authelia-guest-password: {}
+    authelia-argocd-client-secret: {}
 
 # ---------------------------------------------------------------------------
 # Authelia configuration. Rendered into the `authelia` ConfigMap by
@@ -415,6 +416,25 @@ configMap:
           authorization_policy: 'allow-all'
           redirect_uris:
             - 'https://bytestash.drmarchent.com/api/auth/oidc/callback'
+          scopes:
+            - 'openid'
+            - 'profile'
+            - 'email'
+            - 'groups'
+          grant_types:
+            - 'authorization_code'
+          response_types:
+            - 'code'
+          response_modes:
+            - 'query'
+        - client_id: 'argocd'
+          client_secret:
+            path: /secrets/authelia-argocd-client-secret/client-secret-hash
+          public: false
+          token_endpoint_auth_method: 'client_secret_basic'
+          authorization_policy: 'restrict-to-admins'
+          redirect_uris:
+            - 'https://argocd.drmarchent.com/api/dex/callback'
           scopes:
             - 'openid'
             - 'profile'
