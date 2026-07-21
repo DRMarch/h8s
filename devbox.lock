@@ -181,51 +181,41 @@
         }
       }
     },
-    "terraform@1.15.7": {
-      "last_modified": "2026-06-27T07:37:20Z",
-      "resolved": "github:NixOS/nixpkgs/3d46470bb3030020f7e1361f33514854f5bfa86d#terraform",
+    "terraform@1.15.8": {
+      "last_modified": "2026-07-09T04:39:57Z",
+      "resolved": "github:NixOS/nixpkgs/80bd90efcad203e11e2c13e968c82a0ce2db3a2e#terraform",
       "source": "devbox-search",
-      "version": "1.15.7",
+      "version": "1.15.8",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/b81m7gn8aq04hm1dzm4qb0wnxx3b7b2f-terraform-1.15.7",
+              "path": "/nix/store/ab67lcr5rrkr8c9rmv2xp9gzsngfrd4s-terraform-1.15.8",
               "default": true
             }
           ],
-          "store_path": "/nix/store/b81m7gn8aq04hm1dzm4qb0wnxx3b7b2f-terraform-1.15.7"
+          "store_path": "/nix/store/ab67lcr5rrkr8c9rmv2xp9gzsngfrd4s-terraform-1.15.8"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/ybixq1r3k8yjdzxvx45dm1yvfcv1gfxq-terraform-1.15.7",
+              "path": "/nix/store/4czn7p8gk6m6z94cdynx2w9kgb1b0hyl-terraform-1.15.8",
               "default": true
             }
           ],
-          "store_path": "/nix/store/ybixq1r3k8yjdzxvx45dm1yvfcv1gfxq-terraform-1.15.7"
-        },
-        "x86_64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/dhfbiyk7q58pm69cswabznim3adk1rsn-terraform-1.15.7",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/dhfbiyk7q58pm69cswabznim3adk1rsn-terraform-1.15.7"
+          "store_path": "/nix/store/4czn7p8gk6m6z94cdynx2w9kgb1b0hyl-terraform-1.15.8"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/lfrqvszgp38kjv07525vbx6s9wzg88i7-terraform-1.15.7",
+              "path": "/nix/store/vc2im345qlr9crvb7wl7a6xcca49jlvh-terraform-1.15.8",
               "default": true
             }
           ],
-          "store_path": "/nix/store/lfrqvszgp38kjv07525vbx6s9wzg88i7-terraform-1.15.7"
+          "store_path": "/nix/store/vc2im345qlr9crvb7wl7a6xcca49jlvh-terraform-1.15.8"
         }
       }
     }
