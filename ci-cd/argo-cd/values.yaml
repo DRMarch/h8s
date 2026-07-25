@@ -3,6 +3,12 @@ configs:
   cm:
     resource.compareoptions: |
       ignoreResourceStatusField: all
+    resource.customizations.ignoreDifferences.external-secrets.io_ExternalSecret: |
+      jqPathExpressions:
+      - .metadata.finalizers
+      - .spec.data[].remoteRef.conversionStrategy
+      - .spec.data[].remoteRef.decodingStrategy
+      - .spec.data[].remoteRef.metadataPolicy
     admin.enabled: true
     url: https://argocd.drmarchent.com
     dex.config: |
