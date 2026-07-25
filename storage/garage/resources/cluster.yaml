@@ -10,6 +10,9 @@ spec:
   replication:
     factor: 3
   storage:
+    metadata:
+      size: 10Gi
+      storageClassName: longhorn
     data:
       size: 10Gi
       storageClassName: longhorn
