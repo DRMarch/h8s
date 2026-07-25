@@ -19,5 +19,3 @@ spec:
           name: cnpg-endurain-user-credentials
           key: password
   enableSuperuserAccess: false
-  monitoring:
-    enablePodMonitor: true

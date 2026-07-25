@@ -5,3 +5,4 @@ resources:
   - ./cluster.yaml
   - ./database.yaml
   - ./user-credential-secret.yaml
+  - ./pod-monitor.yaml
