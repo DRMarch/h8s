@@ -90,16 +90,6 @@ To verify the whole flow end-to-end:
 
 ## Operational notes
 
-- **`FRONTEND_PROTOCOL=https`** is not currently set in the deployment
-  env, which means the refresh-token cookie will be issued without the
-  `Secure` flag (default `http`). Recommended to add:
-  ```yaml
-  - name: FRONTEND_PROTOCOL
-    value: https
-  ```
-  to the `env:` block in `deployment.yaml`. This is orthogonal to the
-  OIDC setup; the OIDC flow itself works either way.
-
 - **Default credentials**: the fresh-install admin user is `admin` /
   `admin` and lives only in the `endurain` database. Change it before
   exposing the service.
@@ -251,10 +241,10 @@ docs](https://docs.endurain.com/integrations/3rd-party-services/)).
 
 | File | Role |
 |---|---|
-| `deployment.yaml` | Endurain Deployment + init containers (handles the upstream chown workaround) |
+| `deployment.yaml` | Endurain Deployment |
 | `service.yaml` | ClusterIP `endurain:8080` |
 | `pvc.yaml` | 10Gi Longhorn volume for `/app/backend/data` and `/app/backend/logs` |
-| `secret-key.yaml` | Mittwald secret-generator annotation for `SECRET_KEY` |
-| `fernet-key.yaml` | Mittwald secret-generator annotation for `FERNET_KEY` |
+| `secret-key-externalsecret.yaml` | ESO ExternalSecret for `SECRET_KEY` (pulled from Vault) |
+| `fernet-key-externalsecret.yaml` | ESO ExternalSecret for `FERNET_KEY` (pulled from Vault) |
 | `kustomization.yaml` | Bundles the above |
 | `README.md` | This file |

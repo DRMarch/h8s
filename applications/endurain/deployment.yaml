@@ -13,68 +13,19 @@ spec:
         app: endurain
     spec:
       securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
         seccompProfile:
           type: RuntimeDefault
-      # Endurain's entrypoint runs chown -R 1000:1000 on /app/backend/data at startup,
-      # but the main container is locked down (runAsNonRoot, drop ALL caps). These init
-      # containers run as root once to prepare volumes so the main container never needs
-      # elevated privileges.
-      #
-      # Both init containers can be removed once a post-v0.17.7 release ships with the
-      # master-branch entrypoint (no chown, pre-created env.js with 666 permissions).
-      # Upstream tracking issue: https://codeberg.org/endurain-project/endurain/issues/213
-      #
-      # init-permissions: pre-sets ownership of the PVC-backed data/logs directories
-      # so the chown in the entrypoint is a no-op.
-      # init-frontend: copies the frontend build out of the read-only container image
-      # into a writable emptyDir, then chowns to 1000. The entrypoint writes env.js
-      # into /app/frontend/dist at runtime to inject runtime config.
-      initContainers:
-        - name: init-permissions
-          image: busybox:1.38.0
-          command:
-            - sh
-            - -c
-            - |
-              mkdir -p /app/backend/data /app/backend/logs
-              chown -R 1000:1000 /app/backend/data /app/backend/logs
-          securityContext:
-            runAsUser: 0
-          volumeMounts:
-            - name: endurain-data
-              mountPath: /app/backend/data
-              subPath: data
-            - name: endurain-data
-              mountPath: /app/backend/logs
-              subPath: logs
-        - name: init-frontend
-          image: ghcr.io/endurain-project/endurain:v0.17.7
-          command:
-            - sh
-            - -c
-            - |
-              cp -a /app/frontend/dist/. /frontend/
-              echo "window.env = { ENDURAIN_HOST: \"https://endurain.drmarchent.com\" };" > /frontend/env.js
-              chown -R 1000:1000 /frontend
-          securityContext:
-            runAsUser: 0
-          volumeMounts:
-            - name: endurain-frontend
-              mountPath: /frontend
       containers:
         - name: endurain
           securityContext:
             runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
             allowPrivilegeEscalation: false
             capabilities:
               drop:
                 - "ALL"
-          image: ghcr.io/endurain-project/endurain:v0.17.7
-          command: ["uvicorn"]
-          args: ["main:app", "--host", "0.0.0.0", "--port", "8080", "--proxy-headers", "--log-level", "info"]
+          image: codeberg.org/endurain-project/endurain:v0.19
           ports:
             - containerPort: 8080
           readinessProbe:
@@ -85,7 +36,7 @@ spec:
             periodSeconds: 10
           env:
             - name: TZ
-              value: Europe/Lisbon
+              value: Europe/London
             - name: ENDURAIN_HOST
               value: https://endurain.drmarchent.com
             - name: BEHIND_PROXY
@@ -128,11 +79,7 @@ spec:
             - name: endurain-data
               mountPath: /app/backend/logs
               subPath: logs
-            - name: endurain-frontend
-              mountPath: /app/frontend/dist
       volumes:
         - name: endurain-data
           persistentVolumeClaim:
             claimName: endurain-data
-        - name: endurain-frontend
-          emptyDir: {}
