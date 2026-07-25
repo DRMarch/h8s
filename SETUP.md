@@ -2,7 +2,7 @@
 
 A guide to building a highly available, three-node home Kubernetes cluster using kubeadm and kube-vip, running on Ubuntu Server 26.04. This setup focuses on simplicity, reliability, and security.
 
-_Last updated: 2026-07-03
+_Last updated: 2026-07-25
 
 ## Table of Contents
 
@@ -202,6 +202,9 @@ Below we install any packages that are required by Longhorn.
 ```bash
 # For longhorn we must have
 sudo apt install open-iscsi nfs-common cryptsetup dmsetup -y
+
+# Multipathd is not needed and can conflict with longhorn so needs to be removed
+sudo systemctl stop multipathd && sudo systemctl disable multipathd
 ```
 
 ## Argocd
@@ -243,6 +246,11 @@ Firefox uses its own certificate store by default. To use the system CA store:
 Alternatively, import the `.pem` file manually via **Settings > Privacy & Security > Certificates > View Certificates > Import**.
 
 After completing these steps, browsers will trust `https://*.drmarchent.com` without warnings.
+
+### Terraform Secrets
+
+Next you will need to deploy the secrets for the cluster into vault by following the terraform [vault-secrets](./terraform/README.md)
+
 
 ## Harbor Setup
 
