@@ -5,5 +5,8 @@ resources:
   - ./pvc.yaml
   - ./secret-key-externalsecret.yaml
   - ./fernet-key-externalsecret.yaml
+  - ./oidc-client-secret-externalsecret.yaml
+  - ./admin-credentials-externalsecret.yaml
   - ./deployment.yaml
   - ./service.yaml
+  - ./bootstrap-sso-job.yaml
