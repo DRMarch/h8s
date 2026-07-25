@@ -8,6 +8,9 @@ spec:
     - name: lan-gateway
       namespace: default
       sectionName: home-lan-endurain
+    - name: cloudflare-gateway
+      namespace: cloudflare
+      sectionName: home-lan
   hostnames:
     - endurain.drmarchent.com
   rules:
