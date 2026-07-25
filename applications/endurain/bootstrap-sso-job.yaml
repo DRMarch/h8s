@@ -1,0 +1,207 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: endurain-bootstrap-sso
+  namespace: endurain
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 5
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: bootstrap-sso
+          image: curlimages/curl:8.12.1
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 100
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - "ALL"
+          env:
+            - name: ENDURAIN_URL
+              value: http://endurain.endurain.svc.cluster.local:8080
+            - name: OIDC_CLIENT_ID
+              value: endurain
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: endurain-oidc-client-secret
+                  key: client-secret-plaintext
+            - name: ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: endurain-admin-credentials
+                  key: username
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: endurain-admin-credentials
+                  key: password
+          command: ["sh", "-c"]
+          args:
+            - |
+              set -eu
+              COOKIE_JAR=/tmp/cookies.txt
+              MAX_RETRIES=60
+              RETRY_INTERVAL=5
+              IDP_SLUG=authelia
+
+              echo "=== Endurain SSO Bootstrap ==="
+
+              echo "Waiting for Endurain at ${ENDURAIN_URL}..."
+              retries=0
+              until curl -sf --max-time 10 "${ENDURAIN_URL}/" > /dev/null 2>&1; do
+                retries=$((retries + 1))
+                if [ "$retries" -ge "$MAX_RETRIES" ]; then
+                  echo "ERROR: Endurain not ready after $((MAX_RETRIES * RETRY_INTERVAL))s, giving up"
+                  exit 1
+                fi
+                sleep "$RETRY_INTERVAL"
+              done
+              echo "Endurain is ready"
+
+              echo "Logging in..."
+              LOGIN_RESP=$(curl -sf --max-time 10 -c "$COOKIE_JAR" \
+                -X POST "${ENDURAIN_URL}/api/v1/auth/login" \
+                -H "X-Client-Type: web" \
+                -H "Content-Type: application/x-www-form-urlencoded" \
+                -d "username=${ADMIN_USERNAME}&password=${ADMIN_PASSWORD}" 2>/dev/null || echo "")
+
+              ACCESS_TOKEN=$(echo "$LOGIN_RESP" | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
+              CSRF_TOKEN=$(echo "$LOGIN_RESP" | sed -n 's/.*"csrf_token":"\([^"]*\)".*/\1/p')
+
+              NEEDS_ROTATION=no
+              if [ -z "$ACCESS_TOKEN" ]; then
+                LOGIN_RESP=$(curl -sf --max-time 10 -c "$COOKIE_JAR" \
+                  -X POST "${ENDURAIN_URL}/api/v1/auth/login" \
+                  -H "X-Client-Type: web" \
+                  -H "Content-Type: application/x-www-form-urlencoded" \
+                  -d "username=admin&password=admin" 2>/dev/null || echo "")
+
+                ACCESS_TOKEN=$(echo "$LOGIN_RESP" | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
+                CSRF_TOKEN=$(echo "$LOGIN_RESP" | sed -n 's/.*"csrf_token":"\([^"]*\)".*/\1/p')
+
+                if [ -z "$ACCESS_TOKEN" ]; then
+                  echo "ERROR: Login failed with both Vault and default credentials"
+                  exit 1
+                fi
+                echo "Logged in with default credentials"
+                NEEDS_ROTATION=yes
+              else
+                echo "Logged in with Vault credentials"
+              fi
+
+              IDP_LIST=$(curl -sf --max-time 10 -b "$COOKIE_JAR" \
+                -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+                -H "X-Client-Type: web" \
+                -H "X-CSRF-Token: ${CSRF_TOKEN}" \
+                "${ENDURAIN_URL}/api/v1/idp")
+
+              EXISTING_ID=$(echo "$IDP_LIST" | sed -n 's/.*"id":\([0-9]*\)[^}]*"slug":"'"$IDP_SLUG"'".*/\1/p')
+
+              if [ -z "$EXISTING_ID" ]; then
+                EXISTING_ID=$(echo "$IDP_LIST" | sed -n 's/.*"slug":"'"$IDP_SLUG"'"[^}]*"id":\([0-9]*\).*/\1/p')
+              fi
+
+              if [ -n "$EXISTING_ID" ]; then
+                echo "IdP '${IDP_SLUG}' already exists (id=${EXISTING_ID}), updating..."
+                HTTP_CODE=$(curl -s --max-time 10 -o /dev/null -w "%{http_code}" \
+                  -b "$COOKIE_JAR" \
+                  -X PUT "${ENDURAIN_URL}/api/v1/idp/${EXISTING_ID}" \
+                  -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+                  -H "X-Client-Type: web" \
+                  -H "X-CSRF-Token: ${CSRF_TOKEN}" \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                    "name": "Authelia",
+                    "slug": "'"${IDP_SLUG}"'",
+                    "enabled": true,
+                    "client_id": "'"${OIDC_CLIENT_ID}"'",
+                    "client_secret": "'"${OIDC_CLIENT_SECRET}"'",
+                    "issuer_url": "https://auth.drmarchent.com",
+                    "scopes": "openid profile email",
+                    "auto_create_users": true,
+                    "sync_user_info": true
+                  }')
+                if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+                  echo "IdP updated successfully (HTTP ${HTTP_CODE})"
+                else
+                  echo "ERROR: Failed to update IdP (HTTP ${HTTP_CODE})"
+                  exit 1
+                fi
+              else
+                echo "Creating Authelia IdP..."
+                HTTP_CODE=$(curl -s --max-time 10 -o /dev/null -w "%{http_code}" \
+                  -b "$COOKIE_JAR" \
+                  -X POST "${ENDURAIN_URL}/api/v1/idp" \
+                  -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+                  -H "X-Client-Type: web" \
+                  -H "X-CSRF-Token: ${CSRF_TOKEN}" \
+                  -H "Content-Type: application/json" \
+                  -d '{
+                    "name": "Authelia",
+                    "slug": "'"${IDP_SLUG}"'",
+                    "provider_type": "oidc",
+                    "enabled": true,
+                    "client_id": "'"${OIDC_CLIENT_ID}"'",
+                    "client_secret": "'"${OIDC_CLIENT_SECRET}"'",
+                    "issuer_url": "https://auth.drmarchent.com",
+                    "scopes": "openid profile email",
+                    "auto_create_users": true,
+                    "sync_user_info": true
+                  }')
+                if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+                  echo "IdP created successfully (HTTP ${HTTP_CODE})"
+                else
+                  echo "ERROR: Failed to create IdP (HTTP ${HTTP_CODE})"
+                  exit 1
+                fi
+              fi
+
+              CURRENT_SETTINGS=$(curl -sf --max-time 10 -b "$COOKIE_JAR" \
+                -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+                -H "X-Client-Type: web" \
+                -H "X-CSRF-Token: ${CSRF_TOKEN}" \
+                "${ENDURAIN_URL}/api/v1/server_settings")
+              UPDATED_SETTINGS=$(echo "$CURRENT_SETTINGS" | sed 's/"sso_enabled":false/"sso_enabled":true/')
+              HTTP_CODE=$(curl -s --max-time 10 -o /dev/null -w "%{http_code}" \
+                -b "$COOKIE_JAR" \
+                -X PUT "${ENDURAIN_URL}/api/v1/server_settings" \
+                -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+                -H "X-Client-Type: web" \
+                -H "X-CSRF-Token: ${CSRF_TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d "$UPDATED_SETTINGS")
+              if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+                echo "SSO enabled successfully (HTTP ${HTTP_CODE})"
+              else
+                echo "ERROR: Failed to enable SSO (HTTP ${HTTP_CODE})"
+                exit 1
+              fi
+
+              if [ "$NEEDS_ROTATION" = "yes" ]; then
+                HTTP_CODE=$(curl -s --max-time 10 -o /dev/null -w "%{http_code}" \
+                  -b "$COOKIE_JAR" \
+                  -X PUT "${ENDURAIN_URL}/api/v1/users/1/password" \
+                  -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+                  -H "X-Client-Type: web" \
+                  -H "X-CSRF-Token: ${CSRF_TOKEN}" \
+                  -H "Content-Type: application/json" \
+                  -d '{"password": "'"${ADMIN_PASSWORD}"'"}')
+                if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+                  echo "Password rotated successfully (HTTP ${HTTP_CODE})"
+                else
+                  echo "ERROR: Failed to rotate password (HTTP ${HTTP_CODE})"
+                  exit 1
+                fi
+              fi
+
+              echo "=== SSO bootstrap complete ==="

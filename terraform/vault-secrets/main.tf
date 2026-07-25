@@ -22,6 +22,7 @@
 #   - cnpg/authelia-user-credentials -> username, password
 #   - endurain/fernet-key           -> fernet_key  (url-safe base64, 44 chars)
 #   - endurain/secret-key           -> secret_key  (url-safe base64, 44 chars)
+#   - endurain/admin-credentials    -> username, password
 #   - bytestash/jwt                 -> secret, token-expiry
 #   - bytestash/oidc                -> client-secret-plaintext
 #   - renovate/github               -> token (GitHub fine-grained PAT)
@@ -100,6 +101,12 @@ resource "random_password" "searxng_metrics_password" {
 }
 
 resource "random_password" "cnpg_authelia_password" {
+  length           = 32
+  special          = true
+  override_special = "!#%&*()-_=+[]{}<>?"
+}
+
+resource "random_password" "endurain_admin_password" {
   length           = 32
   special          = true
   override_special = "!#%&*()-_=+[]{}<>?"
@@ -658,6 +665,27 @@ resource "null_resource" "vault_endurain_secret_key" {
   }
 }
 
+# ---- Vault Push: Endurain Admin Credentials ----
+
+resource "null_resource" "vault_endurain_admin_credentials" {
+  triggers = {
+    password = random_password.endurain_admin_password.result
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/endurain/admin-credentials \
+          username='admin' \
+          password='${random_password.endurain_admin_password.result}'
+      "
+    EOT
+  }
+}
+
 # ---- Vault Push: Renovate GitHub PAT ----
 
 resource "null_resource" "vault_github_pat" {
@@ -722,6 +750,11 @@ output "endurain_fernet_key" {
 
 output "endurain_secret_key" {
   value     = local.endurain_secret_key_b64
+  sensitive = true
+}
+
+output "endurain_admin_password" {
+  value     = random_password.endurain_admin_password.result
   sensitive = true
 }
 
