@@ -36,3 +36,16 @@ vault_token = "hvs.xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 #   8. Click "Generate token" and copy the value (github_pat_...)
 #   9. Paste the token below
 github_pat_token = "github_pat_xxxxxxxxxxxxxxxxxxxx"
+
+# Discord webhook URL for Alertmanager cluster alerts
+# ====================================================
+# Alertmanager sends cluster alerts (node down, pod crashes, disk full, etc.)
+# to a Discord channel via webhook.
+#
+# To create the webhook:
+#   1. In Discord: Server Settings → Integrations → Webhooks → New Webhook
+#   2. Name: "h8s-alerts"
+#   3. Choose the target channel
+#   4. Click "Copy Webhook URL"
+#   5. Paste the URL below
+discord_webhook_url = "https://discord.com/api/webhooks/XXXXXXXXXX/YYYYYYYYYYYYYYYYYYYY"

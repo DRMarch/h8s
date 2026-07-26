@@ -824,6 +824,26 @@ resource "null_resource" "vault_github_pat" {
   }
 }
 
+# ---- Vault Push: Alertmanager Discord Webhook ----
+
+resource "null_resource" "vault_alertmanager_discord_webhook" {
+  triggers = {
+    url = var.discord_webhook_url
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/alertmanager/discord-webhook \
+          url='${var.discord_webhook_url}'
+      "
+    EOT
+  }
+}
+
 # ---- Outputs (plaintext values for reference) ----
 
 output "authelia_admin_password" {

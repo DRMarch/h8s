@@ -43,3 +43,10 @@ variable "github_pat_token" {
   default     = ""
   sensitive   = true
 }
+
+variable "discord_webhook_url" {
+  description = "Discord webhook URL for Alertmanager cluster alerts"
+  type        = string
+  default     = ""
+  sensitive   = true
+}

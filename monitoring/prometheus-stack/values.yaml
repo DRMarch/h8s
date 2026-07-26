@@ -1,5 +1,6 @@
 # https://raw.githubusercontent.com/prometheus-community/helm-charts/refs/tags/kube-prometheus-stack-84.5.0/charts/kube-prometheus-stack/values.yaml
 namespaceOverride: monitoring
+
 prometheus:
   prometheusSpec:
     # Stops the need to have to specify release tags
@@ -35,6 +36,38 @@ alertmanager:
           resources:
             requests:
               storage: 10Gi
+    secrets:
+      - alertmanager-discord-webhook
+
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['namespace', 'severity']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: 'discord'
+    receivers:
+      - name: 'discord'
+        discord_configs:
+          - webhook_url_file: '/etc/alertmanager/secrets/alertmanager-discord-webhook/url'
+            send_resolved: true
+    inhibit_rules:
+      - source_matchers:
+          - 'severity = critical'
+        target_matchers:
+          - 'severity =~ warning|info'
+        equal:
+          - 'namespace'
+          - 'alertname'
+      - source_matchers:
+          - 'severity = warning'
+        target_matchers:
+          - 'severity = info'
+        equal:
+          - 'namespace'
+          - 'alertname'
 
 grafana:
   enabled: false
