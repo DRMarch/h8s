@@ -14,6 +14,7 @@ resources:
   - ./http-routes/hubble.yaml
   - ./http-routes/longhorn.yaml
   - ./http-routes/bytestash.yaml
+  - ./http-routes/mlflow.yaml
   - ./http-routes/renovate.yaml
   - ./http-routes/searxng.yaml
   - ./http-routes/http-to-https-redirect.yaml
@@ -26,6 +27,7 @@ resources:
   - ./reference-grants/harbor-external-auth-authelia.yaml
   - ./reference-grants/lan-gateway-hello-world-tls.yaml
   - ./reference-grants/hello-world-external-auth-authelia.yaml
+  - ./reference-grants/lan-gateway-mlflow-tls.yaml
   - ./reference-grants/lan-gateway-renovate-tls.yaml
   - ./reference-grants/lan-gateway-hubble-tls.yaml
   - ./reference-grants/hubble-external-auth-authelia.yaml

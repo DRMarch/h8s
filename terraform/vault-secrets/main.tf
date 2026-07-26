@@ -1,10 +1,11 @@
 # ============================================================
-# Vault Secrets Provisioning — Authelia + CNPG + Renovate + Bytestash + SearXNG
+# Vault Secrets Provisioning — Authelia + CNPG + Renovate + Bytestash + SearXNG + MLflow
 # ============================================================
 # Provisions secret values in Vault for Authelia (encryption key,
 # session secret, HMAC secret, admin password, OIDC client secrets),
 # CNPG (database credentials), the Renovate GitHub App, ByteStash
-# (JWT secret, OIDC client secret), and SearXNG (secret key, metrics).
+# (JWT secret, OIDC client secret), SearXNG (secret key, metrics),
+# and MLflow (OIDC client secret, session key).
 #
 # Generated secrets:
 #   - authelia/encryption-key        -> encryption-key
@@ -17,16 +18,21 @@
 #                                      client-secret-plaintext
 #   - authelia/bytestash-oidc        -> client-secret-hash (pbkdf2)
 #                                      client-secret-plaintext
-#   - authelia/argocd-oidc          -> client-secret-hash (pbkdf2)
+#   - authelia/argocd-oidc           -> client-secret-hash (pbkdf2)
 #                                      client-secret-plaintext
+#   - authelia/mlflow-oidc           -> client-secret-hash (pbkdf2)
+#                                      client-secret-plaintext
+#   - mlflow/oidc                    -> secret-key
+#   - garage/mlflow-garage-credentials -> access-key-id
+#                                        secret-access-key
 #   - cnpg/authelia-user-credentials -> username, password
-#   - endurain/fernet-key           -> fernet_key  (url-safe base64, 44 chars)
-#   - endurain/secret-key           -> secret_key  (url-safe base64, 44 chars)
-#   - endurain/admin-credentials    -> username, password
-#   - bytestash/jwt                 -> secret, token-expiry
-#   - bytestash/oidc                -> client-secret-plaintext
-#   - renovate/github               -> token (GitHub fine-grained PAT)
-#   - searxng/searxng-secret        -> SECRET, METRICS_PASSWORD, METRICS_USERNAME
+#   - endurain/fernet-key            -> fernet_key  (url-safe base64, 44 chars)
+#   - endurain/secret-key            -> secret_key  (url-safe base64, 44 chars)
+#   - endurain/admin-credentials     -> username, password
+#   - bytestash/jwt                  -> secret, token-expiry
+#   - bytestash/oidc                 -> client-secret-plaintext
+#   - renovate/github                -> token (GitHub fine-grained PAT)
+#   - searxng/searxng-secret         -> SECRET, METRICS_PASSWORD, METRICS_USERNAME
 #
 # Bring-your-own secrets (via secrets.auto.tfvars):
 #   - vault_token, github_pat_token
@@ -97,6 +103,16 @@ resource "random_password" "searxng_secret_key" {
 
 resource "random_password" "searxng_metrics_password" {
   length  = 32
+  special = false
+}
+
+resource "random_password" "mlflow_oidc_secret_key" {
+  length  = 64
+  special = false
+}
+
+resource "random_password" "authelia_mlflow_oidc_plaintext" {
+  length  = 64
   special = false
 }
 
@@ -599,6 +615,108 @@ resource "null_resource" "vault_searxng_secret" {
           SECRET='${random_password.searxng_secret_key.result}' \
           METRICS_PASSWORD='${random_password.searxng_metrics_password.result}' \
           METRICS_USERNAME='prometheus'
+      "
+    EOT
+  }
+}
+
+# ---- Vault Push: MLflow OIDC Session Secret Key ----
+
+resource "null_resource" "vault_mlflow_oidc_secret_key" {
+  triggers = {
+    value = random_password.mlflow_oidc_secret_key.result
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/mlflow/oidc \
+          secret-key='${random_password.mlflow_oidc_secret_key.result}'
+      "
+    EOT
+  }
+}
+
+# ---- Vault Push: MLflow Authelia OIDC (pbkdf2 hash + plaintext) ----
+
+resource "null_resource" "vault_authelia_mlflow_oidc" {
+  triggers = {
+    plaintext = random_password.authelia_mlflow_oidc_plaintext.result
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      TMP_CONFIG=$(mktemp)
+      trap 'rm -f "$TMP_CONFIG"' EXIT
+      cat > "$TMP_CONFIG" <<EOF
+      authentication_backend:
+        file:
+          path: /dev/null
+      EOF
+
+      if ! RAW=$(docker run --rm \
+          -v "$TMP_CONFIG:/config/configuration.yml:ro" \
+          ${var.authelia_docker_image} \
+          authelia crypto hash generate pbkdf2 \
+          --password '${random_password.authelia_mlflow_oidc_plaintext.result}' \
+          --no-confirm 2>&1); then
+        echo "ERROR: authelia crypto hash generate (pbkdf2) for mlflow failed. Output:" >&2
+        echo "$RAW" >&2
+        exit 1
+      fi
+      HASH=$(echo "$RAW" | sed -n 's/^Digest: //p' | tr -d '\r\n ')
+
+      case "$HASH" in
+        '$'*) ;;
+        *) echo "ERROR: mlflow OIDC client secret hash invalid. Raw output:" >&2
+           echo "$RAW" >&2
+           echo "Extracted hash: '$HASH'" >&2
+           exit 1 ;;
+      esac
+      if echo "$HASH" | grep -q ' '; then
+        echo "ERROR: mlflow OIDC client secret hash contains whitespace: $HASH" >&2
+        exit 1
+      fi
+
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/authelia/mlflow-oidc \
+          client-secret-hash='$HASH' \
+          client-secret-plaintext='${random_password.authelia_mlflow_oidc_plaintext.result}'
+      "
+    EOT
+  }
+}
+
+resource "random_password" "garage_mlflow_access_key_id" {
+  length  = 20
+  special = false
+}
+
+resource "random_password" "garage_mlflow_secret_access_key" {
+  length  = 64
+  special = false
+}
+
+resource "null_resource" "vault_garage_mlflow_creds" {
+  triggers = {
+    access = random_password.garage_mlflow_access_key_id.result
+    secret = random_password.garage_mlflow_secret_access_key.result
+  }
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/garage/mlflow-garage-credentials \
+          access-key-id='GK${random_password.garage_mlflow_access_key_id.result}' \
+          secret-access-key='${random_password.garage_mlflow_secret_access_key.result}'
       "
     EOT
   }

@@ -1,0 +1,15 @@
+apiVersion: garage.rajsingh.info/v1beta1
+kind: GarageKey
+metadata:
+  name: mlflow-key
+spec:
+  clusterRef:
+    name: garage-default-cluster
+  importKey:
+    secretRef:
+      name: garage-mlflow-creds
+  bucketPermissions:
+    - bucketRef:
+        name: mlflow
+      read: true
+      write: true

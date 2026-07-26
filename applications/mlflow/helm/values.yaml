@@ -1,0 +1,105 @@
+# https://github.com/community-charts/helm-charts/blob/main/charts/mlflow/values.yaml
+
+# ── Single worker (OIDC plugin + forked workers crash with readOnlyRootFilesystem) ──
+extraArgs:
+  workers: "1"
+
+log:
+  enabled: true
+  level: debug
+
+# ── PostgreSQL backend (CloudNative-PG) ──
+backendStore:
+  databaseMigration: true
+  postgres:
+    enabled: true
+    host: "cnpg-mlflow-rw.mlflow.svc.cluster.local"
+    port: 5432
+    database: "mlflow"
+  existingDatabaseSecret:
+    name: "cnpg-mlflow-user-credentials"
+    usernameKey: "username"
+    passwordKey: "password"
+
+# ── S3 Artifact Store (Garage) ──
+# Credentials originate in Vault (garage/mlflow-garage-credentials),
+# flow through ESO into the mlflow namespace, and the GarageKey CR
+# imports the same pre-generated key via importKey.secretRef.
+artifactRoot:
+  s3:
+    enabled: true
+    bucket: "mlflow"
+    existingSecret:
+      name: "mlflow-garage-credentials"
+      keyOfAccessKeyId: "accessKeyId"
+      keyOfSecretAccessKey: "secretAccessKey"
+
+# ── OIDC Authentication ──
+oidcAuth:
+  enabled: true
+  discoveryUrl: "https://auth.drmarchent.com/.well-known/openid-configuration"
+  clientId: "mlflow"
+  existingSecret:
+    name: "mlflow-oidc-secret"
+    clientSecretKey: "OIDC_CLIENT_SECRET"
+  providerDisplayName: "Sign in with Authelia"
+  scope: "openid email profile groups"
+  groupName:
+    - app-users
+  adminGroupName:
+    - admins
+  groupsAttribute: "groups"
+  defaultPermission: "NO_PERMISSIONS"
+  sessionCookieSecure: true
+  sessionCookieSamesite: "lax"
+  trustedProxies:
+    - "10.0.0.0/8"
+    - "172.16.0.0/12"
+    - "192.168.0.0/16"
+  database:
+    postgres:
+      enabled: true
+      host: "cnpg-mlflow-rw.mlflow.svc.cluster.local"
+      port: 5432
+      database: "mlflow"
+      existingSecret:
+        name: "cnpg-mlflow-user-credentials"
+        usernameKey: "username"
+        passwordKey: "password"
+
+# ── Extra env vars ──
+extraEnvVars:
+  MLFLOW_S3_ENDPOINT_URL: "http://garage-default-cluster.garage.svc.cluster.local:3900"
+  MLFLOW_S3_ADDRESSING_STYLE: "path"
+  AWS_DEFAULT_REGION: "us-east-1"
+  OIDC_ALEMBIC_VERSION_TABLE: "oidc_auth_alembic_version"
+
+serverAllowedHosts:
+  - "mlflow.drmarchent.com"
+
+corsAllowedOrigins:
+  - "https://mlflow.drmarchent.com"
+
+# ── Prometheus Metrics ──
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+  interval: 30s
+  labels:
+    release: prometheus
+
+extraVolumes:
+  - name: prometheus-metrics
+    emptyDir: {}
+
+extraVolumeMounts:
+  - name: prometheus-metrics
+    mountPath: /mlflow/metrics
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 2Gi

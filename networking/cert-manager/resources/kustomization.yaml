@@ -19,3 +19,4 @@ resources:
   - ./certificates/searxng-homelab-local.yaml
   - ./certificates/wildcard-drmarchent-local.yaml
   - ./certificates/longhorn-homelab-local.yaml
+  - ./certificates/mlflow-homelab-local.yaml

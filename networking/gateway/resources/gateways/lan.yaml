@@ -167,6 +167,18 @@ spec:
         certificateRefs:
           - name: searxng-homelab-local-tls
             namespace: searxng
+    - protocol: HTTPS
+      name: home-lan-mlflow
+      hostname: mlflow.drmarchent.com
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: mlflow-homelab-local-tls
+            namespace: mlflow
     - protocol: HTTP
       name: http-redirect
       port: 80

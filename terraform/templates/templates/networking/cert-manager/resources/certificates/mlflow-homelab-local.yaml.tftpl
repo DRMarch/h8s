@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mlflow-homelab-local
+  namespace: mlflow
+spec:
+  secretName: mlflow-homelab-local-tls
+  issuerRef:
+    name: vault-issuer
+    kind: ClusterIssuer
+  commonName: mlflow.${kubernetes_domain}
+  dnsNames:
+    - mlflow.${kubernetes_domain}
