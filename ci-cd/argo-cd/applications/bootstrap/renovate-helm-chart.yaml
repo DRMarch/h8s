@@ -10,9 +10,9 @@ metadata:
 spec:
   project: default
   sources:
-    - repoURL: https://charts.cncfstack.com/helm.mogenius.com
+    - repoURL: ghcr.io/mogenius/helm-charts
       chart: renovate-operator
-      targetRevision: 4.10.0 # May 2026
+      targetRevision: 5.5.0
       helm:
         releaseName: renovate-operator
         valueFiles:
