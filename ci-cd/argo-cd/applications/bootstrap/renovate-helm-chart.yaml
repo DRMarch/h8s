@@ -12,7 +12,7 @@ spec:
   sources:
     - repoURL: ghcr.io/mogenius/helm-charts
       chart: renovate-operator
-      targetRevision: 4.10.0
+      targetRevision: 4.14.1
       helm:
         releaseName: renovate-operator
         valueFiles:
