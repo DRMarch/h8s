@@ -8,5 +8,6 @@ metrics:
     enabled: true
     port: 8080
 
+# Can't specify the namespace to save the grafanaDashboard configmap to
 grafanaDashboard:
-  enabled: true
+  enabled: false
