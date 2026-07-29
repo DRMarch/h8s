@@ -2,7 +2,8 @@ apiVersion: dragonflydb.io/v1alpha1
 kind: Dragonfly
 metadata:
   name: searxng-dragonfly
-  namespace: searxng
+  labels:
+    app: searxng-dragonfly
 spec:
   image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
   replicas: 1

@@ -6,6 +6,5 @@ resources:
   - ./service.yaml
   - ./configmap.yaml
   - ./limiter-configmap.yaml
-  - ./dragonfly.yaml
   - ./searxng-secret-externalsecret.yaml
   - ./service-monitor.yaml

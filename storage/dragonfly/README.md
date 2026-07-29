@@ -17,7 +17,7 @@ The DragonflyDB **operator** is installed in this cluster (via the official [Dra
 | **Operator namespace** | `dragonfly-operator-system` |
 | **Operator sync-wave** | `-397` (ArgoCD) |
 | **Chart** | `oci://ghcr.io/dragonflydb/dragonfly-operator/helm/dragonfly-operator` v1.5.0 |
-| **Dragonfly CRs** | None deployed. |
+| **Dragonfly CRs** | `searxng-dragonfly` (SearXNG cache, `searxng` namespace). |
 | **CRDs** | `dragonflies.dragonflydb.io` is installed by the operator. |
 
 ## Deployment
@@ -26,9 +26,13 @@ The DragonflyDB **operator** is installed in this cluster (via the official [Dra
 
 The Dragonfly Operator is deployed via the ArgoCD Helm application `dragonfly-operator-helm.yaml` (sync-wave `-397`). Values are defined in `storage/dragonfly/operator/values.yaml`.
 
+### Dragonfly instances
+
+Dragonfly CRs are managed in `storage/dragonfly/resources/` and deployed via the ArgoCD application `dragonfly-resources.yaml`. Each instance lives in the namespace of the application that consumes it.
+
 ### Adding a new Dragonfly instance
 
-If a future workload needs Redis-compatible storage, create a `Dragonfly` CR in the target namespace. For example, to spin up a `redis` instance in a new `myapp` namespace:
+If a future workload needs Redis-compatible storage, create a `Dragonfly` CR in `storage/dragonfly/resources/`. For example, to spin up a `redis` instance in a new `myapp` namespace:
 
 ```yaml
 apiVersion: dragonflydb.io/v1alpha1
