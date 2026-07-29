@@ -1,4 +1,4 @@
-# https://github.com/rajsinghtech/garage-operator/blob/v0.4.9/charts/garage-operator/values.yaml
+# https://github.com/rajsinghtech/garage-operator/blob/v0.6.29/charts/garage-operator/values.yaml
 
 # -- Number of operator replicas (typically 1 with leader election)
 replicaCount: 1
