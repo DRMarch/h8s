@@ -179,6 +179,18 @@ spec:
         certificateRefs:
           - name: mlflow-homelab-local-tls
             namespace: mlflow
+    - protocol: HTTPS
+      name: home-lan-llm
+      hostname: llm.drmarchent.com
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: wildcard-drmarchent-local-tls
+            namespace: cloudflare
     - protocol: HTTP
       name: http-redirect
       port: 80

@@ -1,0 +1,34 @@
+apiVersion: extensions.higress.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: ai-proxy-opencode-zen
+  namespace: higress-system
+spec:
+  url: oci://higress-registry.us-west-1.cr.aliyuncs.com/plugins/ai-proxy@sha256:69c17eae7b8331f37f05a651a0a1aa731fe7aff2ce30452ff4bbba7c7271818d
+  sha256: 69c17eae7b8331f37f05a651a0a1aa731fe7aff2ce30452ff4bbba7c7271818d
+  imagePullPolicy: IfNotPresent
+  failStrategy: FAIL_OPEN
+  priority: 100
+  defaultConfigDisable: true
+  matchRules:
+    - service:
+        - opencode-zen.dns
+      config:
+        activeProviderId: opencode-zen
+        providers:
+          - id: opencode-zen
+            type: openai
+            openaiCustomUrl: https://opencode.ai/zen/v1
+            apiTokens:
+              - ${secret.higress-system/higress-opencode-go.api-token-1}
+              - ${secret.higress-system/higress-opencode-go.api-token-2}
+            modelMapping:
+              "*": ""
+            failover:
+              enabled: true
+              cooldownDuration: 300000
+              failoverOnStatus:
+                - "401"
+                - "403"
+                - "429"
+                - "5.*"

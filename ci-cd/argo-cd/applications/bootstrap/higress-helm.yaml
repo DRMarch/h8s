@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: higress-helm
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "-45"
+spec:
+  project: default
+  sources:
+    - repoURL: https://higress.io/helm-charts
+      chart: higress-core
+      targetRevision: 2.2.3
+      helm:
+        releaseName: higress
+        valueFiles:
+          - $h8s/networking/higress/helm/values.yaml
+    - repoURL: https://github.com/DRMarch/h8s.git
+      targetRevision: HEAD
+      ref: h8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: higress-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - PruneLast=true
+      - ServerSideApply=true
+      - CreateNamespace=true

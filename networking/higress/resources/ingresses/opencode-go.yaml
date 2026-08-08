@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: opencode-go
+  namespace: higress-system
+  annotations:
+    higress.io/backend-protocol: HTTPS
+    higress.io/destination: opencode-go.dns
+    higress.io/proxy-ssl-name: opencode.ai
+    higress.io/proxy-ssl-server-name: "on"
+    higress.io/exact-match-header-x-higress-llm-provider: go
+spec:
+  ingressClassName: higress
+  rules:
+    - host: llm.drmarchent.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              resource:
+                apiGroup: networking.higress.io
+                kind: McpBridge
+                name: default

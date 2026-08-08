@@ -1,0 +1,19 @@
+apiVersion: networking.higress.io/v1
+kind: McpBridge
+metadata:
+  name: default
+  namespace: higress-system
+spec:
+  registries:
+    - name: opencode-go
+      type: dns
+      domain: opencode.ai
+      port: 443
+      protocol: https
+      sni: opencode.ai
+    - name: opencode-zen
+      type: dns
+      domain: opencode.ai
+      port: 443
+      protocol: https
+      sni: opencode.ai

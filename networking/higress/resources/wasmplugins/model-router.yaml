@@ -1,0 +1,20 @@
+apiVersion: extensions.higress.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: model-router
+  namespace: higress-system
+spec:
+  url: oci://higress-registry.us-west-1.cr.aliyuncs.com/plugins/model-router:2.0.0
+  imagePullPolicy: IfNotPresent
+  failStrategy: FAIL_OPEN
+  priority: 900
+  defaultConfigDisable: true
+  matchRules:
+    - domain:
+        - llm.drmarchent.com
+      config:
+        addProviderHeader: x-higress-llm-provider
+        modelToHeader: x-higress-llm-model
+        modelToProvider:
+          "go/": "go"
+          "zen/": "zen"

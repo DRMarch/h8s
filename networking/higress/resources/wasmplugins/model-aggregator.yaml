@@ -1,0 +1,27 @@
+apiVersion: extensions.higress.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: ai-models-aggregator
+  namespace: higress-system
+spec:
+  url: ghcr.io/drmarch/higress-model-aggregator:990e8f7
+  imagePullPolicy: IfNotPresent
+  failStrategy: FAIL_OPEN
+  priority: 950
+  defaultConfigDisable: true
+  matchRules:
+    - domain:
+        - llm.drmarchent.com
+      config:
+        providers:
+          - name: opencode-zen
+            modelsUrl: https://opencode.ai/zen/v1/models
+            prefix: "zen/"
+            serviceName: opencode-go
+            include:
+              - "^big-pickle$"
+              - "free$"
+          - name: opencode-go
+            modelsUrl: https://opencode.ai/zen/go/v1/models
+            prefix: "go/"
+            serviceName: opencode-go

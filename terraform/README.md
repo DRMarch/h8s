@@ -82,6 +82,12 @@ terraform apply
 
 `secrets.auto.tfvars` is gitignored — never commit real values.
 
+For the Higress OpenCode Go pilot, set both `opencode_go_api_key_1` and
+`opencode_go_api_key_2`. Terraform writes them to
+`kubernetes-homelab/higress/opencode-go`; the Higress ExternalSecret then
+materializes them in `higress-system`. Leave both empty to skip this optional
+provider resource.
+
 ### Legacy: passing variables on the CLI
 
 You can still pass variables on the command line (backward compatible):
@@ -113,6 +119,8 @@ Edit [`vault-secrets/variables.tf`](./vault-secrets/variables.tf):
 | `authelia_docker_image` | `ghcr.io/authelia/authelia:latest` | Image for crypto hash generation |
 | `vault_token` | `""` | Vault root token (preferred over `vault_token_file`) |
 | `github_pat_token` | `""` | GitHub fine-grained PAT for Renovate |
+| `opencode_go_api_key_1` | `""` | First OpenCode Go API key for Higress token failover |
+| `opencode_go_api_key_2` | `""` | Second OpenCode Go API key for Higress token failover |
 
 ### Outputs (sensitive)
 
@@ -166,3 +174,4 @@ kubectl exec -n vault vault-0 -- \
 | `kubernetes-homelab/endurain/fernet-key` | `fernet_key` | Endurain Fernet crypto |
 | `kubernetes-homelab/endurain/secret-key` | `secret_key` | Endurain session signing |
 | `kubernetes-homelab/renovate/github` | `token` | Renovate GitHub fine-grained PAT |
+| `kubernetes-homelab/higress/opencode-go` | `api-token-1`, `api-token-2` | Higress OpenCode Go provider tokens |

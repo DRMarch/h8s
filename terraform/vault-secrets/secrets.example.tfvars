@@ -49,3 +49,10 @@ github_pat_token = "github_pat_xxxxxxxxxxxxxxxxxxxx"
 #   4. Click "Copy Webhook URL"
 #   5. Paste the URL below
 discord_webhook_url = "https://discord.com/api/webhooks/XXXXXXXXXX/YYYYYYYYYYYYYYYYYYYY"
+
+# OpenCode Go keys for the initial Higress provider pilot.
+# These must belong to separate OpenCode Go usage quotas. Both are written to
+# kubernetes-homelab/higress/opencode-go and consumed through ESO; never put
+# the real values in Git.
+opencode_go_api_key_1 = "sk-opencode-go-key-1"
+opencode_go_api_key_2 = "sk-opencode-go-key-2"

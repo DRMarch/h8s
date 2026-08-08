@@ -1,0 +1,55 @@
+# https://github.com/higress-group/higress/blob/main/helm/core/values.yaml
+
+global:
+  enableGatewayAPI: true
+  gatewayClass: higress
+  createIngressClass: true
+  ingressClass: higress
+  watchNamespace: ""
+  enableRedis: false
+  enablePluginServer: false
+  imagePullPolicy: IfNotPresent
+  hub: higress-registry.us-west-1.cr.aliyuncs.com
+  pluginNamespace: plugins
+  logging:
+    level: "default:debug"
+
+gateway:
+  name: higress-gateway
+  replicas: 1
+  service:
+    type: ClusterIP
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 2048Mi
+  metrics:
+    enabled: true
+    provider: monitoring.coreos.com
+    podMonitorSelector:
+      release: prometheus
+
+controller:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 25m
+      memory: 128Mi
+    limits:
+      cpu: 50m
+      memory: 256Mi
+
+pilot:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 250m
+      memory: 512Mi
+
+tracing:
+  enable: false
