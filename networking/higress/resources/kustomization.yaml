@@ -5,3 +5,4 @@ resources:
   - ./mcpbridge.yaml
   - ./ingress.yaml
   - ./wasmplugins/opencode-go.yaml
+  - ./wasmplugins/model-aggregator.yaml
