@@ -259,6 +259,13 @@ resource "local_file" "http_route_searxng" {
   })
 }
 
+resource "local_file" "http_route_llm" {
+  filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/llm.yaml"
+  content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/llm.yaml.tftpl", {
+    kubernetes_domain = var.kubernetes_domain
+  })
+}
+
 resource "local_file" "http_route_http_to_https_redirect" {
   filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/http-to-https-redirect.yaml"
   content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/http-to-https-redirect.yaml.tftpl", {

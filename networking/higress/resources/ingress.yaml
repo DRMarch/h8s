@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: opencode-go
+  namespace: higress-system
+  annotations:
+    higress.io/destination: opencode-go.dns
+spec:
+  ingressClassName: higress
+  rules:
+    - host: llm.drmarchent.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              resource:
+                apiGroup: networking.higress.io
+                kind: McpBridge
+                name: default

@@ -15,10 +15,12 @@ resources:
   - ./http-routes/longhorn.yaml
   - ./http-routes/bytestash.yaml
   - ./http-routes/mlflow.yaml
+  - ./http-routes/llm.yaml
   - ./http-routes/renovate.yaml
   - ./http-routes/searxng.yaml
   - ./http-routes/http-to-https-redirect.yaml
   - ./reference-grants/lan-gateway-argocd-tls.yaml
+  - ./reference-grants/lan-gateway-wildcard-tls.yaml
   - ./reference-grants/lan-gateway-authelia-tls.yaml
   - ./reference-grants/lan-gateway-endurain-tls.yaml
   - ./reference-grants/lan-gateway-garage-tls.yaml

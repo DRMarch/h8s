@@ -1,0 +1,20 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: llm
+  namespace: higress-system
+spec:
+  parentRefs:
+    - name: lan-gateway
+      namespace: default
+      sectionName: home-lan-llm
+  hostnames:
+    - llm.drmarchent.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: higress-gateway
+          port: 80

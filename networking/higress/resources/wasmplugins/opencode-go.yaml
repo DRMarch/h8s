@@ -1,0 +1,38 @@
+apiVersion: extensions.higress.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: ai-proxy
+  namespace: higress-system
+spec:
+  url: oci://higress-registry.us-west-1.cr.aliyuncs.com/plugins/ai-proxy@sha256:69c17eae7b8331f37f05a651a0a1aa731fe7aff2ce30452ff4bbba7c7271818d
+  sha256: 69c17eae7b8331f37f05a651a0a1aa731fe7aff2ce30452ff4bbba7c7271818d
+  imagePullPolicy: IfNotPresent
+  failStrategy: FAIL_OPEN
+  priority: 100
+  defaultConfigDisable: true
+  matchRules:
+    - ingress:
+        - higress-system/opencode-go
+      config: &opencode-go-config
+        activeProviderId: opencode-go
+        providers:
+          - id: opencode-go
+            type: openai
+            openaiCustomUrl: https://opencode.ai/zen/go/v1
+            apiTokens:
+              - ${secret.higress-system/higress-opencode-go.api-token-1}
+              - ${secret.higress-system/higress-opencode-go.api-token-2}
+            modelMapping:
+              deepseek-v4-flash: deepseek-v4-flash
+            failover:
+              enabled: true
+              cooldownDuration: 300000
+              failoverOnStatus:
+                - "401"
+                - "403"
+                - "429"
+                - "5.*"
+
+    - domain:
+        - llm.drmarchent.com
+      config: *opencode-go-config

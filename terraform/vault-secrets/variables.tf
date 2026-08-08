@@ -50,3 +50,17 @@ variable "discord_webhook_url" {
   default     = ""
   sensitive   = true
 }
+
+variable "opencode_go_api_key_1" {
+  description = "First OpenCode Go API key. Both OpenCode Go keys are written to the same Vault path for Higress token failover."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "opencode_go_api_key_2" {
+  description = "Second OpenCode Go API key. Both keys should belong to independent usage quotas."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
