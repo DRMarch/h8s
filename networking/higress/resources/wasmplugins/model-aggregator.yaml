@@ -4,12 +4,24 @@ metadata:
   name: ai-models-aggregator
   namespace: higress-system
 spec:
-  url: oci://ghcr.io/drmarch/higress-model-aggregator:bae9e94
+  url: ghcr.io/drmarch/higress-model-aggregator:142435d
   imagePullPolicy: IfNotPresent
   failStrategy: FAIL_OPEN
   priority: 950
   defaultConfigDisable: true
   matchRules:
+    - ingress:
+        - higress-system/opencode-go
+      config:
+        providers:
+          - name: opencode-zen
+            modelsUrl: https://opencode.ai/zen/v1/models
+            prefix: "zen/"
+            serviceName: opencode-go
+          - name: opencode-go
+            modelsUrl: https://opencode.ai/zen/go/v1/models
+            prefix: "go/"
+            serviceName: opencode-go
     - domain:
         - llm.drmarchent.com
       config:
@@ -17,6 +29,8 @@ spec:
           - name: opencode-zen
             modelsUrl: https://opencode.ai/zen/v1/models
             prefix: "zen/"
+            serviceName: opencode-go
           - name: opencode-go
             modelsUrl: https://opencode.ai/zen/go/v1/models
             prefix: "go/"
+            serviceName: opencode-go
