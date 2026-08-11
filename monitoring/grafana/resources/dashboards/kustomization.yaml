@@ -9,6 +9,7 @@ resources:
   - ./external-secrets/
   - ./garage/
   - ./harbor/
+  - ./higress/
   - ./kubernetes/
   - ./longhorn/
   - ./renovate/
