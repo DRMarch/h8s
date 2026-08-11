@@ -129,6 +129,23 @@ extraEnvVars:
       secretKeyRef:
         name: cnpg-openwebui-user-credentials
         key: password
+  - name: ENABLE_PERSISTENT_CONFIG
+    value: "false"
+  # ── Web search (SearXNG tool) ──────────────────────────────────────────────
+  - name: ENABLE_WEB_SEARCH
+    value: "True"
+  - name: WEB_SEARCH_ENGINE
+    value: "searxng"
+  - name: SEARXNG_QUERY_URL
+    value: "http://searxng.searxng.svc.cluster.local:8080/search?q=<query>"
+  - name: SEARXNG_LANGUAGE
+    value: "en"
+  - name: WEB_SEARCH_RESULT_COUNT
+    value: "5"
+  - name: WEB_SEARCH_CONCURRENT_REQUESTS
+    value: "3"
+  - name: ENABLE_WEB_SEARCH_CONFIRMATION
+    value: "true"
 
 podSecurityContext:
   runAsNonRoot: true
