@@ -5,4 +5,4 @@ resources:
   - ./folder.yaml
   - ./higress-controller-dashboard.yaml
   - ./higress-ai-gateway-dashboard.yaml
-
+  - ./higress-ai-statistics-dashboard.yaml
