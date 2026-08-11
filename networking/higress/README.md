@@ -40,20 +40,21 @@ Higress selects between the credentials and temporarily removes a credential fro
 
 Run the `terraform/vault-secrets` workspace after setting both provider credentials. Argo CD then deploys the `higress-helm` and `higress-resources` Applications in order. The resources include the Higress gateway, OpenCode Go provider bridge, LAN route, ExternalSecret and AI Proxy WasmPlugin.
 
-The route is LAN-facing and does not configure client authentication. Do not attach it to the Cloudflare Gateway unless an authentication policy has been added.
 
 ## API
 
-List available OpenCode Go models:
+List available OpenCode Go/Zen models (the `x-api-key` header is required on every request):
 
 ```bash
-curl https://llm.drmarchent.com/v1/models
+curl https://llm.drmarchent.com/v1/models \
+  -H 'x-api-key: <your-api-key>'
 ```
 
 Send a Chat Completions request:
 
 ```bash
 curl https://llm.drmarchent.com/v1/chat/completions \
+  -H 'x-api-key: <your-api-key>' \
   -H 'Content-Type: application/json' \
   -d '{
     "model": "go/deepseek-v4-flash",

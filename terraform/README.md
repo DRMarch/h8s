@@ -6,6 +6,7 @@ This directory contains two **separate** Terraform workspaces with distinct life
 |---|---|---|---|
 | **Templates** | `templates/` | Renders K8s manifests from `.tftpl` files (ExternalSecrets, HTTPRoutes, certificates) | Every config change |
 | **Secrets** | `vault-secrets/` | Generates random secrets, hashes (argon2, pbkdf2), pushes to Vault | Once at cluster bootstrap |
+| **Higress API Keys** | `higress-api-keys/` | Generates Higress `key-auth` consumer keys, pushes them to Vault, and renders the ExternalSecret + WasmPlugin manifests | When adding/rotating Higress API keys |
 
 ## Why separate?
 
@@ -158,6 +159,20 @@ kubectl exec -n vault vault-0 -- \
 ```
 
 > **Note:** for the `authelia/*-password` paths, Vault only stores the **argon2 hash**, not the plaintext. Once the Terraform state is lost, the plaintext is unrecoverable and the user must be reset (see "Rotation" in `security/authelia/README.md`).
+
+## Higress API keys workspace (`higress-api-keys/`)
+
+Dedicated workspace for the Higress `key-auth` plugin keys. Consumer **names** are committed in `variables.tf` (`higress_api_consumers`, not secret); Terraform generates an sk- prefixed key per consumer (sk- + 128 random chars, like the Authelia passwords), pushes it to Vault, and **re-renders** the two consuming manifests (`networking/higress/resources/api-key-externalsecret.yaml` and `.../wasmplugins/key-auth.yaml`) — no manifest hand-editing is needed.
+
+```bash
+cd terraform/higress-api-keys
+cp secrets.example.tfvars secrets.auto.tfvars
+$EDITOR secrets.auto.tfvars      # vault_token only
+terraform init
+terraform apply
+```
+
+Each consumer lands in Vault at `kubernetes-homelab/higress/api-keys/<consumer>` (field `api-key`), is synced by ESO into the `higress-system/higress-api-keys` Secret, and is enforced by the `key-auth` WasmPlugin on `llm.drmarchent.com`. Read generated keys with `terraform output -json api_keys`. The rendered manifests contain no secret values — only Vault/secret references. See the workspace README for adding and removing consumers (edit `variables.tf`).
 
 ### Secrets generated
 

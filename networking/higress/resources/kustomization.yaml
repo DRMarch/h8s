@@ -2,8 +2,10 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ./opencode-go-externalsecret.yaml
+  - ./api-key-externalsecret.yaml
   - ./mcpbridge.yaml
   - ./ingresses
+  - ./wasmplugins/key-auth.yaml
   - ./wasmplugins/model-router.yaml
   - ./wasmplugins/ai-proxy-opencode-go.yaml
   - ./wasmplugins/ai-proxy-opencode-zen.yaml
