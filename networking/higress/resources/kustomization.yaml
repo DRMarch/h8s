@@ -11,3 +11,4 @@ resources:
   - ./wasmplugins/ai-proxy-opencode-go.yaml
   - ./wasmplugins/ai-proxy-opencode-zen.yaml
   - ./wasmplugins/model-aggregator.yaml
+  - ./wasmplugins/ai-statistics.yaml

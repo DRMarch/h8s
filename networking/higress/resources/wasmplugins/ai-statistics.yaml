@@ -1,0 +1,35 @@
+apiVersion: extensions.higress.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: ai-statistics
+  namespace: higress-system
+  labels:
+    app.kubernetes.io/name: ai-statistics
+    app.kubernetes.io/component: observability
+spec:
+  url: oci://higress-registry.us-west-1.cr.aliyuncs.com/plugins/ai-statistics@sha256:6501d3a8e35c4724eb5fe5c9044e7588aedd29c9dd9ca6ae5e28fbd47df50725
+  sha256: 6501d3a8e35c4724eb5fe5c9044e7588aedd29c9dd9ca6ae5e28fbd47df50725
+  imagePullPolicy: IfNotPresent
+  failStrategy: FAIL_OPEN
+  priority: 200
+  defaultConfig:
+    use_default_response_attributes: true
+    enable_content_types:
+      - application/json
+      - text/event-stream
+    value_length_limit: 4096
+    enable_path_suffixes:
+      - "/v1/chat/completions"
+      - "/v1/completions"
+      - "/v1/embeddings"
+      - "/v1/messages"
+    attributes:
+      - key: consumer
+        value_source: request_header
+        value: x-mse-consumer
+        apply_to_log: true
+      - key: provider
+        value_source: request_header
+        value: x-higress-llm-provider
+        apply_to_log: true
+    session_id_header: x-session-id
