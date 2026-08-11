@@ -8,6 +8,9 @@ spec:
     - name: lan-gateway
       namespace: default
       sectionName: home-lan-chat
+    - name: cloudflare-gateway
+      namespace: cloudflare
+      sectionName: home-lan
   hostnames:
     - chat.drmarchent.com
   rules:
