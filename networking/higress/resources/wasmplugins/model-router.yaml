@@ -12,6 +12,7 @@ spec:
   matchRules:
     - domain:
         - llm.drmarchent.com
+        - higress-internal.higress-system.svc.cluster.local
       config:
         addProviderHeader: x-higress-llm-provider
         modelToHeader: x-higress-llm-model

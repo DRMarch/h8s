@@ -20,3 +20,4 @@ resources:
   - ./certificates/wildcard-drmarchent-local.yaml
   - ./certificates/longhorn-homelab-local.yaml
   - ./certificates/mlflow-homelab-local.yaml
+  - ./certificates/chat-homelab-local.yaml

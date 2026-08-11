@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: higress-internal
+  namespace: higress-system
+spec:
+  type: ExternalName
+  externalName: higress-gateway.higress-system.svc.cluster.local
+  ports:
+    - port: 80
+      targetPort: 80

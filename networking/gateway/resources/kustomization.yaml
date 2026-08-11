@@ -16,6 +16,7 @@ resources:
   - ./http-routes/bytestash.yaml
   - ./http-routes/mlflow.yaml
   - ./http-routes/llm.yaml
+  - ./http-routes/openwebui.yaml
   - ./http-routes/renovate.yaml
   - ./http-routes/searxng.yaml
   - ./http-routes/http-to-https-redirect.yaml
@@ -36,6 +37,7 @@ resources:
   - ./reference-grants/lan-gateway-longhorn-tls.yaml
   - ./reference-grants/longhorn-external-auth-authelia.yaml
   - ./reference-grants/lan-gateway-bytestash-tls.yaml
+  - ./reference-grants/lan-gateway-chat-tls.yaml
   - ./reference-grants/lan-gateway-excalidraw-tls.yaml
   - ./reference-grants/excalidraw-external-auth-authelia.yaml
   - ./reference-grants/lan-gateway-searxng-tls.yaml

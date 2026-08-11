@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: chat-homelab-local
+  namespace: open-webui
+spec:
+  secretName: chat-homelab-local-tls
+  issuerRef:
+    name: vault-issuer
+    kind: ClusterIssuer
+  commonName: chat.drmarchent.com
+  dnsNames:
+    - chat.drmarchent.com

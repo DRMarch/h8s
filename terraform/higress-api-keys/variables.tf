@@ -29,8 +29,14 @@ variable "vault_token" {
   sensitive   = true
 }
 
-variable "higress_api_consumers" {
-  description = "key-auth consumer names (lowercase DNS labels). Each name gets a generated key (sk- + 128 random chars) pushed to Vault at kubernetes-homelab/higress/api-keys/<name>; the ExternalSecret and WasmPlugin manifests are rendered from this list. Names are not secret — they appear in the manifests."
+variable "higress_external_api_consumers" {
+  description = "key-auth consumer names allowed on the EXTERNAL (public) domain, e.g. llm.drmarchent.com (lowercase DNS labels). Each name gets a generated key (sk- + 128 random chars) pushed to Vault at kubernetes-homelab/higress/api-keys/<name>; the ExternalSecret and key-auth WasmPlugin manifests are rendered from these lists. Names are not secret — they appear in the manifests."
   type        = list(string)
   default     = ["domain-admin"]
+}
+
+variable "higress_internal_api_consumers" {
+  description = "key-auth consumer names allowed on the INTERNAL domain (higress-internal.higress-system.svc.cluster.local), used by in-cluster apps such as Open WebUI. Same key generation/Vault semantics as higress_external_api_consumers; the two lists scope each key to its own domain."
+  type        = list(string)
+  default     = ["open-webui"]
 }

@@ -12,6 +12,7 @@ spec:
   matchRules:
     - domain:
         - llm.drmarchent.com
+        - higress-internal.higress-system.svc.cluster.local
       config:
         providers:
           - name: opencode-zen

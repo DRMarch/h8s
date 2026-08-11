@@ -191,6 +191,18 @@ spec:
         certificateRefs:
           - name: wildcard-drmarchent-local-tls
             namespace: cloudflare
+    - protocol: HTTPS
+      name: home-lan-chat
+      hostname: chat.${kubernetes_domain}
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: chat-homelab-local-tls
+            namespace: open-webui
     - protocol: HTTP
       name: http-redirect
       port: 80

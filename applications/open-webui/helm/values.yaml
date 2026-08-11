@@ -1,0 +1,191 @@
+# Open WebUI Helm values for h8s homelab.
+# https://github.com/open-webui/helm-charts/blob/main/charts/open-webui/values.yaml
+replicaCount: 1
+
+image:
+  repository: ghcr.io/open-webui/open-webui
+  tag: "v0.11.0"
+  pullPolicy: IfNotPresent
+
+ollama:
+  enabled: false
+
+pipelines:
+  enabled: false
+
+websocket:
+  enabled: true
+  manager: ""
+  redis:
+    enabled: false
+
+copyAppData:
+  command: ["sh", "-c"]
+  args: ["cp -R -n /app/backend/data/* /tmp/app-data/ 2>/dev/null; exit 0"]
+
+enableOpenaiApi: true
+openaiBaseApiUrl: "http://higress-internal.higress-system.svc.cluster.local/v1"
+openaiApiKeyExistingSecret: openwebui-secrets
+openaiApiKeyExistingSecretKey: OPENAI_API_KEY
+
+# Chroma (RAG)
+persistence:
+  enabled: false
+  size: 5Gi
+
+service:
+  type: ClusterIP
+  port: 80
+  containerPort: 8080
+
+# Cilium Gateway API handles ingress
+ingress:
+  enabled: false
+
+sso:
+  enabled: true
+  enableSignup: true
+  mergeAccountsByEmail: false
+  enableRoleManagement: true
+  roleManagement:
+    rolesClaim: groups
+    allowedRoles: "admins"
+    adminRoles: "admins"
+  oidc:
+    enabled: true
+    clientId: open-webui
+    clientExistingSecret: openwebui-secrets
+    clientExistingSecretKey: OAUTH_CLIENT_SECRET
+    providerUrl: "https://auth.drmarchent.com/.well-known/openid-configuration"
+    providerName: Authelia
+    scopes: "openid email profile groups"
+
+
+extraEnvVars:
+  - name: WEBUI_URL
+    value: "https://chat.drmarchent.com"
+  - name: ENABLE_SIGNUP
+    value: "False"
+  - name: ENABLE_LOGIN_FORM
+    value: "False"
+  - name: ENABLE_PASSWORD_AUTH
+    value: "False"
+  - name: ENABLE_PASSWORD_CHANGE_FORM
+    value: "False"
+  - name: ENABLE_OAUTH_ID_TOKEN_COOKIE
+    value: "False"
+  - name: ENABLE_PROFILE_IMAGE_URL_FORWARDING
+    value: "False"
+  - name: OPENID_REDIRECT_URI
+    value: "https://chat.drmarchent.com/oauth/oidc/callback"
+  - name: OAUTH_CODE_CHALLENGE_METHOD
+    value: "S256"
+  - name: WEBUI_SESSION_COOKIE_SECURE
+    value: "True"
+  - name: WEBUI_SESSION_COOKIE_SAME_SITE
+    value: "lax"
+  - name: JWT_EXPIRES_IN
+    value: "12h"
+  - name: CORS_ALLOW_ORIGIN
+    value: "https://chat.drmarchent.com"
+  - name: FORWARDED_ALLOW_IPS
+    value: "192.168.1.12"
+  - name: HSTS
+    value: "max-age=31536000;includeSubDomains"
+  - name: XFRAME_OPTIONS
+    value: "DENY"
+  - name: XCONTENT_TYPE
+    value: "nosniff"
+  - name: REFERRER_POLICY
+    value: "strict-origin-when-cross-origin"
+  - name: PERMISSIONS_POLICY
+    value: "camera=(),microphone=(),geolocation=()"
+  - name: ENABLE_OPENAI_API_PASSTHROUGH
+    value: "False"
+  - name: ENABLE_OAUTH_TOKEN_EXCHANGE
+    value: "False"
+  - name: WEBUI_SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        name: openwebui-secrets
+        key: WEBUI_SECRET_KEY
+  - name: HOME
+    value: "/app/backend/data"
+  - name: DATABASE_TYPE
+    value: "postgresql"
+  - name: DATABASE_HOST
+    value: "cnpg-openwebui-rw.open-webui.svc.cluster.local"
+  - name: DATABASE_PORT
+    value: "5432"
+  - name: DATABASE_NAME
+    value: "openwebui"
+  - name: DATABASE_USER
+    valueFrom:
+      secretKeyRef:
+        name: cnpg-openwebui-user-credentials
+        key: username
+  - name: DATABASE_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: cnpg-openwebui-user-credentials
+        key: password
+
+podSecurityContext:
+  runAsNonRoot: true
+  fsGroup: 1000
+  fsGroupChangePolicy: OnRootMismatch
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  runAsNonRoot: true
+  privileged: false
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+  seccompProfile:
+    type: RuntimeDefault
+
+# Writable scratch for the read-only root filesystem: the app (uvicorn/Python)
+# needs /tmp for uploads and temp files.
+volumes:
+  - name: tmp
+    emptyDir: {}
+volumeMounts:
+  container:
+    - name: tmp
+      mountPath: /tmp
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  failureThreshold: 3
+  periodSeconds: 10
+  timeoutSeconds: 10
+readinessProbe:
+  httpGet:
+    path: /health/db
+    port: http
+  failureThreshold: 3
+  periodSeconds: 10
+  timeoutSeconds: 10
+startupProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 5
+  failureThreshold: 20
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 1Gi
+  limits:
+    cpu: 400m
+    memory: 2Gi

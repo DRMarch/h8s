@@ -4,6 +4,7 @@ resources:
   - ./opencode-go-externalsecret.yaml
   - ./api-key-externalsecret.yaml
   - ./mcpbridge.yaml
+  - ./higress-internal-service.yaml
   - ./ingresses
   - ./wasmplugins/key-auth.yaml
   - ./wasmplugins/model-router.yaml

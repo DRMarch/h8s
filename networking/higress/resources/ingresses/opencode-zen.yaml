@@ -22,3 +22,13 @@ spec:
                 apiGroup: networking.higress.io
                 kind: McpBridge
                 name: default
+    - host: higress-internal.higress-system.svc.cluster.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              resource:
+                apiGroup: networking.higress.io
+                kind: McpBridge
+                name: default

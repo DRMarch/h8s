@@ -22,6 +22,9 @@
 #                                      client-secret-plaintext
 #   - authelia/mlflow-oidc           -> client-secret-hash (pbkdf2)
 #                                      client-secret-plaintext
+#   - authelia/openwebui-oidc        -> client-secret-hash (pbkdf2)
+#                                      client-secret-plaintext
+#   - openwebui/secret-key           -> secret-key
 #   - mlflow/oidc                    -> secret-key
 #   - garage/mlflow-garage-credentials -> access-key-id
 #                                        secret-access-key
@@ -112,6 +115,16 @@ resource "random_password" "mlflow_oidc_secret_key" {
 }
 
 resource "random_password" "authelia_mlflow_oidc_plaintext" {
+  length  = 64
+  special = false
+}
+
+resource "random_password" "authelia_openwebui_oidc_plaintext" {
+  length  = 64
+  special = false
+}
+
+resource "random_password" "openwebui_secret_key" {
   length  = 64
   special = false
 }
@@ -693,6 +706,83 @@ resource "null_resource" "vault_authelia_mlflow_oidc" {
   }
 }
 
+# ---- Vault Push: Open WebUI Authelia OIDC (pbkdf2 hash + plaintext) ----
+
+resource "null_resource" "vault_authelia_openwebui_oidc" {
+  triggers = {
+    plaintext = random_password.authelia_openwebui_oidc_plaintext.result
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      # Authelia 4.39+ requires authentication_backend.file to be configured
+      # for the `crypto hash generate` subcommand. Mount a minimal stub config
+      # so the CLI loads; the file path is unused by hash generation itself.
+      TMP_CONFIG=$(mktemp)
+      trap 'rm -f "$TMP_CONFIG"' EXIT
+      cat > "$TMP_CONFIG" <<EOF
+      authentication_backend:
+        file:
+          path: /dev/null
+      EOF
+
+      if ! RAW=$(docker run --rm \
+          -v "$TMP_CONFIG:/config/configuration.yml:ro" \
+          ${var.authelia_docker_image} \
+          authelia crypto hash generate pbkdf2 \
+          --password '${random_password.authelia_openwebui_oidc_plaintext.result}' \
+          --no-confirm 2>&1); then
+        echo "ERROR: authelia crypto hash generate (pbkdf2) for open-webui failed. Output:" >&2
+        echo "$RAW" >&2
+        exit 1
+      fi
+      HASH=$(echo "$RAW" | sed -n 's/^Digest: //p' | tr -d '
+ ')
+
+      case "$HASH" in
+        '$'*) ;;
+        *) echo "ERROR: open-webui OIDC client secret hash invalid. Raw output:" >&2
+           echo "$RAW" >&2
+           echo "Extracted hash: '$HASH'" >&2
+           exit 1 ;;
+      esac
+      if echo "$HASH" | grep -q ' '; then
+        echo "ERROR: open-webui OIDC client secret hash contains whitespace: $HASH" >&2
+        exit 1
+      fi
+
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/authelia/openwebui-oidc \
+          client-secret-hash='$HASH' \
+          client-secret-plaintext='${random_password.authelia_openwebui_oidc_plaintext.result}'
+      "
+    EOT
+  }
+}
+
+# ---- Vault Push: Open WebUI WEBUI_SECRET_KEY ----
+
+resource "null_resource" "vault_openwebui_secret_key" {
+  triggers = {
+    value = random_password.openwebui_secret_key.result
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/openwebui/secret-key \
+          secret-key='${random_password.openwebui_secret_key.result}'
+      "
+    EOT
+  }
+}
+
 resource "random_password" "garage_mlflow_access_key_id" {
   length  = 20
   special = false
@@ -962,5 +1052,15 @@ output "searxng_secret_key" {
 
 output "searxng_metrics_password" {
   value     = random_password.searxng_metrics_password.result
+  sensitive = true
+}
+
+output "openwebui_oidc_client_secret" {
+  value     = random_password.authelia_openwebui_oidc_plaintext.result
+  sensitive = true
+}
+
+output "openwebui_secret_key" {
+  value     = random_password.openwebui_secret_key.result
   sensitive = true
 }

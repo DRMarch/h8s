@@ -1,0 +1,11 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: cnpg-openwebui
+  namespace: open-webui
+spec:
+  selector:
+    matchLabels:
+      cnpg.io/cluster: cnpg-openwebui
+  podMetricsEndpoints:
+    - port: metrics

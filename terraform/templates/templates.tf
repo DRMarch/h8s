@@ -109,6 +109,13 @@ resource "local_file" "certificates_searxng" {
   })
 }
 
+resource "local_file" "certificates_chat" {
+  filename = "${path.module}/${local.project_root}/networking/cert-manager/resources/certificates/chat-homelab-local.yaml"
+  content = templatefile("${path.module}/templates/networking/cert-manager/resources/certificates/chat-homelab-local.yaml.tftpl", {
+    kubernetes_domain = var.kubernetes_domain
+  })
+}
+
 ############
 ## Cilium ##
 ############
@@ -266,6 +273,13 @@ resource "local_file" "http_route_llm" {
   })
 }
 
+resource "local_file" "http_route_openwebui" {
+  filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/openwebui.yaml"
+  content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/openwebui.yaml.tftpl", {
+    kubernetes_domain = var.kubernetes_domain
+  })
+}
+
 resource "local_file" "http_route_http_to_https_redirect" {
   filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/http-to-https-redirect.yaml"
   content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/http-to-https-redirect.yaml.tftpl", {
@@ -350,6 +364,11 @@ resource "local_file" "authelia_cnpg_credentials_externalsecret" {
 resource "local_file" "authelia_argocd_client_secret_externalsecret" {
   filename = "${path.module}/${local.project_root}/security/authelia/helm/resources/argocd-client-secret-externalsecret.yaml"
   content  = templatefile("${path.module}/templates/security/authelia/argocd-client-secret-externalsecret.yaml.tftpl", {})
+}
+
+resource "local_file" "authelia_openwebui_client_secret_externalsecret" {
+  filename = "${path.module}/${local.project_root}/security/authelia/helm/resources/openwebui-client-secret-externalsecret.yaml"
+  content  = templatefile("${path.module}/templates/security/authelia/openwebui-client-secret-externalsecret.yaml.tftpl", {})
 }
 
 resource "local_file" "argocd_dex_oidc_secret_externalsecret" {

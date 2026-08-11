@@ -1,5 +1,5 @@
 # Generates an sk- prefixed API key (sk- + 128 random chars) per consumer in
-# higress_api_consumers and pushes it to Vault:
+# higress_external_api_consumers / higress_internal_api_consumers and pushes it to Vault:
 #
 #   kubernetes-homelab/higress/api-keys/<consumer>  (field: api-key)
 #
@@ -9,21 +9,22 @@
 
 locals {
   vault_token_cmd = var.vault_token != "" ? "echo '${var.vault_token}'" : "jq -r '.root_token' ${var.vault_token_file}"
+  all_consumers = distinct(concat(var.higress_external_api_consumers, var.higress_internal_api_consumers))
 
   # Full key = "sk-" + the generated random part.
   api_keys = {
-    for name in var.higress_api_consumers : name => "sk-${random_password.api_key[name].result}"
+    for name in local.all_consumers : name => "sk-${random_password.api_key[name].result}"
   }
 }
 
 resource "random_password" "api_key" {
-  for_each = toset(var.higress_api_consumers)
+  for_each = toset(local.all_consumers)
   length   = 128
   special  = false
 }
 
 resource "null_resource" "vault_higress_api_key" {
-  for_each = toset(var.higress_api_consumers)
+  for_each = toset(local.all_consumers)
 
   triggers = {
     key_sha256 = sha256(local.api_keys[each.key])
@@ -64,7 +65,7 @@ resource "null_resource" "vault_higress_api_key" {
 output "api_keys" {
   description = "Generated API key per consumer (sensitive). Retrieve with `terraform output -json api_keys`."
   value = {
-    for name in sort(var.higress_api_consumers) : name => local.api_keys[name]
+    for name in sort(local.all_consumers) : name => local.api_keys[name]
   }
   sensitive = true
 }

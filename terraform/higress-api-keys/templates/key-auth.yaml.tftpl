@@ -11,15 +11,35 @@ spec:
   priority: 1000
   defaultConfigDisable: true
   matchRules:
+    # External
     - domain:
         - llm.drmarchent.com
       config:
         consumers:
-%{ for consumer in consumers ~}
+%{ for consumer in external_consumers ~}
+          - name: ${consumer}-bearer
+            credential: "Bearer $${secret.higress-system/higress-api-keys.${consumer}}"
           - name: ${consumer}
             credential: $${secret.higress-system/higress-api-keys.${consumer}}
 %{ endfor ~}
         keys:
+          - authorization
+          - x-api-key
+        in_query: false
+        in_header: true
+    # Internal
+    - domain:
+        - higress-internal.higress-system.svc.cluster.local
+      config:
+        consumers:
+%{ for consumer in internal_consumers ~}
+          - name: ${consumer}-bearer
+            credential: "Bearer $${secret.higress-system/higress-api-keys.${consumer}}"
+          - name: ${consumer}
+            credential: $${secret.higress-system/higress-api-keys.${consumer}}
+%{ endfor ~}
+        keys:
+          - authorization
           - x-api-key
         in_query: false
         in_header: true

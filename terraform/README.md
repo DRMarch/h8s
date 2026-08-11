@@ -135,6 +135,8 @@ terraform output -raw authelia_guest_password     # Guest login (forward-auth on
 # OIDC client secrets (between Authelia and the relying party)
 terraform output -raw grafana_oidc_client_secret   # Grafana -> Authelia token exchange
 terraform output -raw endurain_oidc_client_secret  # Endurain -> Authelia token exchange
+terraform output -raw openwebui_oidc_client_secret # Open WebUI -> Authelia token exchange
+terraform output -raw openwebui_secret_key         # Open WebUI WEBUI_SECRET_KEY (JWT signing)
 
 # Database + app secrets (rarely needed; keep safe)
 terraform output -raw cnpg_authelia_password       # Postgres role `authelia`
@@ -158,11 +160,27 @@ kubectl exec -n vault vault-0 -- \
   vault kv get -format=json kubernetes-homelab/authelia/guest-password
 ```
 
+### Recovering a missing Vault secret
+
+`null_resource` provisioners only run on create/replace, so `terraform apply` alone
+will **not** re-push a secret whose Vault path was lost (e.g. after a Vault restore).
+Symptoms: the consuming `ExternalSecret` reports `Secret does not exist`. Fix:
+
+```bash
+cd terraform/vault-secrets
+# Re-run the provisioner(s) for the affected secret(s), e.g.:
+terraform apply -replace=null_resource.vault_authelia_openwebui_oidc
+terraform apply -replace=null_resource.vault_openwebui_secret_key
+```
+
+The provisioners now also read back the written path (`vault kv get`) so a failed
+write fails the apply instead of silently recording success.
+
 > **Note:** for the `authelia/*-password` paths, Vault only stores the **argon2 hash**, not the plaintext. Once the Terraform state is lost, the plaintext is unrecoverable and the user must be reset (see "Rotation" in `security/authelia/README.md`).
 
 ## Higress API keys workspace (`higress-api-keys/`)
 
-Dedicated workspace for the Higress `key-auth` plugin keys. Consumer **names** are committed in `variables.tf` (`higress_api_consumers`, not secret); Terraform generates an sk- prefixed key per consumer (sk- + 128 random chars, like the Authelia passwords), pushes it to Vault, and **re-renders** the two consuming manifests (`networking/higress/resources/api-key-externalsecret.yaml` and `.../wasmplugins/key-auth.yaml`) — no manifest hand-editing is needed.
+Dedicated workspace for the Higress `key-auth` plugin keys. Consumer **names** are committed in `variables.tf` (`higress_external_api_consumers` / `higress_internal_api_consumers`, not secret); Terraform generates an sk- prefixed key per consumer (sk- + 128 random chars, like the Authelia passwords), pushes it to Vault, and **re-renders** the two consuming manifests (`networking/higress/resources/api-key-externalsecret.yaml` and `.../wasmplugins/key-auth.yaml`) — no manifest hand-editing is needed.
 
 ```bash
 cd terraform/higress-api-keys

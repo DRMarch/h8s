@@ -146,6 +146,7 @@ secret:
     authelia-guest-password: {}
     authelia-argocd-client-secret: {}
     authelia-mlflow-client-secret: {}
+    authelia-openwebui-client-secret: {}
 
 # ---------------------------------------------------------------------------
 # Authelia configuration. Rendered into the `authelia` ConfigMap by
@@ -336,6 +337,8 @@ configMap:
           id_token: ['email', 'name', 'groups', 'preferred_username']
         mlflow:
           id_token: ['email', 'name', 'groups', 'preferred_username']
+        open-webui:
+          id_token: ['email', 'name', 'groups', 'preferred_username']
       # Restrict OIDC issuance to the `admins` group only. The default
       # `deny` policy rejects every user that doesn't match a rule, so
       # the `guest` user (in `app-users`) is blocked at the authorization
@@ -461,6 +464,28 @@ configMap:
           claims_policy: 'mlflow'
           redirect_uris:
             - 'https://mlflow.drmarchent.com/callback'
+          scopes:
+            - 'openid'
+            - 'profile'
+            - 'email'
+            - 'groups'
+          grant_types:
+            - 'authorization_code'
+          response_types:
+            - 'code'
+          response_modes:
+            - 'query'
+        - client_id: 'open-webui'
+          client_secret:
+            path: /secrets/authelia-openwebui-client-secret/client-secret-hash
+          public: false
+          token_endpoint_auth_method: 'client_secret_basic'
+          authorization_policy: 'restrict-to-admins'
+          claims_policy: 'open-webui'
+          require_pkce: true
+          pkce_challenge_method: 'S256'
+          redirect_uris:
+            - 'https://chat.drmarchent.com/oauth/oidc/callback'
           scopes:
             - 'openid'
             - 'profile'

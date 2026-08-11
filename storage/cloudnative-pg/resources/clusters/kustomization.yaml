@@ -6,3 +6,4 @@ resources:
   - ./endurain
   - ./authelia
   - ./mlflow
+  - ./openwebui
