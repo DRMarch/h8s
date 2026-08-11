@@ -43,22 +43,57 @@ Run the `terraform/vault-secrets` workspace after setting both provider credenti
 
 ## API
 
-List available OpenCode Go/Zen models (the `x-api-key` header is required on every request):
+The gateway accepts either header for authentication (`x-api-key` matches the `domain-admin` consumer; `Authorization: Bearer <key>` matches the `domain-admin-bearer` consumer in [`resources/wasmplugins/key-auth.yaml`](./resources/wasmplugins/key-auth.yaml)):
 
 ```bash
 curl https://llm.drmarchent.com/v1/models \
-  -H 'x-api-key: <your-api-key>'
+  -H "Authorization: Bearer $HIGRESS_API_KEY"
 ```
 
 Send a Chat Completions request:
 
 ```bash
 curl https://llm.drmarchent.com/v1/chat/completions \
-  -H 'x-api-key: <your-api-key>' \
+  -H "Authorization: Bearer $HIGRESS_API_KEY" \
   -H 'Content-Type: application/json' \
   -d '{
     "model": "go/deepseek-v4-flash",
     "messages": [{"role": "user", "content": "Say hello in one sentence."}],
     "stream": false
   }'
+```
+
+## OpenCode client
+
+Point [OpenCode](https://opencode.ai) at this gateway by registering Higress as a custom OpenAI-compatible provider. The [`opencode-models-discovery`](https://github.com/yuhp/opencode-models-discovery) plugin queries `/v1/models` at startup and merges the live list into the model picker, so the `models` block does not need to be maintained by hand.
+
+Export the key once per shell (or stash it in your secrets manager):
+
+```bash
+echo 'export HIGRESS_API_KEY=<your-api-key>' >> ~/.bashrc
+source ~/.bashrc
+```
+
+Add the provider and plugin to `~/.config/opencode/opencode.jsonc`:
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  "plugin": ["opencode-models-discovery@latest"],
+
+  "provider": {
+    "higress": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Higress (homelab)",
+      "options": {
+        "baseURL": "https://llm.drmarchent.com/v1",
+        "apiKey": "{env:HIGRESS_API_KEY}",
+        "modelsDiscovery": {
+          "enabled": true
+        }
+      }
+    }
+  }
+}
 ```

@@ -32,7 +32,7 @@ variable "vault_token" {
 variable "higress_external_api_consumers" {
   description = "key-auth consumer names allowed on the EXTERNAL (public) domain, e.g. llm.drmarchent.com (lowercase DNS labels). Each name gets a generated key (sk- + 128 random chars) pushed to Vault at kubernetes-homelab/higress/api-keys/<name>; the ExternalSecret and key-auth WasmPlugin manifests are rendered from these lists. Names are not secret — they appear in the manifests."
   type        = list(string)
-  default     = ["domain-admin"]
+  default     = ["domain-admin", "opencode"]
 }
 
 variable "higress_internal_api_consumers" {

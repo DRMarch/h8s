@@ -20,6 +20,10 @@ spec:
             credential: "Bearer ${secret.higress-system/higress-api-keys.domain-admin}"
           - name: domain-admin
             credential: ${secret.higress-system/higress-api-keys.domain-admin}
+          - name: opencode-bearer
+            credential: "Bearer ${secret.higress-system/higress-api-keys.opencode}"
+          - name: opencode
+            credential: ${secret.higress-system/higress-api-keys.opencode}
         keys:
           - authorization
           - x-api-key
