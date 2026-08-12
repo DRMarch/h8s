@@ -13,6 +13,7 @@ resources:
   - ./kubernetes/
   - ./longhorn/
   - ./renovate/
+  - ./searxng/
   - ./cloudflare-tunnel/
 patches:
   - target:
