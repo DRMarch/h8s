@@ -12,7 +12,7 @@ spec:
   sources:
     - repoURL: https://higress.io/helm-charts
       chart: higress-core
-      targetRevision: 2.2.3
+      targetRevision: 2.2.4
       helm:
         releaseName: higress
         valueFiles:
