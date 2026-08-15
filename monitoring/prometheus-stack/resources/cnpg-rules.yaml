@@ -1,0 +1,139 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cnpg
+  namespace: monitoring
+  labels:
+    release: prometheus-stack
+spec:
+  groups:
+    - name: cnpg.rules
+      rules:
+        - alert: PostgresInstanceDown
+          expr: cnpg_collector_up == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: PostgreSQL instance {{ $labels.pod }} is down
+            description: >-
+              The PostgreSQL instance in cluster {{ $labels.cluster }} on pod
+              {{ $labels.pod }} has been down for more than 1 minute.
+
+        - alert: PostgresConnectionSaturation
+          expr: >-
+            (
+              sum by (namespace, cluster, pod) (cnpg_backends_total)
+                /
+              sum by (namespace, cluster, pod) (cnpg_pg_settings_setting{name="max_connections"})
+            ) > 0.8
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: PostgreSQL connections above 80% of max_connections
+            description: >-
+              Pod {{ $labels.pod }} is using {{ $value | humanizePercentage }} of
+              its configured max_connections.
+
+        - alert: PostgresConnectionExhausted
+          expr: >-
+            (
+              sum by (namespace, cluster, pod) (cnpg_backends_total)
+                /
+              sum by (namespace, cluster, pod) (cnpg_pg_settings_setting{name="max_connections"})
+            ) > 0.95
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: PostgreSQL connections near exhaustion
+            description: >-
+              Pod {{ $labels.pod }} is using {{ $value | humanizePercentage }} of
+              its configured max_connections and is close to rejecting new
+              connections.
+
+        - alert: PostgresLongRunningTransaction
+          expr: cnpg_backends_max_tx_duration_seconds > 300
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: A PostgreSQL query has been running for more than 5 minutes
+            description: >-
+              Pod {{ $labels.pod }} has a backend that has been in a transaction
+              for more than 5 minutes ({{ $value }}s).
+
+        - alert: PostgresBackendsWaiting
+          expr: cnpg_backends_waiting_total > 10
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: PostgreSQL backends are waiting on locks
+            description: >-
+              Pod {{ $labels.pod }} has {{ $value }} backends currently waiting on
+              other queries.
+
+        - alert: PostgresReplicationLag
+          expr: cnpg_pg_replication_lag > 300
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: PostgreSQL standby is lagging behind the primary
+            description: >-
+              Pod {{ $labels.pod }} is {{ $value }}s behind the primary.
+
+        - alert: PostgresReplicaFailingReplication
+          expr: cnpg_pg_replication_in_recovery > cnpg_pg_replication_is_wal_receiver_up
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: PostgreSQL replica is failing to replicate
+            description: >-
+              Pod {{ $labels.pod }} is in recovery but its WAL receiver is not
+              running.
+
+        - alert: PostgresXidAgeWarning
+          expr: cnpg_pg_database_xid_age > 1000000000
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: PostgreSQL transaction ID age is getting high
+            description: >-
+              Database {{ $labels.datname }} on pod {{ $labels.pod }} has an XID
+              age of {{ $value }}. Autovacuum might be struggling.
+
+        - alert: PostgresDeadlocks
+          expr: increase(cnpg_pg_stat_database_deadlocks[5m]) > 0
+          labels:
+            severity: warning
+          annotations:
+            summary: PostgreSQL deadlocks detected
+            description: >-
+              Database {{ $labels.datname }} on pod {{ $labels.pod }} has
+              experienced deadlocks in the last 5 minutes.
+
+        - alert: PostgresArchiveFailure
+          expr: increase(cnpg_pg_stat_archiver_failed_count[5m]) > 0
+          labels:
+            severity: warning
+          annotations:
+            summary: PostgreSQL WAL archiving is failing
+            description: >-
+              Pod {{ $labels.pod }} has failed to archive WAL files in the last 5
+              minutes. Check your backup storage backend.
+
+        - alert: PostgresExporterError
+          expr: cnpg_collector_last_collection_error > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: PostgreSQL metrics exporter is erroring
+            description: >-
+              The metrics exporter on pod {{ $labels.pod }} failed its last
+              collection.

@@ -1,0 +1,230 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: higress-ai
+  namespace: monitoring
+  labels:
+    release: prometheus-stack
+spec:
+  groups:
+    - name: higress-ai.rules
+      rules:
+        - alert: AIModelHighRequestVolume
+          expr: >-
+            sum by (ai_model) (
+              increase(route_upstream_model_consumer_metric_llm_duration_count[1h])
+            ) > 500
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: AI model {{ $labels.ai_model }} exceeded 500 requests in an hour
+            description: >-
+              Model {{ $labels.ai_model }} served {{ $value }} requests in the last
+              hour.
+
+        - alert: AIModelHighTokenUsage
+          expr: >-
+            (
+              sum by (ai_model) (
+                increase(route_upstream_model_consumer_metric_input_token[1h])
+              )
+              +
+              sum by (ai_model) (
+                increase(route_upstream_model_consumer_metric_output_token[1h])
+              )
+            ) > 10000000
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: AI model {{ $labels.ai_model }} used more than 10M tokens in an hour
+            description: >-
+              Model {{ $labels.ai_model }} consumed {{ $value }} tokens (input +
+              output) in the last hour.
+
+        - alert: AIModelErrorRate
+          expr: >-
+            sum by (ai_model) (
+              rate(route_upstream_model_consumer_metric_llm_failure_count[5m])
+            )
+              /
+            sum by (ai_model) (
+              rate(route_upstream_model_consumer_metric_llm_duration_count[5m])
+            )
+            > 0.05
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: AI model {{ $labels.ai_model }} error rate above 5%
+            description: >-
+              Model {{ $labels.ai_model }} has a failure rate of
+              {{ $value | humanizePercentage }} over the last 5 minutes.
+
+        - alert: AIModelErrorRateCritical
+          expr: >-
+            sum by (ai_model) (
+              rate(route_upstream_model_consumer_metric_llm_failure_count[5m])
+            )
+              /
+            sum by (ai_model) (
+              rate(route_upstream_model_consumer_metric_llm_duration_count[5m])
+            )
+            > 0.2
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: AI model {{ $labels.ai_model }} error rate above 20%
+            description: >-
+              Model {{ $labels.ai_model }} has a failure rate of
+              {{ $value | humanizePercentage }} over the last 5 minutes.
+
+        - alert: AIModelHighLatency
+          expr: >-
+            sum by (ai_model) (
+              rate(route_upstream_model_consumer_metric_llm_service_duration[5m])
+            )
+              /
+            sum by (ai_model) (
+              rate(route_upstream_model_consumer_metric_llm_duration_count[5m])
+            )
+            > 100000
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: AI model {{ $labels.ai_model }} has high average latency
+            description: >-
+              Average request duration for model {{ $labels.ai_model }} is
+              {{ $value }}ms over the last 5 minutes.
+
+        - alert: AIModelHighTTFT
+          expr: >-
+            sum by (ai_model) (
+              rate(route_upstream_model_consumer_metric_llm_first_token_duration[5m])
+            )
+              /
+            sum by (ai_model) (
+              rate(route_upstream_model_consumer_metric_llm_stream_duration_count[5m])
+            )
+            > 50000
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: AI model {{ $labels.ai_model }} has high time-to-first-token
+            description: >-
+              Average time to first token for model {{ $labels.ai_model }} is
+              {{ $value }}ms over the last 5 minutes.
+
+        - alert: AIConsumerHighRequestVolume
+          expr: >-
+            sum by (ai_consumer) (
+              increase(route_upstream_model_consumer_metric_llm_duration_count[1h])
+            ) > 500
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: AI consumer {{ $labels.ai_consumer }} exceeded 500 requests in an hour
+            description: >-
+              Consumer {{ $labels.ai_consumer }} served {{ $value }} requests in the
+              last hour.
+
+        - alert: AIConsumerHighTokenUsage
+          expr: >-
+            (
+              sum by (ai_consumer) (
+                increase(route_upstream_model_consumer_metric_input_token[1h])
+              )
+              +
+              sum by (ai_consumer) (
+                increase(route_upstream_model_consumer_metric_output_token[1h])
+              )
+            ) > 10000000
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: AI consumer {{ $labels.ai_consumer }} used more than 10M tokens in an hour
+            description: >-
+              Consumer {{ $labels.ai_consumer }} consumed {{ $value }} tokens (input +
+              output) in the last hour.
+
+        - alert: AIConsumerErrorRate
+          expr: >-
+            sum by (ai_consumer) (
+              rate(route_upstream_model_consumer_metric_llm_failure_count[5m])
+            )
+              /
+            sum by (ai_consumer) (
+              rate(route_upstream_model_consumer_metric_llm_duration_count[5m])
+            )
+            > 0.05
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: AI consumer {{ $labels.ai_consumer }} error rate above 5%
+            description: >-
+              Consumer {{ $labels.ai_consumer }} has a failure rate of
+              {{ $value | humanizePercentage }} over the last 5 minutes.
+
+        - alert: AIConsumerErrorRateCritical
+          expr: >-
+            sum by (ai_consumer) (
+              rate(route_upstream_model_consumer_metric_llm_failure_count[5m])
+            )
+              /
+            sum by (ai_consumer) (
+              rate(route_upstream_model_consumer_metric_llm_duration_count[5m])
+            )
+            > 0.2
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: AI consumer {{ $labels.ai_consumer }} error rate above 20%
+            description: >-
+              Consumer {{ $labels.ai_consumer }} has a failure rate of
+              {{ $value | humanizePercentage }} over the last 5 minutes.
+
+        - alert: AIConsumerHighLatency
+          expr: >-
+            sum by (ai_consumer) (
+              rate(route_upstream_model_consumer_metric_llm_service_duration[5m])
+            )
+              /
+            sum by (ai_consumer) (
+              rate(route_upstream_model_consumer_metric_llm_duration_count[5m])
+            )
+            > 100000
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: AI consumer {{ $labels.ai_consumer }} has high average latency
+            description: >-
+              Average request duration for consumer {{ $labels.ai_consumer }} is
+              {{ $value }}ms over the last 5 minutes.
+
+        - alert: AIConsumerHighTTFT
+          expr: >-
+            sum by (ai_consumer) (
+              rate(route_upstream_model_consumer_metric_llm_first_token_duration[5m])
+            )
+              /
+            sum by (ai_consumer) (
+              rate(route_upstream_model_consumer_metric_llm_stream_duration_count[5m])
+            )
+            > 50000
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: AI consumer {{ $labels.ai_consumer }} has high time-to-first-token
+            description: >-
+              Average time to first token for consumer {{ $labels.ai_consumer }} is
+              {{ $value }}ms over the last 5 minutes.

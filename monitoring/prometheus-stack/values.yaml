@@ -36,23 +36,17 @@ alertmanager:
           resources:
             requests:
               storage: 10Gi
-    secrets:
-      - alertmanager-discord-webhook
+    alertmanagerConfigMatcherStrategy:
+      type: None
 
   config:
     global:
       resolve_timeout: 5m
     route:
-      group_by: ['namespace', 'severity']
-      group_wait: 30s
-      group_interval: 5m
-      repeat_interval: 12h
-      receiver: 'discord'
+      receiver: 'null'
+      routes: []
     receivers:
-      - name: 'discord'
-        discord_configs:
-          - webhook_url_file: '/etc/alertmanager/secrets/alertmanager-discord-webhook/url'
-            send_resolved: true
+      - name: 'null'
     inhibit_rules:
       - source_matchers:
           - 'severity = critical'
