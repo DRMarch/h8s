@@ -1,63 +1,13 @@
 {
   "lockfile_version": "1",
   "packages": {
-    "awscli2@2.35.11": {
-      "last_modified": "2026-07-11T07:21:12Z",
-      "resolved": "github:NixOS/nixpkgs/770b9bbb84018993c8f009d437fff6c2e3077037#awscli2",
-      "source": "devbox-search",
-      "version": "2.35.11",
-      "systems": {
-        "aarch64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/q4bhxkfld2gnssbh2km26gpa8kldzkvg-awscli2-2.35.11",
-              "default": true
-            },
-            {
-              "name": "dist",
-              "path": "/nix/store/ydpjq71ib50w5pg4nwanjvcsmykqrwba-awscli2-2.35.11-dist"
-            }
-          ],
-          "store_path": "/nix/store/q4bhxkfld2gnssbh2km26gpa8kldzkvg-awscli2-2.35.11"
-        },
-        "aarch64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/521r8335d0wwxyvga3nacpfd20sbqjp7-awscli2-2.35.11",
-              "default": true
-            },
-            {
-              "name": "dist",
-              "path": "/nix/store/n88a3zvhbym5s37ghfvdg0ib3mhc5pbd-awscli2-2.35.11-dist"
-            }
-          ],
-          "store_path": "/nix/store/521r8335d0wwxyvga3nacpfd20sbqjp7-awscli2-2.35.11"
-        },
-        "x86_64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/jvkhaq9ppwhyj06sxplpv3cb8jqxm23w-awscli2-2.35.11",
-              "default": true
-            },
-            {
-              "name": "dist",
-              "path": "/nix/store/7fx0v7bvwz9vhb75sc82vws10vnaaa6f-awscli2-2.35.11-dist"
-            }
-          ],
-          "store_path": "/nix/store/jvkhaq9ppwhyj06sxplpv3cb8jqxm23w-awscli2-2.35.11"
-        }
-      }
-    },
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
-      "last_modified": "2026-06-23T00:43:55Z",
-      "resolved": "github:NixOS/nixpkgs/89570f24e97e614aa34aa9ab1c927b6578a43775?lastModified=1782175435&narHash=sha256-EMzXKmnOtBQ2MnvpiNOm7E%2BkOMvdPrIKaeg52Tip2Uk%3D"
+      "last_modified": "2026-08-14T15:04:01Z",
+      "resolved": "github:NixOS/nixpkgs/8be7bd0c83f12e2e3bbba07c9044d6fed9e66f7f?lastModified=1786719841&narHash=sha256-QcpQOT0NQEFkI77t%2BYXPZqDJc35iIodG7zinieOwFUg%3D"
     },
     "helm@0.9.0": {
-      "last_modified": "2026-05-21T08:15:18Z",
-      "resolved": "github:NixOS/nixpkgs/4a29d733e8a7d5b824c3d8c958a946a9867b3eb2#helm",
+      "last_modified": "2026-08-01T16:34:20Z",
+      "resolved": "github:NixOS/nixpkgs/a5cbcfe954791221bfffe2307f7d1a1bf61a871e#helm",
       "source": "devbox-search",
       "version": "0.9.0",
       "systems": {
@@ -65,21 +15,21 @@
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/vbcgk7iswlg02n33jsxscrm8jjaksczn-helm-0.9.0",
+              "path": "/nix/store/1fqg19q6k5067s3p2gxfyqg8cw2cgzd5-helm-0.9.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/vbcgk7iswlg02n33jsxscrm8jjaksczn-helm-0.9.0"
+          "store_path": "/nix/store/1fqg19q6k5067s3p2gxfyqg8cw2cgzd5-helm-0.9.0"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/21ysjpyqfaxzdsxsgydxvv7b42qf446l-helm-0.9.0",
+              "path": "/nix/store/jd52mh1q115hqllc40yj1bi5fcwq0x84-helm-0.9.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/21ysjpyqfaxzdsxsgydxvv7b42qf446l-helm-0.9.0"
+          "store_path": "/nix/store/jd52mh1q115hqllc40yj1bi5fcwq0x84-helm-0.9.0"
         }
       }
     },
@@ -149,8 +99,8 @@
       }
     },
     "terraform@1.15.8": {
-      "last_modified": "2026-07-09T04:39:57Z",
-      "resolved": "github:NixOS/nixpkgs/80bd90efcad203e11e2c13e968c82a0ce2db3a2e#terraform",
+      "last_modified": "2026-08-01T16:34:20Z",
+      "resolved": "github:NixOS/nixpkgs/a5cbcfe954791221bfffe2307f7d1a1bf61a871e#terraform",
       "source": "devbox-search",
       "version": "1.15.8",
       "systems": {
@@ -158,31 +108,31 @@
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/ab67lcr5rrkr8c9rmv2xp9gzsngfrd4s-terraform-1.15.8",
+              "path": "/nix/store/zadj9gfykqnrv64v3vk2krf0i53r4s11-terraform-1.15.8",
               "default": true
             }
           ],
-          "store_path": "/nix/store/ab67lcr5rrkr8c9rmv2xp9gzsngfrd4s-terraform-1.15.8"
+          "store_path": "/nix/store/zadj9gfykqnrv64v3vk2krf0i53r4s11-terraform-1.15.8"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/4czn7p8gk6m6z94cdynx2w9kgb1b0hyl-terraform-1.15.8",
+              "path": "/nix/store/vi095xlgsgi7xsd79l49l27mlzx5wny4-terraform-1.15.8",
               "default": true
             }
           ],
-          "store_path": "/nix/store/4czn7p8gk6m6z94cdynx2w9kgb1b0hyl-terraform-1.15.8"
+          "store_path": "/nix/store/vi095xlgsgi7xsd79l49l27mlzx5wny4-terraform-1.15.8"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/vc2im345qlr9crvb7wl7a6xcca49jlvh-terraform-1.15.8",
+              "path": "/nix/store/q20n31gwj6ila5lzmsbxgxi103z21xx5-terraform-1.15.8",
               "default": true
             }
           ],
-          "store_path": "/nix/store/vc2im345qlr9crvb7wl7a6xcca49jlvh-terraform-1.15.8"
+          "store_path": "/nix/store/q20n31gwj6ila5lzmsbxgxi103z21xx5-terraform-1.15.8"
         }
       }
     }

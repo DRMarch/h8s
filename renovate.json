@@ -30,12 +30,25 @@
                 "https://raw\\.githubusercontent\\.com/(?<depName>[^/]+/[^/]+)/refs/tags/(?<currentValue>v[0-9.]+)/"
             ],
             "datasourceTemplate": "github-tags"
+        },
+        {
+            "customType": "regex",
+            "description": "Track the Devbox CLI version in devbox.json",
+            "fileMatch": [
+                "^devbox\\.json$"
+            ],
+            "matchStrings": [
+                "jetify-com/devbox/(?<currentValue>\\d+\\.\\d+\\.\\d+)/\\.schema/devbox\\.schema\\.json"
+            ],
+            "depNameTemplate": "devbox",
+            "datasourceTemplate": "devbox"
         }
     ],
     "dependencyDashboard": true,
     "dependencyDashboardTitle": "Renovate Dependency Dashboard",
     "enabledManagers": [
         "argocd",
+        "custom.regex",
         "devbox",
         "dockerfile",
         "helm-values",
