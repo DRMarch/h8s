@@ -21,3 +21,24 @@ metrics:
 
 persistence:
   enabled: true
+
+updateStrategy:
+  type: Recreate
+
+existingSecretSecretKey: harbor-internal-secrets
+
+core:
+  existingSecret: harbor-internal-secrets
+  secretName: harbor-internal-secrets
+  existingXsrfSecret: harbor-internal-secrets
+  existingXsrfSecretKey: CSRF_KEY
+
+jobservice:
+  existingSecret: harbor-internal-secrets
+  existingSecretKey: JOBSERVICE_SECRET
+
+registry:
+  existingSecret: harbor-internal-secrets
+  existingSecretKey: REGISTRY_HTTP_SECRET
+  credentials:
+    existingSecret: harbor-internal-secrets
