@@ -7,7 +7,6 @@ spec:
     enabled: true
     interval: 30s
   imagePullPolicy: IfNotPresent
-  imageRepository: dxflrs/amd64_garage:v2.3.0
   zone: eu-west-2
   replicas: 3
   replication:
