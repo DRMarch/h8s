@@ -32,11 +32,14 @@ spec:
               args:
                 - |
                   BLOCKLIST_PATH="/blocklist/hosts"
+                  TEMP_RAW_FILE="/tmp/blocklist.raw"
                   TEMP_HOSTS_FILE="/tmp/hosts.tmp"
-                  BLOCKLIST_URL="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/hosts/pro.txt"
+                  BLOCKLIST_URL="https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/pro.txt"
                   echo "Attempting to download blocklist from $BLOCKLIST_URL"
-                  curl -fsSL "$BLOCKLIST_URL" -o "$TEMP_HOSTS_FILE"
-                  if [ -s "$TEMP_HOSTS_FILE" ]; then
+                  curl -fsSL "$BLOCKLIST_URL" -o "$TEMP_RAW_FILE"
+                  if [ -s "$TEMP_RAW_FILE" ]; then
+                    grep '^\*\.' "$TEMP_RAW_FILE" | sed 's/^\*\./0.0.0.0 /' > "$TEMP_HOSTS_FILE"
+                    rm -f "$TEMP_RAW_FILE"
                     if ! cmp -s "$TEMP_HOSTS_FILE" "$BLOCKLIST_PATH"; then
                         echo "New blocklist downloaded, updating..."
                         mv "$TEMP_HOSTS_FILE" "$BLOCKLIST_PATH"
