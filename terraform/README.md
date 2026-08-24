@@ -120,6 +120,8 @@ Edit [`vault-secrets/variables.tf`](./vault-secrets/variables.tf):
 | `authelia_docker_image` | `ghcr.io/authelia/authelia:latest` | Image for crypto hash generation |
 | `vault_token` | `""` | Vault root token (preferred over `vault_token_file`) |
 | `github_pat_token` | `""` | GitHub fine-grained PAT for Renovate |
+| `discord_webhook_url` | `""` | Discord webhook URL for Alertmanager cluster alerts |
+| `model_watch_webhook_url` | `""` | Discord webhook URL for model-watch model change notifications |
 | `opencode_go_api_key_1` | `""` | First OpenCode Go API key for Higress token failover |
 | `opencode_go_api_key_2` | `""` | Second OpenCode Go API key for Higress token failover |
 
@@ -207,4 +209,5 @@ Each consumer lands in Vault at `kubernetes-homelab/higress/api-keys/<consumer>`
 | `kubernetes-homelab/endurain/fernet-key` | `fernet_key` | Endurain Fernet crypto |
 | `kubernetes-homelab/endurain/secret-key` | `secret_key` | Endurain session signing |
 | `kubernetes-homelab/renovate/github` | `token` | Renovate GitHub fine-grained PAT |
+| `kubernetes-homelab/model-watch/webhook-url` | `url` | model-watch Discord webhook (model add/remove alerts) |
 | `kubernetes-homelab/higress/opencode-go` | `api-token-1`, `api-token-2` | Higress OpenCode Go provider tokens |

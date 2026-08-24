@@ -51,6 +51,13 @@ variable "discord_webhook_url" {
   sensitive   = true
 }
 
+variable "model_watch_webhook_url" {
+  description = "Discord webhook URL for model-watch model change notifications. Written to kubernetes-homelab/model-watch/webhook-url (field: url) and consumed by the model-watch CronJob via ESO."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 variable "opencode_go_api_key_1" {
   description = "First OpenCode Go API key. Both OpenCode Go keys are written to the same Vault path for Higress token failover."
   type        = string

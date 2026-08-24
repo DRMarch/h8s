@@ -36,7 +36,7 @@ variable "higress_external_api_consumers" {
 }
 
 variable "higress_internal_api_consumers" {
-  description = "key-auth consumer names allowed on the INTERNAL domain (higress-internal.higress-system.svc.cluster.local), used by in-cluster apps such as Open WebUI. Same key generation/Vault semantics as higress_external_api_consumers; the two lists scope each key to its own domain."
+  description = "key-auth consumer names allowed on the INTERNAL domain (higress-internal.higress-system.svc.cluster.local), used by in-cluster apps such as Open WebUI and model-watch. Same key generation/Vault semantics as higress_external_api_consumers; the two lists scope each key to its own domain."
   type        = list(string)
-  default     = ["open-webui"]
+  default     = ["open-webui", "model-watch"]
 }

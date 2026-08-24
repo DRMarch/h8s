@@ -934,6 +934,26 @@ resource "null_resource" "vault_alertmanager_discord_webhook" {
   }
 }
 
+# ---- Vault Push: model-watch Discord Webhook ----
+
+resource "null_resource" "vault_model_watch_webhook" {
+  triggers = {
+    url = var.model_watch_webhook_url
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/model-watch/webhook-url \
+          url='${var.model_watch_webhook_url}'
+      "
+    EOT
+  }
+}
+
 # ---- Vault Push: OpenCode Go API Keys for Higress ----
 #
 # These are intentionally supplied as bring-your-own variables rather than

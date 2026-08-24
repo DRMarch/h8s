@@ -50,6 +50,9 @@ github_pat_token = "github_pat_xxxxxxxxxxxxxxxxxxxx"
 #   5. Paste the URL below
 discord_webhook_url = "https://discord.com/api/webhooks/XXXXXXXXXX/YYYYYYYYYYYYYYYYYYYY"
 
+# Discord webhook URL for model-watch (model add/remove notifications)
+model_watch_webhook_url = "https://discord.com/api/webhooks/XXXXXXXXXX/YYYYYYYYYYYYYYYYYYYY"
+
 # OpenCode Go keys for the initial Higress provider pilot.
 # These must belong to separate OpenCode Go usage quotas. Both are written to
 # kubernetes-homelab/higress/opencode-go and consumed through ESO; never put
