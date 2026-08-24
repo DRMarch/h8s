@@ -34,7 +34,13 @@ Fields:
 
 The credentials are configured through the Terraform variables `opencode_go_api_key_1` and `opencode_go_api_key_2` in the ignored `terraform/vault-secrets/secrets.auto.tfvars` file. Both values must be supplied before the Higress resources synchronize.
 
-Higress selects between the credentials and temporarily removes a credential from rotation after authentication failures, quota responses (`429`) or configured upstream failures. OpenCode Go usage limits are documented at https://opencode.ai/docs/go/.
+Higress rotates between the credentials and pulls one out of rotation on auth failures, `429`s or configured upstream failures. Usage limits are documented at https://opencode.ai/docs/go/.
+
+## Session affinity
+
+OpenCode Go cached reads are ~30x cheaper than cold input. However this setup uses two `apiTokens` from separate accounts, so Higress picks one at random per request and nothing pins a session to a single credential. Consecutive requests often land on different credentials with cold caches, so you pay the full input rate more often than you should.
+
+Provider-level session affinity is not in Higress yet, but it's on the way: [3840](https://github.com/higress-group/higress/issues/3840) (open; PRs [3921](https://github.com/higress-group/higress/pull/3921) and [4128](https://github.com/higress-group/higress/pull/4128) also relevant).
 
 ## Deployment
 
