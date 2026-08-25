@@ -93,6 +93,19 @@
             "matchPackageNames": [
                 "ghcr.io/grafana/helm-charts/grafana-operator"
             ]
+        },
+        {
+            "description": "Only update Renovate itself on minor/major releases",
+            "matchDatasources": [
+                "docker"
+            ],
+            "matchPackageNames": [
+                "renovate/renovate"
+            ],
+            "matchUpdateTypes": [
+                "patch"
+            ],
+            "enabled": false
         }
     ],
     "prConcurrentLimit": 0,
