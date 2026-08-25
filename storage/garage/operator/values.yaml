@@ -1,4 +1,4 @@
-# https://github.com/rajsinghtech/garage-operator/blob/v0.6.29/charts/garage-operator/values.yaml
+# https://github.com/rajsinghtech/garage-operator/blob/v0.7.6/charts/garage-operator/values.yaml
 
 # -- Number of operator replicas (typically 1 with leader election)
 replicaCount: 1
@@ -7,8 +7,6 @@ image:
   repository: ghcr.io/rajsinghtech/garage-operator
   pullPolicy: IfNotPresent
   tag: "v0.7.6"
-
-defaultGarageImage: "dxflrs/amd64_garage:v2.3.0"
 
 
 # Pod security context
