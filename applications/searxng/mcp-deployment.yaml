@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: searxng-mcp
+  namespace: searxng
+  labels:
+    app: searxng-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: searxng-mcp
+  template:
+    metadata:
+      labels:
+        app: searxng-mcp
+    spec:
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: searxng-mcp
+          image: isokoliuk/mcp-searxng:2.1.0
+          ports:
+            - name: http
+              containerPort: 3000
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: SEARXNG_URL
+              value: "http://searxng.searxng.svc.cluster.local:8080"
+            - name: MCP_HTTP_PORT
+              value: "3000"
+            - name: MCP_HTTP_HOST
+              value: "0.0.0.0"
+            - name: SEARXNG_DEFAULT_RESPONSE_FORMAT
+              value: "json"
+            - name: SEARXNG_MAX_RESULTS
+              value: "20"
+            - name: HOME
+              value: "/tmp"
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+      volumes:
+        - name: tmp
+          emptyDir: {}

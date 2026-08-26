@@ -4,6 +4,8 @@ namespace: searxng
 resources:
   - ./deployment.yaml
   - ./service.yaml
+  - ./mcp-deployment.yaml
+  - ./mcp-service.yaml
   - ./configmap.yaml
   - ./limiter-configmap.yaml
   - ./searxng-secret-externalsecret.yaml

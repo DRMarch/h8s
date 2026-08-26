@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: searxng-mcp
+  namespace: searxng
+  labels:
+    app: searxng-mcp
+spec:
+  type: ClusterIP
+  selector:
+    app: searxng-mcp
+  ports:
+    - name: http
+      protocol: TCP
+      port: 3000
+      targetPort: http
