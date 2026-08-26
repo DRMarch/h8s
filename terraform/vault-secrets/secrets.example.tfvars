@@ -59,3 +59,8 @@ model_watch_webhook_url = "https://discord.com/api/webhooks/XXXXXXXXXX/YYYYYYYYY
 # the real values in Git.
 opencode_go_api_key_1 = "sk-opencode-go-key-1"
 opencode_go_api_key_2 = "sk-opencode-go-key-2"
+
+# OpenRouter API key for the Higress provider bridge. Written to
+# kubernetes-homelab/higress/openrouter (field: api-key) and consumed through
+# ESO; never put the real value in Git. Leave empty to skip Vault provisioning.
+openrouter_api_key = "sk-or-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

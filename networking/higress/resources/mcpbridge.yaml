@@ -17,3 +17,9 @@ spec:
       port: 443
       protocol: https
       sni: opencode.ai
+    - name: openrouter
+      type: dns
+      domain: openrouter.ai
+      port: 443
+      protocol: https
+      sni: openrouter.ai

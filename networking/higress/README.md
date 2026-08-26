@@ -1,6 +1,6 @@
 # Higress
 
-This directory contains the Higress configuration that exposes OpenCode Go through an OpenAI-compatible API on the LAN. Cilium provides the external gateway and TLS termination; Higress forwards requests to OpenCode Go and manages provider-token selection and failover.
+This directory contains the Higress configuration that exposes OpenCode Go and OpenRouter (free models only) through an OpenAI-compatible API on the LAN. Cilium provides the external gateway and TLS termination; Higress forwards requests to the providers and manages provider-token selection and failover.
 
 ```text
 LAN client
@@ -8,17 +8,13 @@ LAN client
   -> Higress gateway Service
   -> model-router (provider header + model rewrite)
   -> provider Ingress (header match `higress.io/exact-match-header-...`)
-       -> McpBridge DNS registry (`opencode-{go,zen}.dns`)
-  -> Higress AI Proxy (rewrites to `https://opencode.ai/zen/{go,}v1`)
-  -> OpenCode Go (`https://opencode.ai`)
+       -> McpBridge DNS registry (`opencode-{go,zen}.dns` / `openrouter.dns`)
+  -> Higress AI Proxy (rewrites to `https://opencode.ai/zen/{go,}v1` / `https://openrouter.ai/api/v1`)
+  -> OpenCode Go (`https://opencode.ai`) / OpenRouter (`https://openrouter.ai`)
 ```
 
 Provider routing uses Ingresses whose backend is the McpBridge resource and
-whose `higress.io/destination` points at the DNS-registry ServiceEntries
-(`opencode-go.dns` / `opencode-zen.dns`), so the ai-proxy rewrite is sent
-straight to the provider over TLS — no loopback through the gateway. (Gateway
-API `Hostname` backends are not resolvable by the Higress 2.2.3 controller.)
-```
+whose `higress.io/destination` points at the DNS-registry ServiceEntries (`opencode-go.dns` / `opencode-zen.dns` / `openrouter.dns`), so the ai-proxy rewrite is sent straight to the provider over TLS — no loopback through the gateway. (Gateway API `Hostname` backends are not resolvable by the Higress 2.2.3 controller.)
 
 ## Provider credentials
 
@@ -34,7 +30,22 @@ Fields:
 
 The credentials are configured through the Terraform variables `opencode_go_api_key_1` and `opencode_go_api_key_2` in the ignored `terraform/vault-secrets/secrets.auto.tfvars` file. Both values must be supplied before the Higress resources synchronize.
 
-Higress rotates between the credentials and pulls one out of rotation on auth failures, `429`s or configured upstream failures. Usage limits are documented at https://opencode.ai/docs/go/.
+Higress rotates between the credentials and pulls one out of rotation on auth failures, `429`s or configured upstream failures.
+
+### OpenRouter (free models)
+
+A single OpenRouter credential is supplied through Vault and synchronized with ESO:
+
+```text
+Vault path: kubernetes-homelab/higress/openrouter
+
+Fields:
+  api-key
+```
+
+Configured through the Terraform variable `openrouter_api_key` in the ignored `terraform/vault-secrets/secrets.auto.tfvars` file. Set it before the Higress resources synchronize.
+
+OpenRouter models are exposed with the `or/` prefix and filtered by the model-aggregator to only list models whose id ends in `:free` (e.g. `or/meta-llama/llama-3.3-70b-instruct:free`). The filter only affects the `/v1/models` listing — a client that already knows a paid `or/<model>` id can still route to it.
 
 ## Session affinity
 
@@ -44,7 +55,7 @@ Provider-level session affinity is not in Higress yet, but it's on the way: [384
 
 ## Deployment
 
-Run the `terraform/vault-secrets` workspace after setting both provider credentials. Argo CD then deploys the `higress-helm` and `higress-resources` Applications in order. The resources include the Higress gateway, OpenCode Go provider bridge, LAN route, ExternalSecret and AI Proxy WasmPlugin.
+Run the `terraform/vault-secrets` workspace after setting the provider credentials. Argo CD then deploys the `higress-helm` and `higress-resources` Applications in order. The resources include the Higress gateway, OpenCode Go and OpenRouter provider bridges, LAN route, ExternalSecrets and AI Proxy WasmPlugins.
 
 
 ## API

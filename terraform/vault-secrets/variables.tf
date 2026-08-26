@@ -71,3 +71,10 @@ variable "opencode_go_api_key_2" {
   default     = ""
   sensitive   = true
 }
+
+variable "openrouter_api_key" {
+  description = "OpenRouter API key. Written to kubernetes-homelab/higress/openrouter (field: api-key) and consumed via ESO by the Higress ai-proxy provider."
+  type        = string
+  default     = ""
+  sensitive   = true
+}

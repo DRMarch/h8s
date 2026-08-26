@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - ./opencode-go.yaml
   - ./opencode-zen.yaml
+  - ./openrouter.yaml

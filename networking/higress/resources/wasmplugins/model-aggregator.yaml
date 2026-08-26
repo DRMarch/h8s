@@ -26,3 +26,10 @@ spec:
             modelsUrl: https://opencode.ai/zen/go/v1/models
             prefix: "go/"
             serviceName: opencode-go
+          - name: openrouter
+            modelsUrl: https://openrouter.ai/api/v1/models
+            prefix: "or/"
+            serviceName: openrouter
+            timeout: 10000
+            include:
+              - ":free$"
