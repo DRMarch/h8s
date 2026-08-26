@@ -9,7 +9,7 @@ GitOps-managed via ArgoCD, Cilium Gateway API ingress, Vault + ESO for secrets.
 - **CNI / Ingress**: Cilium + Gateway API + HTTPRoute
 - **GitOps**: ArgoCD (App-of-Apps), Helm + Kustomize
 - **Secrets**: HashiCorp Vault → External Secrets Operator → Kubernetes Secrets
-- **IaC / Templating**: Terraform 1.15.6 (two workspaces: `templates`, `vault-secrets`)
+- **IaC / Templating**: Terraform 1.15.8 (three workspaces: `templates`, `vault-secrets`, `higress-api-keys`) — see [terraform/README.md](./terraform/README.md)
 - **Dependencies**: Renovate (ArgoCD, Helm, Kubernetes, Dockerfile, Devbox managers)
 - **Tooling**: Devbox (kubectl, terraform, helm, awscli2)
 
@@ -18,12 +18,12 @@ GitOps-managed via ArgoCD, Cilium Gateway API ingress, Vault + ESO for secrets.
 - `ci-cd/argo-cd/` — ArgoCD + App-of-Apps
 - `ci-cd/argo-events/` — GitHub webhook listener
 - `ci-cd/renovate/` — Dependency automation
-- `networking/{cilium,cert-manager,gateway,coredns,cloudflared}/` — CNI, TLS, ingress, DNS, tunnel
+- `networking/{cilium,cert-manager,gateway,coredns,cloudflared,higress}/` — CNI, TLS, ingress, DNS, tunnel, LLM gateway
 - `security/{authelia,vault,external-secrets}/` — SSO, secrets, secret sync
 - `storage/{longhorn,cloudnative-pg,garage,harbor,dragonfly}/` — Persistence
 - `monitoring/{prometheus-stack,grafana}/` — Observability
-- `applications/{endurain,excalidraw,hello-world}/` — Workloads
-- `terraform/{templates,vault-secrets}/` — Templating + secret generation
+- `applications/{bytestash,endurain,excalidraw,hello-world,mlflow,model-watch,open-webui,searxng}/` — Workloads
+- `terraform/{templates,vault-secrets,higress-api-keys}/` — Templating + secret generation
 
 ## Code Conventions
 
@@ -95,3 +95,8 @@ GitOps-managed via ArgoCD, Cilium Gateway API ingress, Vault + ESO for secrets.
 - `kubectl -n kube-system rollout restart deployment/cilium-operator` — Cilium gateway issues
 - `kubectl exec -ti vault-0 -n vault -- vault operator unseal` — Vault rescheduled
 - PVC inspection: see [DEBUGGING.md](./DEBUGGING.md)
+
+## Further reading
+
+- [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — request / secret / GitOps flows.
+- [docs/ADDING-AN-APP.md](./docs/ADDING-AN-APP.md) — recipe for onboarding a new workload.

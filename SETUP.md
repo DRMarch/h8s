@@ -16,6 +16,13 @@ _Last updated: 2026-07-25
   - [4. Configure kubeconfig](#4-configure-kubeconfig)
   - [5. Install CNI (Cilium)](#5-install-cni-cilium)
   - [6. Untaint Control Plane Nodes](#6-untaint-control-plane-nodes)
+  - [7. Additional Setup (Longhorn deps)](#7-additional-setup-longhorn-deps)
+- [Next Steps](#next-steps)
+  - [ArgoCD](#argocd)
+  - [Vault Setup](#vault-setup)
+  - [Trusting Cluster Certificates](#trusting-cluster-certificates)
+  - [Terraform Secrets](#terraform-secrets)
+  - [Harbor Setup](#harbor-setup)
 - [Future Considerations](#future-considerations)
 
 ## Overview
@@ -116,7 +123,7 @@ sudo sed -i 's#path: /etc/kubernetes/admin.conf#path: /etc/kubernetes/super-admi
 
 On **other control plane nodes**, copy and adapt `/etc/kubernetes/manifests/kube-vip.yaml` as needed.
 
-### 3. Setup Control Plane
+### 3. Initialise Control Plane
 
 On the first node:
 
@@ -156,11 +163,7 @@ sudo cp /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
-### 5. Setup kube/config
-
-Next you will need to copy the contents of `$HOME/.kube/config` from the node where you `kubeadm init` and then copy this over to your local machine in the same path. This will allow you to access the cluster remotely with `kubectl`.
-
-### 6. Install CNI (Cilium)
+### 5. Install CNI (Cilium)
 
 Cilium is the CNI for the cluster. It must be installed manually during initial setup
 since ArgoCD cannot run without a working CNI. After ArgoCD is deployed, the `cilium-helm`
@@ -187,7 +190,7 @@ kubectl apply -k networking/cilium/resources
 Future Cilium version bumps are done by changing `targetRevision` in
 `ci-cd/argo-cd/applications/bootstrap/cilium-helm.yaml`.
 
-### 7. Untaint Control Plane Nodes
+### 6. Untaint Control Plane Nodes
 
 Allow scheduling pods on control plane nodes:
 ```bash
@@ -197,7 +200,7 @@ kubectl taint nodes <node-name> node-role.kubernetes.io/control-plane:NoSchedule
 Replace `<node-name>` with your actual node name.
 
 
-### 8. Additional setup
+### 7. Additional Setup (Longhorn deps)
 Below we install any packages that are required by Longhorn.
 ```bash
 # For longhorn we must have
@@ -207,27 +210,35 @@ sudo apt install open-iscsi nfs-common cryptsetup dmsetup -y
 sudo systemctl stop multipathd && sudo systemctl disable multipathd
 ```
 
-## Argocd
+## Next Steps
+
+After the cluster is up, the remaining setup is done in this order:
+
+1. [ArgoCD](#argocd) — bootstraps everything else via GitOps.
+2. [Vault Setup](#vault-setup) — secrets backend, root CA service.
+3. [Trusting Cluster Certificates](#trusting-cluster-certificates) — install the cluster root CA on your local machine.
+4. [Terraform Secrets](#terraform-secrets) — push generated secrets and API keys into Vault.
+5. [Harbor Setup](#harbor-setup) — only if you want the cluster to pull from a local Harbor registry.
+
+### ArgoCD
+
 Next you can setup [argocd](./ci-cd/argo-cd/README.md) that will bootstrap all the other services in the cluster.
 
-## Future Considerations
-- **Migrate to TalosOS**.
-
-## Vault Setup
+### Vault Setup
 
 You will need to setup Vault that can be found [here](./security/vault/README.md).
 
-## Trusting Cluster Certificates
+### Trusting Cluster Certificates
 
 Your cluster uses a self-signed root CA (stored in Vault) to issue certificates for all services. To avoid browser warnings, you need to trust this CA on your local machine.
 
-### Export the Root CA
+#### Export the Root CA
 
 ```bash
 kubectl exec -ti vault-0 -n vault -- vault read -field=certificate pki/cert/ca > ~/cluster-root-ca.pem
 ```
 
-### Install on Ubuntu (System-Wide)
+#### Install on Ubuntu (System-Wide)
 
 ```bash
 sudo cp ~/cluster-root-ca.pem /usr/local/share/ca-certificates/cluster-root-ca.crt
@@ -236,7 +247,7 @@ sudo update-ca-certificates
 
 This makes Chrome, Edge, `curl`, `wget`, and other system tools trust the CA.
 
-### Firefox Configuration
+#### Firefox Configuration
 
 Firefox uses its own certificate store by default. To use the system CA store:
 
@@ -251,8 +262,7 @@ After completing these steps, browsers will trust `https://*.drmarchent.com` wit
 
 Next you will need to deploy the secrets for the cluster into vault by following the terraform [vault-secrets](./terraform/README.md)
 
-
-## Harbor Setup
+### Harbor Setup
 
 If you would like to have the cluster be able to pull containers from harbor you will need to edit each node to resolve the dns to coredns. This can be done with:
 
@@ -273,3 +283,7 @@ sudo cp /tmp/ca.crt /usr/local/share/ca-certificates/harbor.crt && sudo update-c
 
 sudo systemctl restart containerd
 ```
+
+## Future Considerations
+
+- **Migrate to TalosOS**.

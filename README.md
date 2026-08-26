@@ -10,9 +10,9 @@ This repo documents the configuration and management of my personal Kubernetes h
 
 - **High Availability:** All three nodes act as control plane nodes with stacked etcd for resilience.
 - **Resource Efficiency:** Control plane nodes are also schedulable for workloads.
-- **Hardware:**  
-  - 3× TRIGKEY N100  
-  - 16GB RAM per node  
+- **Hardware:**
+  - 3× TRIGKEY N100
+  - 16GB RAM per node
   - 512GB storage per node
 
 
@@ -23,4 +23,6 @@ This repo documents the configuration and management of my personal Kubernetes h
 
 ## Documentation
 
-For detailed setup instructions, configuration steps, and operational notes, see [SETUP.md](./SETUP.md).
+- [SETUP.md](./SETUP.md) — Cluster bootstrap (kubeadm, kube-vip, Cilium, Vault, ...).
+- [AGENTS.md](./AGENTS.md) — Conventions, security rules, and operating permissions.
+- [DEBUGGING.md](./DEBUGGING.md) — Common debugging recipes.
