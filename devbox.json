@@ -5,7 +5,7 @@
       "version": "1.36.3"
     },
     "terraform": {
-      "version": "1.15.8"
+      "version": "1.15.9"
     },
     "helm": {
       "version": "0.9.0"
