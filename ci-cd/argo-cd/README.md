@@ -20,7 +20,7 @@ adopts the Helm release and handles all future upgrades.
 ### Initial Bootstrap (one-time)
 
 ```bash
-export ARGOCD_HELM_VER=10.6.4 # May 2026
+export ARGOCD_HELM_VER=10.7.1 # May 2026
 
 helm repo add argo https://argoproj.github.io/argo-helm && helm repo update
 
