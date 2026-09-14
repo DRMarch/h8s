@@ -1,0 +1,28 @@
+apiVersion: extensions.higress.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: transformer-session-header
+  namespace: higress-system
+  labels:
+    app.kubernetes.io/name: transformer-session-header
+    app.kubernetes.io/component: gateway
+spec:
+  url: oci://higress-registry.us-west-1.cr.aliyuncs.com/plugins/transformer@sha256:a67745c81feae946c6ddb6e34418074a11933458c4b8ddf5661ab57b06a120f4
+  sha256: a67745c81feae946c6ddb6e34418074a11933458c4b8ddf5661ab57b06a120f4
+  imagePullPolicy: IfNotPresent
+  failStrategy: FAIL_OPEN
+  priority: 850
+  defaultConfigDisable: true
+  matchRules:
+    - service:
+        - opencode-go.dns
+        - opencode-zen.dns
+      config:
+        reroute: false
+        reqRules:
+          - operate: map
+            headers:
+              - fromKey: x-session-affinity
+                toKey: x-opencode-session
+              - fromKey: X-Session-Id
+                toKey: x-opencode-session

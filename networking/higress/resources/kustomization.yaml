@@ -14,3 +14,4 @@ resources:
   - ./wasmplugins/ai-proxy-openrouter.yaml
   - ./wasmplugins/model-aggregator.yaml
   - ./wasmplugins/ai-statistics.yaml
+  - ./wasmplugins/transformer-session-header.yaml

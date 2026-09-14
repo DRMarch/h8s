@@ -7,6 +7,7 @@ LAN client
   -> Cilium lan-gateway (`llm.drmarchent.com`)
   -> Higress gateway Service
   -> model-router (provider header + model rewrite)
+  -> transformer (maps session header -> `x-opencode-session` for OpenCode backends)
   -> provider Ingress (header match `higress.io/exact-match-header-...`)
        -> McpBridge DNS registry (`opencode-{go,zen}.dns` / `openrouter.dns`)
   -> Higress AI Proxy (rewrites to `https://opencode.ai/zen/{go,}v1` / `https://openrouter.ai/api/v1`)
@@ -47,11 +48,23 @@ Configured through the Terraform variable `openrouter_api_key` in the ignored `t
 
 OpenRouter models are exposed with the `or/` prefix and filtered by the model-aggregator to only list models whose id ends in `:free` (e.g. `or/meta-llama/llama-3.3-70b-instruct:free`). The filter only affects the `/v1/models` listing — a client that already knows a paid `or/<model>` id can still route to it.
 
-## Session affinity
+## Session headers & affinity
+
+OpenCode Go/Zen require a per-conversation `x-opencode-session` header — native OpenCode clients send it, and OpenCode Go returns `503` without it. OpenRouter uses the same concept natively as `x-session-id` for sticky routing and session grouping in its Logs view.
+
+The gateway unifies both on the client-facing `X-Session-Id` header:
+
+- [`transformer-session-header.yaml`](./resources/wasmplugins/transformer-session-header.yaml) maps `X-Session-Id` (and OpenCode's native `x-session-affinity`) onto `x-opencode-session` for the `opencode-go.dns` / `opencode-zen.dns` backends only. OpenRouter traffic passes through untouched — OpenRouter reads `x-session-id` directly.
+- Open WebUI sends `X-Session-Id: <chat-uuid>` on every request via the `OPENAI_API_CONFIGS` connection header (see [`applications/open-webui/helm/values.yaml`](../../applications/open-webui/helm/values.yaml)). The chat id is stable for the life of a conversation (a new chat gets a new id), so Go/Zen sees one consistent session and OpenRouter groups the whole chat under it.
+- ai-statistics keys its telemetry on `x-session-id`, so the same value drives the dashboards.
+
+The session value is client-created and opaque; the gateway only relays or maps it and never generates one.
+
+### Account affinity (deferred)
 
 OpenCode Go cached reads are ~30x cheaper than cold input. However this setup uses two `apiTokens` from separate accounts, so Higress picks one at random per request and nothing pins a session to a single credential. Consecutive requests often land on different credentials with cold caches, so you pay the full input rate more often than you should.
 
-Provider-level session affinity is not in Higress yet, but it's on the way: [3840](https://github.com/higress-group/higress/issues/3840) (open; PRs [3921](https://github.com/higress-group/higress/pull/3921) and [4128](https://github.com/higress-group/higress/pull/4128) also relevant).
+Provider-level session affinity is not in Higress yet, but it's on the way: [3840](https://github.com/higress-group/higress/issues/3840) (open; PRs [3921](https://github.com/higress-group/higress/pull/3921) and [4128](https://github.com/higress-group/higress/pull/4128) also relevant). Once available, the two apiTokens can be pinned per session (e.g. hash on `x-opencode-session`) so a conversation stays on one warm account.
 
 ## Deployment
 
