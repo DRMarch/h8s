@@ -146,6 +146,9 @@ extraEnvVars:
     value: "3"
   - name: ENABLE_WEB_SEARCH_CONFIRMATION
     value: "true"
+  # ── Session header (OpenCode/OpenRouter conversation affinity) ───────────
+  - name: OPENAI_API_CONFIGS
+    value: '{"0": {"headers": {"X-Session-Id": "{{ "{{CHAT_ID}}" }}"}}}'
 
 podSecurityContext:
   runAsNonRoot: true
