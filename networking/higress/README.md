@@ -124,6 +124,45 @@ Add the provider and plugin to `~/.config/opencode/opencode.jsonc`:
         }
       }
     }
+  },
+
+  "mcp": {
+    "higress": {
+      "type": "remote",
+      "url": "https://llm.drmarchent.com/mcp",
+      "headers": { "Authorization": "Bearer {env:HIGRESS_API_KEY}" },
+      "oauth": false,
+      "enabled": true
+    }
   }
 }
 ```
+
+## MCP portal
+
+`https://llm.drmarchent.com/mcp` is a unified Model Context Protocol endpoint, served entirely by Higress wasm plugins (no separate backend):
+
+- `mcp-server` (composed/`toolSet`, on `/mcp`) answers `tools/list` with the merged catalog; tools are exposed as `<server>___<tool>` (e.g. `searxng___searxng_web_search`).
+- `mcp-router` (on `/mcp`) rewrites `tools/call` to `/mcp/servers/<server>`, where a second `mcp-server` rule acts as an `mcp-proxy` to the upstream server.
+- Auth reuses the domain-level `key-auth` (the `opencode` consumer). Protocol: legacy for OpenCode; searxng-mcp also supports modern.
+
+```text
+OpenCode -> llm.drmarchent.com/mcp (Bearer key)
+  -> Higress gateway (key-auth FAIL_CLOSE; LLM plugins no-op on MCP JSON-RPC)
+  -> wasm mcp-server toolSet answers tools/list; mcp-router forwards tools/call
+  -> Ingress /mcp/servers/searxng -> McpBridge dns registry (`searxng-mcp.dns`)
+       -> searxng-mcp (http://searxng-mcp.searxng.svc.cluster.local:3000/mcp)
+```
+
+The searxng backend is reached through a `McpBridge` dns registry (`searxng-mcp.dns`)
+rather than an ExternalName Service: Higress 2.2.x no longer builds Envoy clusters
+for `ExternalName` backends, so a direct ExternalName Ingress backend fails with
+`503 cluster_not_found`. Registry-backed clusters are always pushed to the gateway,
+even with `PILOT_FILTER_GATEWAY_CLUSTER_CONFIG` enabled.
+
+`matchRules.ingress` must contain the Envoy route name. For Ingresses in the
+Higress system namespace (as here), the route name is the bare Ingress name
+(`mcp-unified`, `mcp-servers-searxng`) — the `namespace/name` form only applies
+to Ingresses outside the system namespace.
+
+Adding a backend = one `McpBridge` registry + one `mcp-server` proxy matchRule + one `mcp-router` entry + declared `tools:` metadata (the catalog is static, not auto-discovered).

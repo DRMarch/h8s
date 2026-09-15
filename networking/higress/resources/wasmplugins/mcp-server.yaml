@@ -1,0 +1,145 @@
+apiVersion: extensions.higress.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: mcp-server
+  namespace: higress-system
+spec:
+  url: oci://higress-registry.us-west-1.cr.aliyuncs.com/plugins/mcp-server:2.0.2
+  imagePullPolicy: IfNotPresent
+  failStrategy: FAIL_CLOSE
+  priority: 800
+  defaultConfigDisable: true
+  matchRules:
+    - ingress:
+        - mcp-unified
+      configDisable: false
+      config:
+        toolSet:
+          name: h8s-mcp
+          version: 1.0.0
+          serverTools:
+            - serverName: searxng
+              tools:
+                - searxng_web_search
+                - searxng_search_suggestions
+                - searxng_instance_info
+                - web_url_read
+    - ingress:
+        - mcp-servers-searxng
+      configDisable: false
+      config:
+        server:
+          name: searxng
+          type: mcp-proxy
+          transport: http
+          protocolStrategy: legacy
+          mcpServerURL: http://searxng-mcp.searxng.svc.cluster.local:3000/mcp
+        tools:
+          - name: searxng_web_search
+            description: Searches the web using SearXNG and returns a list of results, each with a title, URL, and content snippet. Use query, not prompt or q. Paginate with pageno; narrow scope with time_range and language. Follow up with web_url_read to read full text of a result.
+            args:
+              - name: query
+                description: The search query string (required parameter name, exactly query).
+                type: string
+                required: true
+              - name: pageno
+                description: Search page number (starts at 1).
+                type: integer
+                required: false
+              - name: time_range
+                description: Time range of search (day, week, month, year).
+                type: string
+                required: false
+                enum: [day, week, month, year]
+              - name: language
+                description: Language code for search results (e.g. en, fr, de).
+                type: string
+                required: false
+              - name: safesearch
+                description: Safe search filter level (0 None, 1 Moderate, 2 Strict).
+                type: string
+                required: false
+                enum: ["0", "1", "2"]
+              - name: min_score
+                description: Minimum relevance score threshold from 0.0 to 1.0; lower results are filtered out.
+                type: number
+                required: false
+              - name: num_results
+                description: Maximum number of results to return (1-20).
+                type: number
+                required: false
+              - name: categories
+                description: Comma-separated SearXNG categories to query.
+                type: string
+                required: false
+              - name: engines
+                description: Comma-separated SearXNG engine names to query.
+                type: string
+                required: false
+              - name: response_format
+                description: Formatted text for agents or raw JSON for programmatic clients.
+                type: string
+                required: false
+                enum: [text, json]
+              - name: result_detail
+                description: full preserves SearXNG metadata; compact returns only title, url, content.
+                type: string
+                required: false
+                enum: [compact, full]
+          - name: searxng_search_suggestions
+            description: Returns search suggestions for a partial or complete query.
+            args:
+              - name: query
+                description: Partial or complete query to autocomplete.
+                type: string
+                required: true
+              - name: language
+                description: Language code for suggestions (e.g. en, fr, de) or all.
+                type: string
+                required: false
+          - name: searxng_instance_info
+            description: Returns SearXNG instance configuration, available categories and engines.
+            args:
+              - name: includeEngines
+                description: Include enabled engine names in the response.
+                type: boolean
+                required: false
+              - name: includeDisabled
+                description: Include disabled engine names when includeEngines is true.
+                type: boolean
+                required: false
+              - name: category
+                description: Filter categories and engines to a single category name.
+                type: string
+                required: false
+              - name: refresh
+                description: Bypass the process cache and fetch fresh /config data.
+                type: boolean
+                required: false
+          - name: web_url_read
+            description: Fetches a URL and converts it to readable markdown text.
+            args:
+              - name: url
+                description: URL to fetch.
+                type: string
+                required: true
+              - name: startChar
+                description: Starting character position for content extraction (default 0).
+                type: number
+                required: false
+              - name: maxLength
+                description: Maximum number of characters to return.
+                type: number
+                required: false
+              - name: section
+                description: Extract content under a specific heading (searches for heading text).
+                type: string
+                required: false
+              - name: paragraphRange
+                description: Return specific paragraph ranges (e.g. 1-5, 3, 10-).
+                type: string
+                required: false
+              - name: readHeadings
+                description: Return only a list of headings instead of full content.
+                type: boolean
+                required: false

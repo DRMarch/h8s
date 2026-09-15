@@ -8,6 +8,8 @@ resources:
   - ./higress-internal-service.yaml
   - ./ingresses
   - ./wasmplugins/key-auth.yaml
+  - ./wasmplugins/mcp-router.yaml
+  - ./wasmplugins/mcp-server.yaml
   - ./wasmplugins/model-router.yaml
   - ./wasmplugins/ai-proxy-opencode-go.yaml
   - ./wasmplugins/ai-proxy-opencode-zen.yaml
