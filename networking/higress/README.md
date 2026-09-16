@@ -127,9 +127,9 @@ Add the provider and plugin to `~/.config/opencode/opencode.jsonc`:
   },
 
   "mcp": {
-    "higress": {
+    "searxng": {
       "type": "remote",
-      "url": "https://llm.drmarchent.com/mcp",
+      "url": "https://llm.drmarchent.com/mcp/servers/searxng",
       "headers": { "Authorization": "Bearer {env:HIGRESS_API_KEY}" },
       "oauth": false,
       "enabled": true
@@ -140,29 +140,34 @@ Add the provider and plugin to `~/.config/opencode/opencode.jsonc`:
 
 ## MCP portal
 
-`https://llm.drmarchent.com/mcp` is a unified Model Context Protocol endpoint, served entirely by Higress wasm plugins (no separate backend):
+Every MCP server is exposed as its own endpoint at `https://llm.drmarchent.com/mcp/servers/<name>` — one client entry per server, no aggregated `/mcp` endpoint.
 
-- `mcp-server` (composed/`toolSet`, on `/mcp`) answers `tools/list` with the merged catalog; tools are exposed as `<server>___<tool>` (e.g. `searxng___searxng_web_search`).
-- `mcp-router` (on `/mcp`) rewrites `tools/call` to `/mcp/servers/<server>`, where a second `mcp-server` rule acts as an `mcp-proxy` to the upstream server.
-- Auth reuses the domain-level `key-auth` (the `opencode` consumer). Protocol: legacy for OpenCode; searxng-mcp also supports modern.
+| Server | Endpoint | Upstream | Protocol |
+|---|---|---|---|
+| `searxng` | `/mcp/servers/searxng` | `http://searxng-mcp.searxng.svc.cluster.local:3000/mcp` | `legacy` |
 
 ```text
-OpenCode -> llm.drmarchent.com/mcp (Bearer key)
+OpenCode -> llm.drmarchent.com/mcp/servers/<name> (Bearer key)
   -> Higress gateway (key-auth FAIL_CLOSE; LLM plugins no-op on MCP JSON-RPC)
-  -> wasm mcp-server toolSet answers tools/list; mcp-router forwards tools/call
-  -> Ingress /mcp/servers/searxng -> McpBridge dns registry (`searxng-mcp.dns`)
-       -> searxng-mcp (http://searxng-mcp.searxng.svc.cluster.local:3000/mcp)
+  -> Ingress mcp-<name> (`higress.io/destination: <name>-mcp.dns`)
+  -> wasm mcp-server matchRule (`type: mcp-proxy`)
+  -> upstream MCP server
 ```
 
-The searxng backend is reached through a `McpBridge` dns registry (`searxng-mcp.dns`)
-rather than an ExternalName Service: Higress 2.2.x no longer builds Envoy clusters
-for `ExternalName` backends, so a direct ExternalName Ingress backend fails with
-`503 cluster_not_found`. Registry-backed clusters are always pushed to the gateway,
-even with `PILOT_FILTER_GATEWAY_CLUSTER_CONFIG` enabled.
+`tools/list` is proxied dynamically from the upstream, so no static tool metadata needs to be maintained.
 
-`matchRules.ingress` must contain the Envoy route name. For Ingresses in the
-Higress system namespace (as here), the route name is the bare Ingress name
-(`mcp-unified`, `mcp-servers-searxng`) — the `namespace/name` form only applies
-to Ingresses outside the system namespace.
+### Adding a server
 
-Adding a backend = one `McpBridge` registry + one `mcp-server` proxy matchRule + one `mcp-router` entry + declared `tools:` metadata (the catalog is static, not auto-discovered).
+[`resources/mcp/servers/<name>/`](./resources/mcp/servers) is a Kustomize Component. Adding a server = copy an existing component directory and add one line to the `components:` list in [`resources/kustomization.yaml`](./resources/kustomization.yaml). Each component owns:
+
+- `ingress.yaml` — Ingress `mcp-<name>` serving `/mcp/servers/<name>` on both hosts.
+- `patch-mcp-server.yaml` — JSON6902 append of the `mcp-proxy` matchRule to the shared [`mcp-server` WasmPlugin](./resources/mcp/base/mcp-server.yaml).
+- `patch-mcpbridge.yaml` — JSON6902 append of the `<name>-mcp` DNS registry to the `default` McpBridge.
+
+Notes:
+
+- Only the McpBridge named `default` in `higress-system` is reconciled, so registries must be appended (JSON6902) to it — the same file also carries the LLM provider registries.
+- The backend is reached through a `McpBridge` dns registry (`<name>-mcp.dns`) rather than an ExternalName Service: Higress 2.2.x no longer builds Envoy clusters for `ExternalName` backends, so a direct ExternalName Ingress backend fails with `503 cluster_not_found`. Registry-backed clusters are always pushed to the gateway, even with `PILOT_FILTER_GATEWAY_CLUSTER_CONFIG` enabled.
+- `matchRules.ingress` must contain the Envoy route name. For Ingresses in the Higress system namespace (as here), the route name is the bare Ingress name (`mcp-searxng`) — the `namespace/name` form only applies to Ingresses outside the system namespace.
+- `protocolStrategy` describes the upstream protocol generation. Use `legacy` (`2024-11-05` / `2025-03-26` / `2025-06-18`) unless the upstream only speaks `modern` (`2026-07-28`) and every client does too: modern -> legacy bridging is supported, legacy downstream -> modern-only upstream is not. `transport: http` is required with `modern`.
+- Auth reuses the domain-level `key-auth` plugin. Wasm plugin images are tag-pinned and tracked by Renovate (`mcp-server:2.0.2`).

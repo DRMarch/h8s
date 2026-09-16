@@ -1,0 +1,12 @@
+apiVersion: extensions.higress.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: mcp-server
+  namespace: higress-system
+spec:
+  url: oci://higress-registry.us-west-1.cr.aliyuncs.com/plugins/mcp-server:2.0.2
+  imagePullPolicy: IfNotPresent
+  failStrategy: FAIL_CLOSE
+  priority: 800
+  defaultConfigDisable: true
+  matchRules: []

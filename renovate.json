@@ -42,6 +42,19 @@
             ],
             "depNameTemplate": "devbox",
             "datasourceTemplate": "devbox"
+        },
+        {
+            "customType": "regex",
+            "description": "Track tag-pinned Higress wasm plugin images (OCI)",
+            "managerFilePatterns": [
+                "/^networking/higress/resources/mcp/.*\\.ya?ml$/",
+                "/^terraform/higress-api-keys/templates/key-auth\\.yaml\\.tftpl$/"
+            ],
+            "matchStrings": [
+                "oci://(?<registryUrl>[^/]+)/(?<depName>plugins/[^:@\\s]+):(?<currentValue>[^@\\s]+)"
+            ],
+            "datasourceTemplate": "docker",
+            "registryUrlTemplate": "https://{{registryUrl}}"
         }
     ],
     "dependencyDashboard": true,

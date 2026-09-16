@@ -1,0 +1,8 @@
+- op: add
+  path: /spec/registries/-
+  value:
+    name: searxng-mcp
+    type: dns
+    domain: searxng-mcp.searxng.svc.cluster.local
+    port: 3000
+    protocol: http

@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - ./ingress.yaml
+patches:
+  - path: ./patch-mcp-server.yaml
+    target:
+      group: extensions.higress.io
+      version: v1alpha1
+      kind: WasmPlugin
+      name: mcp-server
+      namespace: higress-system
+  - path: ./patch-mcpbridge.yaml
+    target:
+      group: networking.higress.io
+      version: v1
+      kind: McpBridge
+      name: default
+      namespace: higress-system

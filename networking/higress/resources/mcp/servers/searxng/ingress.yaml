@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: mcp-unified
+  name: mcp-searxng
   namespace: higress-system
   annotations:
     higress.io/backend-protocol: HTTP
@@ -12,7 +12,7 @@ spec:
     - host: llm.drmarchent.com
       http:
         paths:
-          - path: /mcp
+          - path: /mcp/servers/searxng
             pathType: Prefix
             backend:
               resource:
@@ -22,7 +22,7 @@ spec:
     - host: higress-internal.higress-system.svc.cluster.local
       http:
         paths:
-          - path: /mcp
+          - path: /mcp/servers/searxng
             pathType: Prefix
             backend:
               resource:

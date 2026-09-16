@@ -1,0 +1,13 @@
+- op: add
+  path: /spec/matchRules/-
+  value:
+    ingress:
+      - mcp-searxng
+    configDisable: false
+    config:
+      server:
+        name: searxng
+        type: mcp-proxy
+        transport: http
+        protocolStrategy: legacy
+        mcpServerURL: http://searxng-mcp.searxng.svc.cluster.local:3000/mcp
