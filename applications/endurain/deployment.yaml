@@ -26,7 +26,7 @@ spec:
             capabilities:
               drop:
                 - "ALL"
-          image: codeberg.org/endurain-project/endurain:v0.19
+          image: codeberg.org/endurain-project/endurain:v0.19.2
           ports:
             - containerPort: 8080
           readinessProbe:
