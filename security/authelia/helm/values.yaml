@@ -287,6 +287,12 @@ configMap:
       # Bypass: auth portal (no point requiring auth to view the login page)
       - domain: 'auth.drmarchent.com'
         policy: bypass
+      # Memory Service is admin-only.
+      - domain: 'memory.drmarchent.com'
+        policy: two_factor
+        subject: 'group:admins'
+      - domain: 'memory.drmarchent.com'
+        policy: deny
       # Admin users: require 2FA for all forward-auth-protected services
       - domain: '*.drmarchent.com'
         policy: two_factor

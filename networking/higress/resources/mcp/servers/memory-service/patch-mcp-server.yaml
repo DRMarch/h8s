@@ -1,0 +1,13 @@
+- op: add
+  path: /spec/matchRules/-
+  value:
+    ingress:
+      - mcp-memory-service
+    configDisable: false
+    config:
+      server:
+        name: memory-service
+        type: mcp-proxy
+        transport: http
+        protocolStrategy: legacy
+        mcpServerURL: http://memory-service.memory-service.svc.cluster.local:8000/mcp

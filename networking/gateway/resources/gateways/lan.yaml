@@ -203,6 +203,18 @@ spec:
         certificateRefs:
           - name: chat-homelab-local-tls
             namespace: open-webui
+    - protocol: HTTPS
+      name: home-lan-memory
+      hostname: memory.drmarchent.com
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: memory-service-homelab-local-tls
+            namespace: memory-service
     - protocol: HTTP
       name: http-redirect
       port: 80
