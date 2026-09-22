@@ -155,6 +155,12 @@ extraEnvVars:
       secretKeyRef:
         name: openwebui-secrets
         key: TOOL_SERVER_CONNECTIONS
+  - name: ENABLE_MEMORIES
+    value: "False"
+  # Attach the memory-service MCP tool to every model that has no toolIds of
+  # its own (per-model overrides win). Applied at model-read time.
+  - name: DEFAULT_MODEL_METADATA
+    value: '{"toolIds": ["server:mcp:memory-service"]}'
 
 podSecurityContext:
   runAsNonRoot: true
