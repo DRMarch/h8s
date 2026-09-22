@@ -41,6 +41,11 @@ spec:
                 - x-forwarded-for
                 - x-real-ip
                 - x-envoy-original-path
+              allowedResponseHeaders:
+                - Remote-User
+                - Remote-Groups
+                - Remote-Name
+                - Remote-Email
       backendRefs:
         - name: memory-service
           port: 8000
