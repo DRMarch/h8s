@@ -220,6 +220,7 @@ configMap:
   # session.secret. (The chart's "encryption_key" naming is historical
   # and confusingly maps to Authelia's session.secret env var.)
   session:
+    remember_me: '1 day'
     # Path inside authelia-session-secret (key: session-secret). Combined with
     # secret_name, the chart sets AUTHELIA_SESSION_SECRET_FILE to
     # /secrets/authelia-session-secret/session-secret.
