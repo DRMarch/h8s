@@ -49,9 +49,64 @@ data:
       - name: startpage
       - name: qwant
       - name: wikipedia
-      - name: archlinux
       - name: github
       - name: reddit
         disabled: false
       - name: wikidata
         disabled: true
+      - name: arxiv
+        engine: arxiv
+        shortcut: arx
+        disabled: false
+      - name: mojeek
+        engine: mojeek
+        shortcut: mjk
+        disabled: false
+      - name: openalex
+        engine: openalex
+        shortcut: oa
+        categories: science, scientific publications
+        timeout: 5.0
+        mailto: "websites@drmarchent.com"
+        disabled: false
+      - name: semantic scholar
+        engine: semantic_scholar
+        shortcut: se
+        disabled: false
+      - name: crossref
+        engine: crossref
+        shortcut: cr
+        disabled: false
+      - name: pubmed
+        engine: pubmed
+        shortcut: pub
+        disabled: false
+      - name: gitlab
+        engine: gitlab
+        base_url: https://gitlab.com
+        shortcut: gl
+        disabled: false
+      - name: gitea.com
+        engine: gitea
+        base_url: https://gitea.com
+        shortcut: gitea
+        disabled: false
+      - name: huggingface
+        engine: huggingface
+        shortcut: hf
+        disabled: false
+      - name: github code
+        engine: github_code
+        shortcut: ghc
+        ghc_auth:
+          type: "none"
+        disabled: false
+      - name: mwmbl
+        engine: mwmbl
+        shortcut: mwm
+        disabled: false
+      - name: brave
+        engine: brave
+        shortcut: br
+        retry_on_http_error: [403, 429]
+        disabled: false
