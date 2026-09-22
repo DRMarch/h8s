@@ -1,0 +1,8 @@
+- op: add
+  path: /spec/registries/-
+  value:
+    name: memory-service-mcp
+    type: dns
+    domain: memory-service.memory-service.svc.cluster.local
+    port: 8000
+    protocol: http

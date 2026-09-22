@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: memory-service-config
+data:
+  MCP_MODE: "http"
+  MCP_HTTP_ENABLED: "true"
+  MCP_HTTP_HOST: "0.0.0.0"
+  MCP_HTTP_PORT: "8000"
+  MCP_MEMORY_STORAGE_BACKEND: "sqlite_vec"
+  MCP_MEMORY_SQLITE_PATH: "/data/sqlite_vec.db"
+  MCP_MEMORY_BACKUPS_PATH: "/data/backups"
+  MCP_MEMORY_SQLITE_PRAGMAS: "journal_mode=WAL,busy_timeout=15000,cache_size=20000"
+  MCP_MEMORY_USE_ONNX: "true"
+  MCP_EMBEDDING_MODEL: "all-MiniLM-L6-v2"
+  HOME: "/data"
+  HF_HOME: "/data/hf"
+  SENTENCE_TRANSFORMERS_HOME: "/data/hf"
+  MCP_ALLOW_ANONYMOUS_ACCESS: "true"
+  MCP_CORS_ORIGINS: "https://memory.drmarchent.com"
+  MCP_MDNS_ENABLED: "false"
+  LOG_LEVEL: "INFO"

@@ -116,6 +116,13 @@ resource "local_file" "certificates_chat" {
   })
 }
 
+resource "local_file" "certificates_memory_service" {
+  filename = "${path.module}/${local.project_root}/networking/cert-manager/resources/certificates/memory-service-homelab-local.yaml"
+  content = templatefile("${path.module}/templates/networking/cert-manager/resources/certificates/memory-service-homelab-local.yaml.tftpl", {
+    kubernetes_domain = var.kubernetes_domain
+  })
+}
+
 ############
 ## Cilium ##
 ############
@@ -262,6 +269,13 @@ resource "local_file" "http_route_bytestash" {
 resource "local_file" "http_route_searxng" {
   filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/searxng.yaml"
   content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/searxng.yaml.tftpl", {
+    kubernetes_domain = var.kubernetes_domain
+  })
+}
+
+resource "local_file" "http_route_memory_service" {
+  filename = "${path.module}/${local.project_root}/networking/gateway/resources/http-routes/memory-service.yaml"
+  content = templatefile("${path.module}/templates/networking/gateway/resources/http-routes/memory-service.yaml.tftpl", {
     kubernetes_domain = var.kubernetes_domain
   })
 }

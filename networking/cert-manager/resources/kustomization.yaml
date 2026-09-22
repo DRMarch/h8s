@@ -21,3 +21,4 @@ resources:
   - ./certificates/longhorn-homelab-local.yaml
   - ./certificates/mlflow-homelab-local.yaml
   - ./certificates/chat-homelab-local.yaml
+  - ./certificates/memory-service-homelab-local.yaml

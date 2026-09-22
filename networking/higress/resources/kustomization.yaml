@@ -18,3 +18,4 @@ resources:
   - ./wasmplugins/transformer-session-header.yaml
 components:
   - ./mcp/servers/searxng
+  - ./mcp/servers/memory-service

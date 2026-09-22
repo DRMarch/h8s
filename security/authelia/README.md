@@ -144,6 +144,7 @@ Since there is only the admin user, any authenticated user has access to all pro
 | Domain | Policy | Notes |
 |---|---|---|
 | `auth.drmarchent.com` | bypass | No auth needed to view the login page |
+| `memory.drmarchent.com` | two_factor (`group:admins`) then `deny` | **Admin-only.** The explicit deny is required: rules are first-match-wins and a `subject` mismatch continues to the next rule, so without it guests would fall through to the wildcard one_factor rule |
 | `*.drmarchent.com` | one_factor | Any authenticated user (the sole admin) |
 
 `default_redirection_url` is set to `https://argocd.drmarchent.com` so that users who visit the Authelia portal directly land on the cluster dashboard after login.

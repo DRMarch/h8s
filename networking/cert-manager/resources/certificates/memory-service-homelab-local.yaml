@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: memory-service-homelab-local
+  namespace: memory-service
+spec:
+  secretName: memory-service-homelab-local-tls
+  issuerRef:
+    name: vault-issuer
+    kind: ClusterIssuer
+  commonName: memory.drmarchent.com
+  dnsNames:
+    - memory.drmarchent.com
