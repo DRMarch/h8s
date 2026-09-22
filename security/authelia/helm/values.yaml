@@ -341,7 +341,7 @@ configMap:
         grafana:
           id_token: ['email', 'name', 'groups', 'preferred_username']
         argocd:
-          id_token: ['email', 'name', 'groups', 'preferred_username']
+          id_token: ['email', 'email_verified', 'name', 'groups', 'preferred_username']
         mlflow:
           id_token: ['email', 'name', 'groups', 'preferred_username']
         open-webui:
