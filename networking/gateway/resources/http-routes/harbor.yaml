@@ -46,6 +46,12 @@ spec:
                 - x-forwarded-for
                 - x-real-ip
                 - x-envoy-original-path
+              # Restrict copied authz response headers; see memory-service.yaml.
+              allowedResponseHeaders:
+                - Remote-User
+                - Remote-Groups
+                - Remote-Name
+                - Remote-Email
       backendRefs:
         - name: harbor
           port: 80
