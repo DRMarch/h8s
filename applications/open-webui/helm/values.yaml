@@ -149,6 +149,12 @@ extraEnvVars:
   # ── Session header (OpenCode/OpenRouter conversation affinity) ───────────
   - name: OPENAI_API_CONFIGS
     value: '{"0": {"headers": {"X-Session-Id": "{{ "{{CHAT_ID}}" }}"}}}'
+  # ── MCP tool servers (memory-service, via internal Higress) ──────────────
+  - name: TOOL_SERVER_CONNECTIONS
+    valueFrom:
+      secretKeyRef:
+        name: openwebui-secrets
+        key: TOOL_SERVER_CONNECTIONS
 
 podSecurityContext:
   runAsNonRoot: true
