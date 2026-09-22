@@ -149,6 +149,18 @@ extraEnvVars:
   # ── Session header (OpenCode/OpenRouter conversation affinity) ───────────
   - name: OPENAI_API_CONFIGS
     value: '{"0": {"headers": {"X-Session-Id": "{{ "{{CHAT_ID}}" }}"}}}'
+  # ── MCP tool servers (memory-service, via internal Higress) ──────────────
+  - name: TOOL_SERVER_CONNECTIONS
+    valueFrom:
+      secretKeyRef:
+        name: openwebui-secrets
+        key: TOOL_SERVER_CONNECTIONS
+  - name: ENABLE_MEMORIES
+    value: "False"
+  # Attach the memory-service MCP tool to every model that has no toolIds of
+  # its own (per-model overrides win). Applied at model-read time.
+  - name: DEFAULT_MODEL_METADATA
+    value: '{"toolIds": ["server:mcp:memory-service"]}'
 
 podSecurityContext:
   runAsNonRoot: true
