@@ -6,7 +6,7 @@ metadata:
   annotations:
     renovate-operator.mogenius.com/display-name: "h8s homelab"
 spec:
-  schedule: "0 19 * * *"
+  schedule: "0 */6 * * *"
   image: renovate/renovate:44.105.4
   secretRef: renovate-secret
   extraEnv:
