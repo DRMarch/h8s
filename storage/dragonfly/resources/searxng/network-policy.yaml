@@ -14,5 +14,21 @@ spec:
       ports:
         - port: 9999
           protocol: TCP
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: searxng
+      ports:
+        - port: 6379
+          protocol: TCP
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: dragonfly-operator-system
+      ports:
+        - port: 9999
+          protocol: TCP
+        - port: 6379
+          protocol: TCP
   policyTypes:
     - Ingress
