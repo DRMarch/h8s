@@ -61,6 +61,7 @@ Edit [`templates/variables.tf`](./templates/variables.tf):
 | `gateway_lan_ip` | `192.168.1.12` | LAN IP for ingress traffic |
 | `kubernetes_domain` | `drmarchent.com` | Domain for ingress |
 | `s3_bucket_names` | `["default"]` | Garage S3 bucket names |
+| `opencode_go_api_token_count` | `1` | Number of OpenCode Go `api-token-N` entries to render into the Higress ExternalSecret + ai-proxy WasmPlugins (must match `length(opencode_go_api_keys)` in `vault-secrets/`) |
 
 ## Secrets workspace (`vault-secrets/`)
 
@@ -83,11 +84,7 @@ terraform apply
 
 `secrets.auto.tfvars` is gitignored — never commit real values.
 
-For the Higress OpenCode Go pilot, set both `opencode_go_api_key_1` and
-`opencode_go_api_key_2`. Terraform writes them to
-`kubernetes-homelab/higress/opencode-go`; the Higress ExternalSecret then
-materializes them in `higress-system`. Leave both empty to skip this optional
-provider resource.
+For the Higress OpenCode Go provider, set `opencode_go_api_keys` to a list of bring-your-own keys. Terraform writes them to `kubernetes-homelab/higress/opencode-go` as `api-token-1..N`; the Higress ExternalSecret then materializes them in `higress-system`. Keep the entry count in sync with `opencode_go_api_token_count` in the templates workspace. Leave the list empty to skip this optional provider resource.
 
 For the Higress OpenRouter provider, set `openrouter_api_key`. Terraform writes it to `kubernetes-homelab/higress/openrouter`; the Higress ExternalSecret then materializes it in `higress-system`. Leave it empty to skip this optional
 provider resource.
@@ -125,8 +122,7 @@ Edit [`vault-secrets/variables.tf`](./vault-secrets/variables.tf):
 | `github_pat_token` | `""` | GitHub fine-grained PAT for Renovate |
 | `discord_webhook_url` | `""` | Discord webhook URL for Alertmanager cluster alerts |
 | `model_watch_webhook_url` | `""` | Discord webhook URL for model-watch model change notifications |
-| `opencode_go_api_key_1` | `""` | First OpenCode Go API key for Higress token failover |
-| `opencode_go_api_key_2` | `""` | Second OpenCode Go API key for Higress token failover |
+| `opencode_go_api_keys` | `[]` | Ordered OpenCode Go API keys for Higress token failover (written as `api-token-1..N`) |
 | `openrouter_api_key` | `""` | OpenRouter API key for the Higress provider bridge |
 
 ### Outputs (sensitive)
@@ -214,5 +210,5 @@ Each consumer lands in Vault at `kubernetes-homelab/higress/api-keys/<consumer>`
 | `kubernetes-homelab/endurain/secret-key` | `secret_key` | Endurain session signing |
 | `kubernetes-homelab/renovate/github` | `token` | Renovate GitHub fine-grained PAT |
 | `kubernetes-homelab/model-watch/webhook-url` | `url` | model-watch Discord webhook (model add/remove alerts) |
-| `kubernetes-homelab/higress/opencode-go` | `api-token-1`, `api-token-2` | Higress OpenCode Go provider tokens |
+| `kubernetes-homelab/higress/opencode-go` | `api-token-1..N` | Higress OpenCode Go provider tokens |
 | `kubernetes-homelab/higress/openrouter` | `api-key` | Higress OpenRouter provider key |

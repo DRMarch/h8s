@@ -21,7 +21,6 @@ spec:
             openaiCustomUrl: https://opencode.ai/zen/go/v1
             apiTokens:
               - ${secret.higress-system/higress-opencode-go.api-token-1}
-              - ${secret.higress-system/higress-opencode-go.api-token-2}
             modelMapping:
               "*": ""
             failover:

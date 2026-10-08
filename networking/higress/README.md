@@ -19,17 +19,16 @@ whose `higress.io/destination` points at the DNS-registry ServiceEntries (`openc
 
 ## Provider credentials
 
-Two OpenCode Go credentials are supplied through Vault and synchronized with ESO. Higress references the resulting Kubernetes Secret without storing the raw values in Git.
+One or more OpenCode Go credentials are supplied through Vault and synchronized with ESO. Higress references the resulting Kubernetes Secret without storing the raw values in Git.
 
 ```text
 Vault path: kubernetes-homelab/higress/opencode-go
 
 Fields:
-  api-token-1
-  api-token-2
+  api-token-1 .. api-token-N   (one per configured key)
 ```
 
-The credentials are configured through the Terraform variables `opencode_go_api_key_1` and `opencode_go_api_key_2` in the ignored `terraform/vault-secrets/secrets.auto.tfvars` file. Both values must be supplied before the Higress resources synchronize.
+The credentials are configured through the Terraform variable `opencode_go_api_keys` (an ordered list) in the ignored `terraform/vault-secrets/secrets.auto.tfvars` file. The list length must match `opencode_go_api_token_count` in `terraform/templates`, which drives how many `api-token-N` references are rendered. All values must be supplied before the Higress resources synchronize.
 
 Higress rotates between the credentials and pulls one out of rotation on auth failures, `429`s or configured upstream failures.
 
@@ -62,9 +61,9 @@ The session value is client-created and opaque; the gateway only relays or maps 
 
 ### Account affinity (deferred)
 
-OpenCode Go cached reads are ~30x cheaper than cold input. However this setup uses two `apiTokens` from separate accounts, so Higress picks one at random per request and nothing pins a session to a single credential. Consecutive requests often land on different credentials with cold caches, so you pay the full input rate more often than you should.
+OpenCode Go cached reads are ~30x cheaper than cold input. However this setup uses multiple `apiTokens` from separate accounts, so Higress picks one at random per request and nothing pins a session to a single credential. Consecutive requests often land on different credentials with cold caches, so you pay the full input rate more often than you should.
 
-Provider-level session affinity is not in Higress yet, but it's on the way: [3840](https://github.com/higress-group/higress/issues/3840) (open; PRs [3921](https://github.com/higress-group/higress/pull/3921) and [4128](https://github.com/higress-group/higress/pull/4128) also relevant). Once available, the two apiTokens can be pinned per session (e.g. hash on `x-opencode-session`) so a conversation stays on one warm account.
+Provider-level session affinity is not in Higress yet, but it's on the way: [3840](https://github.com/higress-group/higress/issues/3840) (open; PRs [3921](https://github.com/higress-group/higress/pull/3921) and [4128](https://github.com/higress-group/higress/pull/4128) also relevant). Once available, the configured apiTokens can be pinned per session (e.g. hash on `x-opencode-session`) so a conversation stays on one warm account.
 
 ## Deployment
 

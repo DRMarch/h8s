@@ -37,3 +37,14 @@ variable "s3_bucket_names" {
   type        = list(string)
   default     = ["default"]
 }
+
+variable "opencode_go_api_token_count" {
+  description = "Number of api-token entries to render into the Higress OpenCode Go ExternalSecret and the ai-proxy-opencode-{go,zen} WasmPlugins. Must equal length(var.opencode_go_api_keys) in terraform/vault-secrets."
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = var.opencode_go_api_token_count >= 1
+    error_message = "opencode_go_api_token_count must be at least 1."
+  }
+}

@@ -58,17 +58,10 @@ variable "model_watch_webhook_url" {
   sensitive   = true
 }
 
-variable "opencode_go_api_key_1" {
-  description = "First OpenCode Go API key. Both OpenCode Go keys are written to the same Vault path for Higress token failover."
-  type        = string
-  default     = ""
-  sensitive   = true
-}
-
-variable "opencode_go_api_key_2" {
-  description = "Second OpenCode Go API key. Both keys should belong to independent usage quotas."
-  type        = string
-  default     = ""
+variable "opencode_go_api_keys" {
+  description = "Ordered list of OpenCode Go API keys. Written to kubernetes-homelab/higress/opencode-go as api-token-1..N for Higress token failover. Each key should belong to an independent usage quota. Keep this list length in sync with opencode_go_api_token_count in terraform/templates. Leave empty to skip Vault provisioning."
+  type        = list(string)
+  default     = []
   sensitive   = true
 }
 

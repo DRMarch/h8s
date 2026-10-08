@@ -53,12 +53,13 @@ discord_webhook_url = "https://discord.com/api/webhooks/XXXXXXXXXX/YYYYYYYYYYYYY
 # Discord webhook URL for model-watch (model add/remove notifications)
 model_watch_webhook_url = "https://discord.com/api/webhooks/XXXXXXXXXX/YYYYYYYYYYYYYYYYYYYY"
 
-# OpenCode Go keys for the initial Higress provider pilot.
-# These must belong to separate OpenCode Go usage quotas. Both are written to
-# kubernetes-homelab/higress/opencode-go and consumed through ESO; never put
-# the real values in Git.
-opencode_go_api_key_1 = "sk-opencode-go-key-1"
-opencode_go_api_key_2 = "sk-opencode-go-key-2"
+# OpenCode Go keys for the Higress provider failover.
+# Each entry must belong to a separate OpenCode Go usage quota. The list is
+# written to kubernetes-homelab/higress/opencode-go as api-token-1..N and
+# consumed through ESO; never put the real values in Git. Keep the number of
+# entries in sync with opencode_go_api_token_count in terraform/templates.
+# Leave the list empty to skip Vault provisioning.
+opencode_go_api_keys = ["sk-opencode-go-key-1", "sk-opencode-go-key-2"]
 
 # OpenRouter API key for the Higress provider bridge. Written to
 # kubernetes-homelab/higress/openrouter (field: api-key) and consumed through

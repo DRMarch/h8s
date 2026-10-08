@@ -399,3 +399,31 @@ resource "local_file" "grafana_oidc_client_secret_externalsecret" {
   content  = templatefile("${path.module}/templates/monitoring/grafana/grafana-oidc-client-secret-externalsecret.yaml.tftpl", {})
 }
 
+#############
+## Higress ##
+#############
+# OpenCode Go provider credentials. The number of api-token entries is driven
+# by var.opencode_go_api_token_count and must match the length of
+# var.opencode_go_api_keys in terraform/vault-secrets.
+
+resource "local_file" "higress_opencode_go_externalsecret" {
+  filename = "${path.module}/${local.project_root}/networking/higress/resources/opencode-go-externalsecret.yaml"
+  content = templatefile("${path.module}/templates/networking/higress/resources/opencode-go-externalsecret.yaml.tftpl", {
+    token_count = var.opencode_go_api_token_count
+  })
+}
+
+resource "local_file" "higress_ai_proxy_opencode_go" {
+  filename = "${path.module}/${local.project_root}/networking/higress/resources/wasmplugins/ai-proxy-opencode-go.yaml"
+  content = templatefile("${path.module}/templates/networking/higress/resources/wasmplugins/ai-proxy-opencode-go.yaml.tftpl", {
+    token_count = var.opencode_go_api_token_count
+  })
+}
+
+resource "local_file" "higress_ai_proxy_opencode_zen" {
+  filename = "${path.module}/${local.project_root}/networking/higress/resources/wasmplugins/ai-proxy-opencode-zen.yaml"
+  content = templatefile("${path.module}/templates/networking/higress/resources/wasmplugins/ai-proxy-opencode-zen.yaml.tftpl", {
+    token_count = var.opencode_go_api_token_count
+  })
+}
+
