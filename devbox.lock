@@ -98,41 +98,41 @@
         }
       }
     },
-    "terraform@1.15.9": {
-      "last_modified": "2026-08-29T00:50:12Z",
-      "resolved": "github:NixOS/nixpkgs/e8be7818e19ada32105a8af937a6a473b38167ca#terraform",
+    "terraform@1.16.4": {
+      "last_modified": "2026-10-08T19:21:32Z",
+      "resolved": "github:NixOS/nixpkgs/8edc0c72e3a38faf5434e40d1f19431125fe4b30#terraform",
       "source": "devbox-search",
-      "version": "1.15.9",
+      "version": "1.16.4",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/8nnld5bxyg8fjsyxygryl1sp06j1r96l-terraform-1.15.9",
+              "path": "/nix/store/7m9jga7psi7yzpcxghsvaf86dwzfxq35-terraform-1.16.4",
               "default": true
             }
           ],
-          "store_path": "/nix/store/8nnld5bxyg8fjsyxygryl1sp06j1r96l-terraform-1.15.9"
+          "store_path": "/nix/store/7m9jga7psi7yzpcxghsvaf86dwzfxq35-terraform-1.16.4"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/x7fml4mqi923rzyyr5lyl4xjpi0ydykr-terraform-1.15.9",
+              "path": "/nix/store/iqh0a1445yzkjr810lkldhz38ivrx84d-terraform-1.16.4",
               "default": true
             }
           ],
-          "store_path": "/nix/store/x7fml4mqi923rzyyr5lyl4xjpi0ydykr-terraform-1.15.9"
+          "store_path": "/nix/store/iqh0a1445yzkjr810lkldhz38ivrx84d-terraform-1.16.4"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/0vz7kj1az3xkr5263ha45ani6vlma7mv-terraform-1.15.9",
+              "path": "/nix/store/56jkziqd2v5vxq24ajnrp9z86z313p2f-terraform-1.16.4",
               "default": true
             }
           ],
-          "store_path": "/nix/store/0vz7kj1az3xkr5263ha45ani6vlma7mv-terraform-1.15.9"
+          "store_path": "/nix/store/56jkziqd2v5vxq24ajnrp9z86z313p2f-terraform-1.16.4"
         }
       }
     }
