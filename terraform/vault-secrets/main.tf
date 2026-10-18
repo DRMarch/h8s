@@ -24,6 +24,8 @@
 #                                      client-secret-plaintext
 #   - authelia/openwebui-oidc        -> client-secret-hash (pbkdf2)
 #                                      client-secret-plaintext
+#   - authelia/grimmory-oidc         -> client-secret-hash (pbkdf2)
+#                                      client-secret-plaintext
 #   - openwebui/secret-key           -> secret-key
 #   - mlflow/oidc                    -> secret-key
 #   - garage/mlflow-garage-credentials -> access-key-id
@@ -34,6 +36,9 @@
 #   - endurain/admin-credentials     -> username, password
 #   - bytestash/jwt                  -> secret, token-expiry
 #   - bytestash/oidc                 -> client-secret-plaintext
+#   - grimmory/mariadb               -> root-password, user-password
+#   - grimmory/oidc                  -> client-secret-plaintext
+#   - grimmory/admin-credentials     -> username, password
 #   - renovate/github                -> token (GitHub fine-grained PAT)
 #   - searxng/searxng-secret         -> SECRET, METRICS_PASSWORD, METRICS_USERNAME
 #
@@ -136,6 +141,28 @@ resource "random_password" "cnpg_authelia_password" {
 }
 
 resource "random_password" "endurain_admin_password" {
+  length           = 32
+  special          = true
+  override_special = "!#%&*()-_=+[]{}<>?"
+}
+
+resource "random_password" "authelia_grimmory_oidc_plaintext" {
+  length  = 64
+  special = false
+}
+
+resource "random_password" "grimmory_mariadb_root_password" {
+  # alphanumeric: safe for MariaDB entrypoint and JDBC env usage.
+  length  = 64
+  special = false
+}
+
+resource "random_password" "grimmory_mariadb_user_password" {
+  length  = 64
+  special = false
+}
+
+resource "random_password" "grimmory_admin_password" {
   length           = 32
   special          = true
   override_special = "!#%&*()-_=+[]{}<>?"
@@ -1125,4 +1152,125 @@ output "openwebui_oidc_client_secret" {
 output "openwebui_secret_key" {
   value     = random_password.openwebui_secret_key.result
   sensitive = true
+}
+
+# ---- Vault Push: Grimmory OIDC (pbkdf2 hash + plaintext) ----
+
+resource "null_resource" "vault_authelia_grimmory_oidc" {
+  triggers = {
+    plaintext = random_password.authelia_grimmory_oidc_plaintext.result
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      TMP_CONFIG=$(mktemp)
+      trap 'rm -f "$TMP_CONFIG"' EXIT
+      cat > "$TMP_CONFIG" <<EOF
+      authentication_backend:
+        file:
+          path: /dev/null
+      EOF
+
+      if ! RAW=$(docker run --rm \
+          -v "$TMP_CONFIG:/config/configuration.yml:ro" \
+          ${var.authelia_docker_image} \
+          authelia crypto hash generate pbkdf2 \
+          --password '${random_password.authelia_grimmory_oidc_plaintext.result}' \
+          --no-confirm 2>&1); then
+        echo "ERROR: authelia crypto hash generate (pbkdf2) for grimmory failed. Output:" >&2
+        echo "$RAW" >&2
+        exit 1
+      fi
+      HASH=$(echo "$RAW" | sed -n 's/^Digest: //p' | tr -d '\r\n ')
+
+      case "$HASH" in
+        '$'*) ;;
+        *) echo "ERROR: grimmory OIDC client secret hash invalid. Raw output:" >&2
+           echo "$RAW" >&2
+           echo "Extracted hash: '$HASH'" >&2
+           exit 1 ;;
+      esac
+      if echo "$HASH" | grep -q ' '; then
+        echo "ERROR: grimmory OIDC client secret hash contains whitespace: $HASH" >&2
+        exit 1
+      fi
+
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/authelia/grimmory-oidc \
+          client-secret-hash='$HASH' \
+          client-secret-plaintext='${random_password.authelia_grimmory_oidc_plaintext.result}'
+      "
+    EOT
+  }
+}
+
+# ---- Vault Push: Grimmory OIDC Client Secret ----
+
+resource "null_resource" "vault_grimmory_oidc" {
+  triggers = {
+    plaintext = random_password.authelia_grimmory_oidc_plaintext.result
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/grimmory/oidc \
+          client-secret-plaintext='${random_password.authelia_grimmory_oidc_plaintext.result}'
+      "
+    EOT
+  }
+}
+
+# ---- Vault Push: Grimmory MariaDB Credentials ----
+
+resource "null_resource" "vault_grimmory_mariadb" {
+  triggers = {
+    root_password = random_password.grimmory_mariadb_root_password.result
+    user_password = random_password.grimmory_mariadb_user_password.result
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/grimmory/mariadb \
+          root-password='${random_password.grimmory_mariadb_root_password.result}' \
+          user-password='${random_password.grimmory_mariadb_user_password.result}'
+      "
+    EOT
+  }
+}
+
+output "grimmory_oidc_client_secret" {
+  value     = random_password.authelia_grimmory_oidc_plaintext.result
+  sensitive = true
+}
+
+# ---- Vault Push: Grimmory Admin Credentials ----
+
+resource "null_resource" "vault_grimmory_admin_credentials" {
+  triggers = {
+    password = random_password.grimmory_admin_password.result
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      VAULT_TOKEN=$(${local.vault_token_cmd})
+      kubectl exec ${var.vault_pod} -n ${var.vault_namespace} -- /bin/sh -c "
+        export VAULT_TOKEN='$VAULT_TOKEN'
+        vault kv put ${var.vault_kv_mount}/grimmory/admin-credentials \
+          username='admin' \
+          password='${random_password.grimmory_admin_password.result}'
+      "
+    EOT
+  }
 }

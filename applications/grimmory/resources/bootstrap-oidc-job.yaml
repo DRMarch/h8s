@@ -1,0 +1,146 @@
+# PostSync hook: provisions the initial admin user and configures, tests and
+# enables OIDC via the app API (endurain bootstrap-sso-job pattern).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: grimmory-bootstrap-oidc
+  namespace: grimmory
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 5
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: bootstrap-oidc
+          image: curlimages/curl:8.23.0
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 100
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - "ALL"
+          env:
+            - name: GRIMMORY_URL
+              value: http://grimmory.grimmory.svc.cluster.local:6060
+            - name: ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: grimmory-admin-credentials
+                  key: username
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: grimmory-admin-credentials
+                  key: password
+            - name: ADMIN_EMAIL
+              value: admin@drmarchent.com
+            - name: OIDC_CLIENT_ID
+              value: grimmory
+            - name: OIDC_ISSUER_URI
+              value: https://auth.drmarchent.com
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: grimmory-oidc
+                  key: client-secret
+          command: ["sh", "-c"]
+          args:
+            - |
+              set -eu
+              MAX_RETRIES=60
+              RETRY_INTERVAL=5
+
+              echo "=== Grimmory OIDC Bootstrap ==="
+
+              echo "Waiting for Grimmory at ${GRIMMORY_URL}..."
+              retries=0
+              until curl -sf --max-time 10 "${GRIMMORY_URL}/api/v1/healthcheck" > /dev/null 2>&1; do
+                retries=$((retries + 1))
+                if [ "$retries" -ge "$MAX_RETRIES" ]; then
+                  echo "ERROR: Grimmory not ready after $((MAX_RETRIES * RETRY_INTERVAL))s, giving up"
+                  exit 1
+                fi
+                sleep "$RETRY_INTERVAL"
+              done
+              echo "Grimmory is ready"
+
+              SETUP_DONE=$(curl -sf --max-time 10 "${GRIMMORY_URL}/api/v1/setup/status" \
+                | grep -o '"data":[a-z]*' | head -1 | cut -d: -f2 || echo "")
+              if [ "$SETUP_DONE" != "true" ]; then
+                echo "Provisioning initial admin user (${ADMIN_USERNAME})..."
+                HTTP_CODE=$(curl -s --max-time 10 -o /dev/null -w "%{http_code}" \
+                  -X POST "${GRIMMORY_URL}/api/v1/setup" \
+                  -H "Content-Type: application/json" \
+                  -d '{"username":"'"${ADMIN_USERNAME}"'","name":"Homelab Admin","email":"'"${ADMIN_EMAIL}"'","password":"'"${ADMIN_PASSWORD}"'"}')
+                if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+                  echo "Admin user created (HTTP ${HTTP_CODE})"
+                else
+                  echo "ERROR: Failed to provision admin user (HTTP ${HTTP_CODE})"
+                  exit 1
+                fi
+              else
+                echo "Setup already completed, skipping user provisioning"
+              fi
+
+              echo "Logging in..."
+              TOKEN=$(curl -sf --max-time 10 \
+                -X POST "${GRIMMORY_URL}/api/v1/auth/login" \
+                -H "Content-Type: application/json" \
+                -d '{"username":"'"${ADMIN_USERNAME}"'","password":"'"${ADMIN_PASSWORD}"'"}' 2>/dev/null \
+                | sed -n 's/.*"accessToken":"\([^"]*\)".*/\1/p')
+              if [ -z "$TOKEN" ]; then
+                echo "ERROR: Login failed"
+                exit 1
+              fi
+
+              echo "Saving OIDC provider details..."
+              HTTP_CODE=$(curl -s --max-time 10 -o /dev/null -w "%{http_code}" \
+                -X PUT "${GRIMMORY_URL}/api/v1/settings" \
+                -H "Authorization: Bearer ${TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d '[
+                  {"name":"OIDC_PROVIDER_DETAILS","value":{"providerName":"Authelia","clientId":"'"${OIDC_CLIENT_ID}"'","issuerUri":"'"${OIDC_ISSUER_URI}"'","scopes":"openid profile email groups offline_access","claimMapping":{"username":"preferred_username","name":"name","email":"email","groups":"groups"}}},
+                  {"name":"OIDC_PROVIDER_CLIENT_SECRET","value":"'"${OIDC_CLIENT_SECRET}"'"}
+                ]')
+              if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+                echo "OIDC provider saved (HTTP ${HTTP_CODE})"
+              else
+                echo "ERROR: Failed to save OIDC provider (HTTP ${HTTP_CODE})"
+                exit 1
+              fi
+
+              echo "Testing OIDC connection..."
+              TEST_RESP=$(curl -sf --max-time 30 \
+                -X POST "${GRIMMORY_URL}/api/v1/settings/oidc/test" \
+                -H "Authorization: Bearer ${TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d '{"providerName":"Authelia","clientId":"'"${OIDC_CLIENT_ID}"'","issuerUri":"'"${OIDC_ISSUER_URI}"'","scopes":"openid profile email groups offline_access"}')
+              echo "$TEST_RESP"
+              TEST_OK=$(echo "$TEST_RESP" | grep -o '"success":[a-z]*' | head -1 | cut -d: -f2 || echo "")
+              if [ "$TEST_OK" != "true" ]; then
+                echo "ERROR: OIDC test connection did not pass"
+                exit 1
+              fi
+
+              echo "Enabling OIDC login..."
+              HTTP_CODE=$(curl -s --max-time 10 -o /dev/null -w "%{http_code}" \
+                -X PUT "${GRIMMORY_URL}/api/v1/settings" \
+                -H "Authorization: Bearer ${TOKEN}" \
+                -H "Content-Type: application/json" \
+                -d '[{"name":"OIDC_ENABLED","value":true}]')
+              if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+                echo "OIDC enabled (HTTP ${HTTP_CODE})"
+              else
+                echo "ERROR: Failed to enable OIDC (HTTP ${HTTP_CODE})"
+                exit 1
+              fi
+
+              echo "=== OIDC bootstrap complete ==="

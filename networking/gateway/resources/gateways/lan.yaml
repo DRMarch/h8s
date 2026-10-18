@@ -215,6 +215,18 @@ spec:
         certificateRefs:
           - name: memory-service-homelab-local-tls
             namespace: memory-service
+    - protocol: HTTPS
+      name: home-lan-grimmory
+      hostname: read.drmarchent.com
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: grimmory-homelab-local-tls
+            namespace: grimmory
     - protocol: HTTP
       name: http-redirect
       port: 80

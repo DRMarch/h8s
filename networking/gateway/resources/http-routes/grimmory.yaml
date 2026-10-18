@@ -1,0 +1,23 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: grimmory
+  namespace: grimmory
+spec:
+  parentRefs:
+    - name: lan-gateway
+      namespace: default
+      sectionName: home-lan-grimmory
+    - name: cloudflare-gateway
+      namespace: cloudflare
+      sectionName: home-lan
+  hostnames:
+    - read.drmarchent.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: grimmory
+          port: 6060

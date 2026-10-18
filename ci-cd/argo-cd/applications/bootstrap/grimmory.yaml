@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grimmory
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://github.com/grimmory-tools/grimmory.git
+      targetRevision: v3.5.0
+      path: deploy/helm/grimmory
+      helm:
+        releaseName: grimmory
+        valueFiles:
+          - $h8s/applications/grimmory/helm/values.yaml
+    - repoURL: https://github.com/DRMarch/h8s.git
+      targetRevision: HEAD
+      ref: h8s
+    - repoURL: https://github.com/DRMarch/h8s.git
+      targetRevision: HEAD
+      path: applications/grimmory/resources
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: grimmory
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - PruneLast=true
+      - ServerSideApply=true
+      - CreateNamespace=true

@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: grimmory-homelab-local
+  namespace: grimmory
+spec:
+  secretName: grimmory-homelab-local-tls
+  issuerRef:
+    name: vault-issuer
+    kind: ClusterIssuer
+  commonName: read.drmarchent.com
+  dnsNames:
+    - read.drmarchent.com

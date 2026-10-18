@@ -1,0 +1,78 @@
+# https://github.com/grimmory-tools/grimmory/blob/v3.5.0/deploy/helm/grimmory/values.yaml
+image:
+  repository: ghcr.io/grimmory-tools/grimmory
+  pullPolicy: IfNotPresent
+  tag: v3.5.0
+
+service:
+  type: ClusterIP
+  port: 6060
+
+ingress:
+  enabled: false
+
+serviceAccount:
+  create: true
+  automount: false
+
+# Entrypoint chowns volumes as root, then su-exec to USER_ID. Don't set runAsUser.
+podSecurityContext:
+  fsGroup: 1000
+
+persistence:
+  dataVolume:
+    enabled: true
+    existingClaim: grimmory-data
+  booksVolume:
+    enabled: true
+    existingClaim: grimmory-books
+
+extraVolumes:
+  - name: bookdrop
+    persistentVolumeClaim:
+      claimName: grimmory-bookdrop
+
+extraVolumeMounts:
+  - name: bookdrop
+    mountPath: /bookdrop
+
+extraEnv:
+  - name: USER_ID
+    value: "1000"
+  - name: GROUP_ID
+    value: "1000"
+  - name: TZ
+    value: Etc/UTC
+  # Default 100 MB is small for large PDFs.
+  - name: MAX_FILE_UPLOAD_SIZE_IN_MB
+    value: "100"
+  # Image default heap is ~512 MB.
+  - name: JDK_JAVA_OPTIONS
+    value: "-Xmx1g"
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 1Gi
+  limits:
+    cpu: "1"
+    memory: 2Gi
+
+# MariaDB subchart. DB host resolves to <release>-mariadb; userPasswordKey
+# is required when existingSecret is set.
+mariadb:
+  enabled: true
+  image:
+    tag: 12.2.2
+  auth:
+    database: grimmory
+    username: grimmory
+    existingSecret: grimmory-mariadb
+    secretKeys:
+      rootPasswordKey: mariadb-root-password
+      userPasswordKey: mariadb-password
+  service:
+    port: 3306
+  persistence:
+    storageClass: longhorn
+    size: 512Mi
