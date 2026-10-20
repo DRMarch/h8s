@@ -3,6 +3,8 @@ kind: Kustomization
 namespace: grimmory
 resources:
   - ./grimmory-pvcs.yaml
+  - ./network-policy.yaml
+  - ./ciliumnetworkpolicy.yaml
   - ./grimmory-mariadb-externalsecret.yaml
   - ./grimmory-oidc-externalsecret.yaml
   - ./grimmory-admin-credentials-externalsecret.yaml

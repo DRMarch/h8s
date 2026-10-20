@@ -16,8 +16,23 @@ serviceAccount:
   automount: false
 
 # Entrypoint chowns volumes as root, then su-exec to USER_ID. Don't set runAsUser.
+# Caps are kept to the minimum the entrypoint needs: CHOWN for the volume
+# fix-up, SETGID/SETUID for the su-exec drop to 1000.
 podSecurityContext:
   fsGroup: 1000
+  fsGroupChangePolicy: OnRootMismatch
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - "ALL"
+    add:
+      - "CHOWN"
+      - "SETGID"
+      - "SETUID"
 
 persistence:
   dataVolume:
@@ -46,6 +61,12 @@ extraEnv:
   # Default 100 MB is small for large PDFs.
   - name: MAX_FILE_UPLOAD_SIZE_IN_MB
     value: "100"
+  # App default for ALLOWED_ORIGINS is "*" (application.yaml); pin the real origin.
+  - name: ALLOWED_ORIGINS
+    value: https://read.drmarchent.com
+  # App default is already false; pinned so an image change can't re-enable it.
+  - name: API_DOCS_ENABLED
+    value: "false"
   # Image default heap is ~512 MB.
   - name: JDK_JAVA_OPTIONS
     value: "-Xmx1g"
@@ -76,3 +97,10 @@ mariadb:
   persistence:
     storageClass: longhorn
     size: 512Mi
+  # Chart default is non-root (uid 999) with noPE; drop caps and pin seccomp too.
+  containerSecurityContext:
+    capabilities:
+      drop:
+        - "ALL"
+    seccompProfile:
+      type: RuntimeDefault

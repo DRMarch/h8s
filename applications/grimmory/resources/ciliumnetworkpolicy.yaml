@@ -1,0 +1,23 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: grimmory-ingress
+  namespace: grimmory
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: grimmory
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "6060"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: grimmory
+      toPorts:
+        - ports:
+            - port: "6060"
+              protocol: TCP
