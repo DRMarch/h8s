@@ -13,6 +13,12 @@ gatewayAPI:
 
 kubeProxyReplacement: true
 
+# Pin explicitly: chart 1.20.4 omits this key by default, but a stale
+# `envoy-xds-mode: ads` left in cilium-config breaks the agent<->envoy xDS
+# handshake (envoy requests split CDS/LDS, agent only serves ADS).
+envoy:
+  xdsMode: split
+
 hubble:
   relay:
     enabled: true
