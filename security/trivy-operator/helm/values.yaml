@@ -1,0 +1,26 @@
+# Taken from
+# https://raw.githubusercontent.com/aquasecurity/trivy-operator/refs/tags/v0.37.0/deploy/helm/values.yaml
+
+serviceMonitor:
+  enabled: true
+
+operator:
+  # All scanners are enabled by default: vulnerability, config audit, exposed
+  # secrets, RBAC, infra assessment and cluster compliance (CIS, NSA, PSS).
+  # Required by the CVE panel on the k8s-addons-trivy-operator dashboard.
+  metricsVulnIdEnabled: true
+  scanJobsConcurrentLimit: 1
+  scanJobTimeout: 15m
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 512Mi
+  limits:
+    memory: 1Gi
+
+trivy:
+  timeout: 10m0s
+  resources:
+    limits:
+      cpu: 250m

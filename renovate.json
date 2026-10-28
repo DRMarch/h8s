@@ -55,6 +55,18 @@
             ],
             "datasourceTemplate": "docker",
             "registryUrlTemplate": "https://{{registryUrl}}"
+        },
+        {
+            "customType": "regex",
+            "description": "Update dotdc grafana-dashboards-kubernetes dashboard JSON pins",
+            "managerFilePatterns": [
+                "/^monitoring/grafana/resources/dashboards/.+\\.ya?ml$/"
+            ],
+            "matchStrings": [
+                "https://raw\\.githubusercontent\\.com/dotdc/grafana-dashboards-kubernetes/refs/tags/(?<currentValue>v[0-9.]+)/"
+            ],
+            "depNameTemplate": "dotdc/grafana-dashboards-kubernetes",
+            "datasourceTemplate": "github-tags"
         }
     ],
     "dependencyDashboard": true,
@@ -119,6 +131,16 @@
                 "patch"
             ],
             "enabled": false
+        },
+        {
+            "description": "Group dotdc grafana-dashboards-kubernetes dashboard updates",
+            "matchDatasources": [
+                "github-tags"
+            ],
+            "matchPackageNames": [
+                "dotdc/grafana-dashboards-kubernetes"
+            ],
+            "groupName": "dotdc grafana dashboards"
         }
     ],
     "prConcurrentLimit": 0,

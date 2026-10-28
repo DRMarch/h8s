@@ -19,7 +19,7 @@ GitOps-managed via ArgoCD, Cilium Gateway API ingress, Vault + ESO for secrets.
 - `ci-cd/argo-events/` — GitHub webhook listener
 - `ci-cd/renovate/` — Dependency automation
 - `networking/{cilium,cert-manager,gateway,coredns,cloudflared,higress}/` — CNI, TLS, ingress, DNS, tunnel, LLM gateway
-- `security/{authelia,vault,external-secrets}/` — SSO, secrets, secret sync
+- `security/{authelia,vault,external-secrets,trivy-operator}/` — SSO, secrets, secret sync, security scanning
 - `storage/{longhorn,cloudnative-pg,garage,harbor,dragonfly}/` — Persistence
 - `monitoring/{prometheus-stack,grafana}/` — Observability
 - `applications/{bytestash,endurain,excalidraw,hello-world,mlflow,model-watch,open-webui,searxng}/` — Workloads
