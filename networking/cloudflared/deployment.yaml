@@ -34,7 +34,7 @@ spec:
                 secretKeyRef:
                   name: cloudflared-token
                   key: token
-          image: cloudflare/cloudflared:2026.10.5
+          image: cloudflare/cloudflared:2026.10.6
           name: cloudflared
           ports:
             - containerPort: 2000
