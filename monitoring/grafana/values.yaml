@@ -3,6 +3,11 @@ podSecurityContext:
   runAsNonRoot: true
   seccompProfile:
     type: RuntimeDefault
+namespaceScope: true
+
+rbac:
+  useClusterRole: false
+
 serviceMonitor:
   enabled: true
   namespace: monitoring
