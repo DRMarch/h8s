@@ -1,4 +1,8 @@
 namespaceOverride: monitoring
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
 serviceMonitor:
   enabled: true
   namespace: monitoring
