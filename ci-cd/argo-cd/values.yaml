@@ -1,4 +1,10 @@
 # Terminate SSL at ingress
+global:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
 configs:
   cm:
     resource.compareoptions: |
