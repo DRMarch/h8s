@@ -88,6 +88,12 @@ serviceMonitor:
   labels:
     release: prometheus
 
+podSecurityContext:
+  fsGroup: 1001
+  fsGroupChangePolicy: "OnRootMismatch"
+  seccompProfile:
+    type: RuntimeDefault
+
 extraVolumes:
   - name: prometheus-metrics
     emptyDir: {}
