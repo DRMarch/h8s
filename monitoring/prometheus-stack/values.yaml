@@ -17,6 +17,10 @@ kubeScheduler:
 kubeProxy:
   enabled: false
 
+kube-state-metrics:
+  collectorsExclude:
+    - secrets
+
 
 prometheus:
   prometheusSpec:
