@@ -1,6 +1,6 @@
 # Endurain
 
-Self-hosted fitness tracker ([endurain-project/endurain](https://codeberg.org/endurain-project/endurain)).
+Self-hosted fitness tracker ([endurain-project/endurain](https://github.com/endurain-project/endurain)).
 Served at `https://endurain.drmarchent.com` via the Cilium Gateway.
 
 ## Deployment
@@ -234,8 +234,7 @@ docs](https://docs.endurain.com/integrations/3rd-party-services/)).
   warns that *"Due to recent Strava API changes, expect changes in the
   Strava integration in a following release."* If `redirect_uri
   invalid` persists after fixing the Callback Domain, check open
-  issues on [Codeberg](https://codeberg.org/endurain-project/endurain/issues)
-  (the GitHub mirror is read-only).
+  issues on [GitHub](https://github.com/endurain-project/endurain/issues).
 
 ## Source files
 

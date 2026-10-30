@@ -26,7 +26,7 @@ spec:
             capabilities:
               drop:
                 - "ALL"
-          image: codeberg.org/endurain-project/endurain:v0.19.2
+          image: ghcr.io/endurain-project/endurain:v0.20.2
           ports:
             - containerPort: 8080
           readinessProbe:
@@ -69,10 +69,8 @@ spec:
                 secretKeyRef:
                   name: endurain-fernet-key
                   key: fernet_key
-            - name: RATE_LIMIT_STORAGE_URI
-              value: memory://
-            - name: AUTH_SECURITY_STORAGE_URI
-              value: memory://
+            - name: TRUSTED_PROXIES
+              value: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
           volumeMounts:
             - name: endurain-data
               mountPath: /app/backend/data
