@@ -11,3 +11,23 @@ metrics:
 # Can't specify the namespace to save the grafanaDashboard configmap to
 grafanaDashboard:
   enabled: false
+
+podSecurityContext:
+  enabled: true
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+certController:
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+webhook:
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
