@@ -31,6 +31,8 @@ gateway:
     provider: monitoring.coreos.com
     podMonitorSelector:
       release: prometheus
+  rbac:
+    enabled: false
 
 controller:
   replicas: 1
