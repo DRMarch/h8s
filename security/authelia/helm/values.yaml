@@ -33,9 +33,17 @@ pod:
   securityContext:
     pod:
       fsGroup: 1000
+      seccompProfile:
+        type: RuntimeDefault
     container:
       runAsUser: 1000
       runAsGroup: 1000
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
 
   # Init container reads the pre-hashed admin and guest passwords from
   # their respective Secrets and writes the users database. The
@@ -74,6 +82,15 @@ pod:
           readOnly: true
         - name: authelia-users
           mountPath: /shared
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+            - ALL
 
   # The admin-password Secret is mounted ONLY for the init container above
   # (the main container never reads it; the admin user is generated
@@ -89,12 +106,16 @@ pod:
         secretName: authelia-guest-password
     - name: authelia-users
       emptyDir: {}
+    - name: tmp
+      emptyDir: {}
 
   extraVolumeMounts:
     - name: authelia-users
       mountPath: /users_database.yml
       subPath: users_database.yml
       readOnly: true
+    - name: tmp
+      mountPath: /tmp
 
 # ---------------------------------------------------------------------------
 # Service: ClusterIP, port 80 -> 9091 (Authelia's default internal port).
