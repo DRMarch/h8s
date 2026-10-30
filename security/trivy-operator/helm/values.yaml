@@ -12,6 +12,20 @@ operator:
   scanJobsConcurrentLimit: 1
   scanJobTimeout: 15m
 
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  privileged: false
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  capabilities:
+    drop:
+      - ALL
+
 resources:
   requests:
     cpu: 100m
