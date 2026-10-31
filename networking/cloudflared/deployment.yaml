@@ -14,6 +14,12 @@ spec:
       labels:
         pod: cloudflared
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - command:
             - cloudflared
@@ -36,10 +42,21 @@ spec:
                   key: token
           image: cloudflare/cloudflared:2026.10.7
           name: cloudflared
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - "ALL"
           ports:
             - containerPort: 2000
               name: metrics
               protocol: TCP
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cloudflared-home
+              mountPath: /home/nonroot/.cloudflared
           livenessProbe:
             httpGet:
               path: /ready
@@ -47,3 +64,8 @@ spec:
             failureThreshold: 1
             initialDelaySeconds: 10
             periodSeconds: 10
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: cloudflared-home
+          emptyDir: {}
