@@ -1,0 +1,14 @@
+# https://github.com/mittwald/kubernetes-secret-generator/blob/master/deploy/helm-chart/kubernetes-secret-generator/values.yaml
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - "ALL"
