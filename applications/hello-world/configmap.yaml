@@ -4,10 +4,11 @@ metadata:
   name: nginx-config
 data:
   nginx.conf: |
+    pid /var/run/nginx.pid;
     events {}
     http {
       server {
-        listen 80;
+        listen 8080;
         location / {
           return 200 'Hello world!';
         }
