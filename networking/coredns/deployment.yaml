@@ -20,6 +20,9 @@ spec:
       labels:
         k8s-app: coredns-lan
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -84,6 +87,11 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - "ALL"
+              add:
+                - "NET_BIND_SERVICE"
       dnsPolicy: Default
       volumes:
         - name: config-volume

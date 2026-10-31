@@ -16,6 +16,8 @@ spec:
             - name: blocklist-storage
               persistentVolumeClaim:
                 claimName: coredns-blocklist
+            - name: tmp
+              emptyDir: {}
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
@@ -26,6 +28,12 @@ spec:
               image: curlimages/curl:8.23.0
               securityContext:
                 allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+              volumeMounts:
+                - name: blocklist-storage
+                  mountPath: /blocklist
+                - name: tmp
+                  mountPath: /tmp
               command:
                 - /bin/sh
                 - -c
@@ -54,6 +62,3 @@ spec:
                         rm "$TEMP_HOSTS_FILE"
                     fi
                   fi
-              volumeMounts:
-                - name: blocklist-storage
-                  mountPath: /blocklist
