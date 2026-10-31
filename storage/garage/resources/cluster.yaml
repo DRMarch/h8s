@@ -23,3 +23,12 @@ spec:
     adminTokenSecretRef:
       name: garage-admin-token
       key: admin-token
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    privileged: false
+    capabilities:
+      drop:
+        - "ALL"
