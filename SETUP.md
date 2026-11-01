@@ -2,7 +2,7 @@
 
 A guide to building a highly available, three-node home Kubernetes cluster using kubeadm and kube-vip, running on Ubuntu Server 26.04. This setup focuses on simplicity, reliability, and security.
 
-_Last updated: 2026-07-25
+_Last updated: 2026-11-01
 
 ## Table of Contents
 
@@ -23,6 +23,8 @@ _Last updated: 2026-07-25
   - [Trusting Cluster Certificates](#trusting-cluster-certificates)
   - [Terraform Secrets](#terraform-secrets)
   - [Harbor Setup](#harbor-setup)
+- [Maintenance](#maintenance)
+  - [Monthly Image Cleanup](#monthly-image-cleanup)
 - [Future Considerations](#future-considerations)
 
 ## Overview
@@ -282,6 +284,24 @@ kubectl -n harbor get secret harbor-homelab-local-tls -o jsonpath='{.data.ca\.cr
 sudo cp /tmp/ca.crt /usr/local/share/ca-certificates/harbor.crt && sudo update-ca-certificates
 
 sudo systemctl restart containerd
+```
+
+## Maintenance
+
+### Monthly Image Cleanup
+
+Upgrades leave old images behind; kubelet's image GC only runs at 85% disk. On **each node**:
+
+```bash
+cat <<EOF | sudo tee /etc/cron.d/image-gc
+# Removes images not referenced by any container. Runs 03:00 on the 1st of each month.
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+0 3 1 * * root /usr/bin/ctr -n k8s.io images prune --all 2>&1 | /usr/bin/logger -t image-gc
+EOF
+
+sudo chmod 0644 /etc/cron.d/image-gc
 ```
 
 ## Future Considerations
