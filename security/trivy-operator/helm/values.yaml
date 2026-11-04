@@ -40,4 +40,4 @@ trivy:
   timeout: 10m0s
   resources:
     limits:
-      cpu: 250m
+      cpu: 1

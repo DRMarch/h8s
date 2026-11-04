@@ -10,6 +10,12 @@ spec:
     groupInterval: 5m
     repeatInterval: 12h
     receiver: discord
+    routes:
+      - receiver: blackhole
+        matchers:
+          - name: alertname
+            matchType: =~
+            value: InfoInhibitor|Watchdog
   receivers:
     - name: discord
       discordConfigs:
@@ -17,3 +23,5 @@ spec:
             name: alertmanager-discord-webhook
             key: url
           sendResolved: true
+    # Receiver without integrations: alerts routed here are dropped.
+    - name: blackhole
