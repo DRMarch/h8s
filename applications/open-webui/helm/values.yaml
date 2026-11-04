@@ -4,10 +4,11 @@ replicaCount: 1
 
 strategy:
   type: Recreate
+  rollingUpdate: null
 
 image:
   repository: ghcr.io/open-webui/open-webui
-  tag: "v0.12.5"
+  tag: "v0.13.0"
   pullPolicy: IfNotPresent
 
 ollama:
