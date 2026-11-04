@@ -141,6 +141,18 @@
                 "dotdc/grafana-dashboards-kubernetes"
             ],
             "groupName": "dotdc grafana dashboards"
+        },
+        {
+            "description": "Group open-webui Helm chart and app image updates into one PR",
+            "groupName": "open-webui",
+            "matchDatasources": [
+                "docker",
+                "helm"
+            ],
+            "matchPackageNames": [
+                "ghcr.io/open-webui/open-webui",
+                "open-webui"
+            ]
         }
     ],
     "prConcurrentLimit": 0,
