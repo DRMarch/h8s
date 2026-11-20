@@ -9,7 +9,7 @@ spec:
   project: default
   sources:
     - repoURL: https://github.com/grimmory-tools/grimmory.git
-      targetRevision: v3.5.0
+      targetRevision: v3.5.1
       path: deploy/helm/grimmory
       helm:
         releaseName: grimmory
