@@ -3,7 +3,7 @@ kind: GrafanaDashboard
 metadata:
   name: k8s-addons-trivy-operator
 spec:
-  url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/refs/tags/v3.0.8/dashboards/k8s-addons-trivy-operator.json
+  url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/refs/tags/v3.0.9/dashboards/k8s-addons-trivy-operator.json
   folderRef: trivy-operator
   datasources:
     - inputName: 'DS_PROMETHEUS'
