@@ -154,6 +154,19 @@
                 "open-webui"
             ],
             "separateMajorMinor": false
+        },
+        {
+            "description": "Group garage-operator Helm chart and operator image updates into one PR",
+            "groupName": "garage",
+            "matchDatasources": [
+                "docker",
+                "helm"
+            ],
+            "matchPackageNames": [
+                "ghcr.io/rajsinghtech/garage-operator",
+                "garage-operator"
+            ],
+            "separateMajorMinor": false
         }
     ],
     "prConcurrentLimit": 0,
