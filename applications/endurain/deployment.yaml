@@ -31,7 +31,7 @@ spec:
             capabilities:
               drop:
                 - "ALL"
-          image: ghcr.io/endurain-project/endurain:v0.21.1
+          image: ghcr.io/endurain-project/endurain:v0.21.2
           ports:
             - containerPort: 8080
           readinessProbe:
